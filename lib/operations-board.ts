@@ -14,9 +14,9 @@ function oneOf<T extends readonly string[]>(value:string,values:T,label:string):
  return value as T[number];
 }
 
-export async function listOperationsProjects(){
+export async function listOperationsProjects(authUserId?:string|null,isGlobal=false){
  const sql=db();
- return sql`SELECT p.id,p.brand_id,b.name AS brand_name,p.title,p.status,p.start_at,p.end_at,p.owner_subject,
+ return authUserId&&!isGlobal?sql`SELECT p.id,p.brand_id,b.name AS brand_name,p.title,p.status,p.start_at,p.end_at,p.owner_subject,
   u.display_name AS owner_name,u.email AS owner_email,org.name AS organization_name,
   count(t.id)::int AS task_count,
   count(t.id) FILTER (WHERE t.status='DONE')::int AS done_count,
@@ -28,9 +28,10 @@ export async function listOperationsProjects(){
  LEFT JOIN wgos.app_users u ON u.auth_user_id=p.owner_subject
  LEFT JOIN wgos.tasks t ON t.project_id=p.id
  GROUP BY p.id,b.name,u.display_name,u.email,org.name
- ORDER BY
-  CASE p.status WHEN 'ACTIVE' THEN 0 WHEN 'PLANNING' THEN 1 WHEN 'BLOCKED' THEN 2 WHEN 'COMPLETE' THEN 3 ELSE 4 END,
-  COALESCE(p.end_at,'9999-12-31'::timestamptz),p.created_at DESC`;
+ JOIN wgos.brand_memberships bm ON bm.brand_id=p.brand_id AND bm.auth_user_id=${authUserId} AND bm.active=true
+ GROUP BY p.id,b.name,u.display_name,u.email,org.name
+ ORDER BY CASE p.status WHEN 'ACTIVE' THEN 0 WHEN 'PLANNING' THEN 1 WHEN 'BLOCKED' THEN 2 WHEN 'COMPLETE' THEN 3 ELSE 4 END,COALESCE(p.end_at,'9999-12-31'::timestamptz),p.created_at DESC`
+ :sql`SELECT p.id,p.brand_id,b.name AS brand_name,p.title,p.status,p.start_at,p.end_at,p.owner_subject,u.display_name AS owner_name,u.email AS owner_email,org.name AS organization_name,count(t.id)::int AS task_count,count(t.id) FILTER (WHERE t.status='DONE')::int AS done_count,count(t.id) FILTER (WHERE t.status='BLOCKED')::int AS blocked_count,count(t.id) FILTER (WHERE t.due_at<now() AND t.status NOT IN ('DONE','CANCELLED'))::int AS overdue_count FROM wgos.projects p JOIN wgos.brands b ON b.id=p.brand_id LEFT JOIN wgos.organizations org ON org.id=p.organization_id LEFT JOIN wgos.app_users u ON u.auth_user_id=p.owner_subject LEFT JOIN wgos.tasks t ON t.project_id=p.id GROUP BY p.id,b.name,u.display_name,u.email,org.name ORDER BY CASE p.status WHEN 'ACTIVE' THEN 0 WHEN 'PLANNING' THEN 1 WHEN 'BLOCKED' THEN 2 WHEN 'COMPLETE' THEN 3 ELSE 4 END,COALESCE(p.end_at,'9999-12-31'::timestamptz),p.created_at DESC`;
 }
 
 export async function getOperationsBoard(projectId:string){
