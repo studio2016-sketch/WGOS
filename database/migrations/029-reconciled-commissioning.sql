@@ -153,7 +153,7 @@ CREATE TABLE IF NOT EXISTS wgos.advancing_checkpoints(
  status text NOT NULL DEFAULT 'OPEN',completed_at timestamptz,notes text);
 
 INSERT INTO wgos.data_governance_policies(data_class,record_type,retention_days,legal_hold_supported,exportable,deletion_mode,notes) VALUES
-('BUSINESS','opportunity',2555,true,true,'REVIEW','Commercial history; retention subject to legal/accounting requirements.'),
+('BUSINESS','opportunity',2555,true,true,'REVIEW','Commercial history with retention subject to legal and accounting requirements.'),
 ('LEGAL','agreement',NULL,true,true,'RETAIN','Signed legal artifacts require explicit retention review.'),
 ('FINANCIAL','payment',NULL,true,true,'RETAIN','Provider/accounting records govern retention.'),
 ('PERSONAL','contact',NULL,true,true,'REVIEW','Deletion requests require relationship/legal review.'),
