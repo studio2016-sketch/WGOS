@@ -1,5 +1,5 @@
 -- 029 Reconciled WGOS commissioning migration
--- Extends the live canonical schema. Contacts remain the canonical person model; agreements remain canonical contracts.
+-- Extends the live canonical schema. Contacts remain the canonical person model and agreements remain canonical contracts.
 
 CREATE TABLE IF NOT EXISTS wgos.brand_memberships(
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),auth_user_id text NOT NULL REFERENCES wgos.app_users(auth_user_id) ON DELETE CASCADE,
