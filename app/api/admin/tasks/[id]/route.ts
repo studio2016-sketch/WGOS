@@ -7,6 +7,7 @@ export async function PUT(req:Request,{params}:{params:Promise<{id:string}>}){
  if(!auth.ok)return NextResponse.json({updated:false,error:auth.error},{status:auth.status});
  try{
   const {id}=await params;
+  const access=await requireApiTask(auth.identity,id);if(!access.ok)return NextResponse.json({updated:false,error:access.error},{status:access.status});
   const body=await req.json();
   const task:any=await updateBoardTask({
    taskId:id,
