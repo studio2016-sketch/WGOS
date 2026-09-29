@@ -6,7 +6,8 @@ import OperationsBoardClient from "../admin/operations/OperationsBoardClient";
 export default async function WorkPage({searchParams}:{searchParams:Promise<{project?:string}>}){
  const identity:any=await currentIdentity();
  const query=await searchParams;
- const rows:any[]=await listOperationsProjects() as any[];
+ const isGlobal=Boolean(identity&&["OWNER","ADMIN"].includes(String(identity.role)));
+ const rows:any[]=await listOperationsProjects(identity?.auth_user_id||null,isGlobal) as any[];
  let selectedId=query.project||rows[0]?.id||"";
  let board:any=selectedId?await getOperationsBoard(String(selectedId)):null;
  if(!board&&rows.length&&selectedId!==rows[0].id){
