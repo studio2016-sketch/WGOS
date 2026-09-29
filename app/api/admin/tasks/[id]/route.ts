@@ -1,5 +1,5 @@
 import {NextResponse} from "next/server";
-import {requireApiUser} from "../../../../../lib/authz";
+import {requireApiUser,requireApiTask} from "../../../../../lib/authz";
 import {updateBoardTask} from "../../../../../lib/operations-board";
 
 export async function PUT(req:Request,{params}:{params:Promise<{id:string}>}){
