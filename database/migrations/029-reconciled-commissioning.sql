@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS wgos.proposal_line_items(
  name text NOT NULL,description text,quantity numeric NOT NULL DEFAULT 1,unit_amount_cents bigint NOT NULL DEFAULT 0,tax_cents bigint NOT NULL DEFAULT 0,
  optional boolean NOT NULL DEFAULT false,selected boolean NOT NULL DEFAULT true,metadata jsonb NOT NULL DEFAULT '{}'::jsonb);
 CREATE TABLE IF NOT EXISTS wgos.signature_envelopes(
- id uuid PRIMARY KEY DEFAULT gen_random_uuid(),agreement_id uuid NOT NULL REFERENCES wgos.agreements(id) ON DELETE CASCADE,provider text NOT NULL,
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),agreement_id uuid NOT NULL REFERENCES wgos.\"agreements\"(id) ON DELETE CASCADE,provider text NOT NULL,
  external_envelope_id text,status text NOT NULL DEFAULT 'DRAFT',metadata jsonb NOT NULL DEFAULT '{}'::jsonb,created_at timestamptz NOT NULL DEFAULT now(),updated_at timestamptz NOT NULL DEFAULT now());
 CREATE UNIQUE INDEX IF NOT EXISTS signature_provider_external_idx ON wgos.signature_envelopes(provider,external_envelope_id) WHERE external_envelope_id IS NOT NULL;
 CREATE TABLE IF NOT EXISTS wgos.client_portal_access(
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS wgos.client_portal_access(
 
 CREATE TABLE IF NOT EXISTS wgos.invoices(
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),brand_id text NOT NULL REFERENCES wgos.brands(id),opportunity_id uuid REFERENCES wgos.opportunities(id),
- agreement_id uuid REFERENCES wgos.agreements(id),organization_id uuid REFERENCES wgos.organizations(id),invoice_number text NOT NULL,
+ agreement_id uuid REFERENCES wgos.\"agreements\"(id),organization_id uuid REFERENCES wgos.organizations(id),invoice_number text NOT NULL,
  status text NOT NULL DEFAULT 'DRAFT',total_cents bigint NOT NULL DEFAULT 0,due_cents bigint NOT NULL DEFAULT 0,currency char(3) NOT NULL DEFAULT 'USD',
  issued_at timestamptz,due_at timestamptz,external_provider text,external_id text,created_at timestamptz NOT NULL DEFAULT now(),updated_at timestamptz NOT NULL DEFAULT now(),
  UNIQUE(brand_id,invoice_number));
