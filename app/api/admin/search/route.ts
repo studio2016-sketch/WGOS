@@ -1,0 +1,2 @@
+import {NextResponse} from "next/server";import {requireApiAdmin} from "../../../../lib/authz";import {globalSearch} from "../../../../lib/intelligence";
+export async function GET(req:Request){const auth=await requireApiAdmin();if(!auth.ok)return NextResponse.json({error:auth.error},{status:auth.status});const q=new URL(req.url).searchParams.get("q")||"";try{return NextResponse.json({results:await globalSearch(q)});}catch(e){return NextResponse.json({error:e instanceof Error?e.message:"Search failed"},{status:400});}}
