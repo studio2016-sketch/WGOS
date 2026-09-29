@@ -1,3 +1,8 @@
+-- DEPRECATED BOOTSTRAP REFERENCE ONLY
+-- DO NOT APPLY TO PRODUCTION.
+-- The live Neon wgos schema is authoritative; applied migrations are consolidated under database/migrations/.
+-- This starter model remains temporarily for historical comparison and will be retired after full migration consolidation.
+
 -- WGOS canonical schema v1
 create extension if not exists pgcrypto;
 create table brands(id text primary key,name text not null,public_domain text not null,legal_type text not null,owned boolean not null default true,created_at timestamptz not null default now());
