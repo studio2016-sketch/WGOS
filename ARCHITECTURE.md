@@ -14,4 +14,9 @@ Users receive explicit brand memberships. Global owners aggregate authorized bra
 Google Workspace: email, calendar, Drive/Docs. GitHub: source. Vercel: runtime. Postgres: operational source of truth. Specialized providers: eSignature/payment/accounting. ChatGPT: conversational command layer over authorized WGOS actions.
 
 ## Database
-database/schema.sql is ready for the dedicated WGOS Postgres database. Do not apply it to an unrelated database.
+The existing Neon production database and its `wgos` schema are the operational system of record. Applied production migrations are source-controlled under `database/migrations/` as each consolidated module is moved into this repository.
+
+`database/schema.sql` is an early bootstrap/reference model only and MUST NOT be applied over production. It will be retired once the full migration history has been consolidated from the superseded Global-Proposal-System repository.
+
+## Repository rule
+`studio2016-sketch/WGOS` is the only active application repository for WGOS.app. `Global-Proposal-System` is retained only as a migration/reference source; no new product functionality should be added there.
