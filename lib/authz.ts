@@ -27,3 +27,7 @@ export async function requireApiTask(identity:any,taskId:string){
  if(["OWNER","ADMIN"].includes(String(identity?.role)))return {ok:true as const};
  const sql=db();const rows=await sql`SELECT 1 FROM wgos.tasks t JOIN wgos.projects p ON p.id=t.project_id JOIN wgos.brand_memberships m ON m.brand_id=p.brand_id AND m.auth_user_id=${String(identity.auth_user_id)} AND m.active=true WHERE t.id=${taskId}::uuid LIMIT 1`;return rows[0]?{ok:true as const}:{ok:false as const,status:403,error:"TASK_ACCESS_REQUIRED"};
 }
+export async function requireApiOpportunity(identity:any,opportunityId:string){
+ if(["OWNER","ADMIN"].includes(String(identity?.role)))return {ok:true as const};
+ const sql=db();const rows=await sql`SELECT 1 FROM wgos.opportunities o JOIN wgos.brand_memberships m ON m.brand_id=o.brand_id AND m.auth_user_id=${String(identity.auth_user_id)} AND m.active=true WHERE o.id=${opportunityId}::uuid LIMIT 1`;return rows[0]?{ok:true as const}:{ok:false as const,status:403,error:"OPPORTUNITY_ACCESS_REQUIRED"};
+}
