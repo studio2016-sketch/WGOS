@@ -1,6 +1,6 @@
 import {NextResponse} from "next/server";
-import {validateProposalAccess} from "../../../../../lib/proposal-access";
-import {acceptProposalSnapshot} from "../../../../../lib/commercial-lifecycle";
+import {validateProposalAccess} from "../../../../../../lib/proposal-access";
+import {acceptProposalSnapshot} from "../../../../../../lib/commercial-lifecycle";
 
 export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
  try{
