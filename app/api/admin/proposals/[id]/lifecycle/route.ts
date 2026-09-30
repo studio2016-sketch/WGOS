@@ -1,1 +1,24 @@
-import {NextResponse} from "next/server";import {requireApiUser} from "../../../../../../lib/authz";import {acceptProposalSnapshot,createAgreementFromAcceptedProposal} from "../../../../../lib/commercial-lifecycle";export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){const auth=await requireApiUser();if(!auth.ok)return NextResponse.json({ok:false,error:auth.error},{status:auth.status});try{const {id}=await params;const b=await req.json();const actor=String((auth.identity as any).auth_user_id);if(b.action==="accept"){const snapshot=await acceptProposalSnapshot({proposalId:id,clientEmail:b.clientEmail||null,actor});return NextResponse.json({ok:true,snapshot});}if(b.action==="agreement"){const agreement=await createAgreementFromAcceptedProposal({proposalId:id,actor});return NextResponse.json({ok:true,agreement});}return NextResponse.json({ok:false,error:"Invalid action"},{status:400});}catch(e){return NextResponse.json({ok:false,error:e instanceof Error?e.message:"Lifecycle action failed"},{status:400});}}
+import {NextResponse} from "next/server";
+import {requireApiUser} from "../../../../../../lib/authz";
+import {acceptProposalSnapshot,createAgreementFromAcceptedProposal} from "../../../../../../lib/commercial-lifecycle";
+
+export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
+ const auth=await requireApiUser();
+ if(!auth.ok)return NextResponse.json({ok:false,error:auth.error},{status:auth.status});
+ try{
+  const {id}=await params;
+  const body=await req.json();
+  const actor=String((auth.identity as any).auth_user_id);
+  if(body.action==="accept"){
+   const snapshot=await acceptProposalSnapshot({proposalId:id,clientEmail:body.clientEmail||null,actor});
+   return NextResponse.json({ok:true,snapshot});
+  }
+  if(body.action==="agreement"){
+   const agreement=await createAgreementFromAcceptedProposal({proposalId:id,actor});
+   return NextResponse.json({ok:true,agreement});
+  }
+  return NextResponse.json({ok:false,error:"Invalid action"},{status:400});
+ }catch(e){
+  return NextResponse.json({ok:false,error:e instanceof Error?e.message:"Lifecycle action failed"},{status:400});
+ }
+}
