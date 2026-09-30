@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/authz";
+import { requireApiAdmin } from "@/lib/authz";
 import { verifySignWellConnection } from "@/lib/signwell";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    await requireAdmin();
+    const auth = await requireApiAdmin();
+    if (!auth.ok) {
+      return NextResponse.json({ provider: "signwell", connected: false, error: auth.error }, { status: auth.status });
+    }
     const result = await verifySignWellConnection();
 
     return NextResponse.json(
