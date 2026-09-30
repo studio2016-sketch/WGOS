@@ -1,0 +1,7 @@
+"use client";
+import {useState} from "react";
+export default function IntegrationStatus(){
+ const [state,setState]=useState<any>({signwell:"unchecked"});
+ async function check(){setState({signwell:"checking"});try{const r=await fetch("/api/admin/integrations/signwell/verify",{cache:"no-store"});const j=await r.json();setState({signwell:j.connected?"connected":"attention",detail:j.connected?"Verified":"Not verified"});}catch{setState({signwell:"attention",detail:"Unable to verify"});}}
+ return <section className="adminPanel integrationPanel"><div><p className="eyebrow">PROVIDER COMMISSIONING</p><h2>Integrations</h2><p className="muted">External providers remain authoritative for signatures and payments.</p></div><div className="integrationRow"><div><strong>SignWell</strong><small>Electronic signature provider</small></div><span className={"status "+state.signwell}>{state.signwell==="connected"?"CONNECTED":state.signwell==="checking"?"CHECKING…":state.detail||"NOT VERIFIED"}</span><button onClick={check} disabled={state.signwell==="checking"}>Verify Connection</button></div><div className="integrationRow"><div><strong>Stripe</strong><small>Payment commissioning</small></div><span className="status">NOT COMMISSIONED</span><button disabled title="Payment architecture must be finalized before live commissioning">Commission after approval</button></div></section>;
+}
