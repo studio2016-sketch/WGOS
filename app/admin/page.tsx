@@ -9,6 +9,7 @@ import RelationshipWorkspace from "./RelationshipWorkspace";
 import OpportunityWorkspace from "./OpportunityWorkspace";
 import LifecycleWorkspace from "./LifecycleWorkspace";
 import ExecutiveAttention from "./ExecutiveAttention";
+import IntegrationStatus from "./IntegrationStatus";
 export default async function AdminPage({searchParams}:{searchParams:Promise<{brand?:string}>}){
  const query=await searchParams;const selectedBrand=query.brand||"";
  let summary:any={pipeline:{opportunity_count:0,pipeline_value:0},stages:[]},opportunities:any[]=[],proposals:any[]=[],readiness:any[]=[],lifecycle:any={agreements:[],payments:[],projects:[]},refs:any={brands:[],organizations:[],contacts:[]};
@@ -22,5 +23,6 @@ export default async function AdminPage({searchParams}:{searchParams:Promise<{br
  <RelationshipWorkspace organizations={refs.organizations} contacts={refs.contacts} brands={refs.brands}/>
  <OpportunityWorkspace opportunities={opportunities} proposals={proposals}/>
  <LifecycleWorkspace proposals={proposals} agreements={lifecycle.agreements} payments={lifecycle.payments} projects={lifecycle.projects}/>
+ <IntegrationStatus/>
  <CommercialForms brands={refs.brands} organizations={refs.organizations} contacts={refs.contacts} opportunities={opportunities} proposals={proposals} readiness={readiness}/></main>;
 }
