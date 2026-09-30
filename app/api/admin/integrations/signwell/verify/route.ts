@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { requireApiAdmin } from "../../../../../lib/authz";
-import { verifySignWellConnection } from "../../../../../lib/signwell";
+import { requireApiAdmin } from "../../../../../../lib/authz";
+import { verifySignWellConnection } from "../../../../../../lib/signwell";
 
 export const dynamic = "force-dynamic";
 
