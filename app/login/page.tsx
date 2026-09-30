@@ -20,7 +20,12 @@ export default function Login(){
    const role=String(who?.user?.role||"");
    router.replace(["OWNER","ADMIN"].includes(role)?"/admin":"/work");
    router.refresh();
-  }else{setError(d?.message||d?.error||"Unable to sign in.");setBusy(false)}
+  }else{
+   const msg=String(d?.message||d?.error||"Unable to sign in.");
+   setError(msg);
+   if(/email.*not.*verified/i.test(msg))setMessage("Your password is valid, but your email still needs verification. Use “Send Verification Email” below.");
+   setBusy(false)
+  }
  }
 
  async function reset(){
@@ -32,6 +37,16 @@ export default function Login(){
   setBusy(false);
  }
 
+ async function verify(){
+  if(!email){setError("Enter your email first.");return}
+  setBusy(true);setError("");setMessage("");
+  const r=await fetch("/api/auth/send-verification-email",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({email,callbackURL:window.location.origin+"/login?verified=success"})});
+  let d:any={};try{d=await r.json()}catch{}
+  if(r.ok)setMessage("Verification email sent. Open the newest WGOS verification email and click its verification link.");
+  else setError(d?.message||d?.error||"Unable to send a verification email right now.");
+  setBusy(false);
+ }
+
  return <main className="admin"><section className="principle" style={{maxWidth:720,margin:"10vh auto"}}>
   <p className="eyebrow">WGOS · SECURE ACCESS</p><h1>Command Center Access</h1>
   <p>Sign in with your authorized WGOS identity. Authentication is provided by Neon Auth; WGOS authorization is separately enforced by the app-user role table.</p>
@@ -40,7 +55,10 @@ export default function Login(){
    <label>Password<input type="password" autoComplete="current-password" required minLength={8} value={password} onChange={e=>setPassword(e.target.value)}/></label>
    <button className="primary" disabled={busy}>{busy?"Working…":"Sign In →"}</button>
   </form>
-  <button type="button" disabled={busy} onClick={reset} style={{marginTop:12}}>Set / Reset Password</button>
+  <div style={{display:"flex",gap:10,flexWrap:"wrap",marginTop:12}}>
+   <button type="button" disabled={busy} onClick={verify}>Send Verification Email</button>
+   <button type="button" disabled={busy} onClick={reset}>Set / Reset Password</button>
+  </div>
   {message&&<p className="muted">{message}</p>}
   {error&&<p className="muted">{error}</p>}
   <p className="privateNote">Creating an Auth account alone does not grant WGOS access. OWNER/ADMIN permissions control executive and administrative areas; active TEAM users are limited to the Work workspace and permitted task actions.</p>
