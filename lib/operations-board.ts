@@ -27,7 +27,6 @@ export async function listOperationsProjects(authUserId?:string|null,isGlobal=fa
  LEFT JOIN wgos.organizations org ON org.id=p.organization_id
  LEFT JOIN wgos.app_users u ON u.auth_user_id=p.owner_subject
  LEFT JOIN wgos.tasks t ON t.project_id=p.id
- GROUP BY p.id,b.name,u.display_name,u.email,org.name
  JOIN wgos.brand_memberships bm ON bm.brand_id=p.brand_id AND bm.auth_user_id=${authUserId} AND bm.active=true
  GROUP BY p.id,b.name,u.display_name,u.email,org.name
  ORDER BY CASE p.status WHEN 'ACTIVE' THEN 0 WHEN 'PLANNING' THEN 1 WHEN 'BLOCKED' THEN 2 WHEN 'COMPLETE' THEN 3 ELSE 4 END,COALESCE(p.end_at,'9999-12-31'::timestamptz),p.created_at DESC`
