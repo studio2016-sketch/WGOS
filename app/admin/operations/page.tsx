@@ -5,12 +5,12 @@ import OperationsBoardClient from "./OperationsBoardClient";
 import RecurringRules from "./RecurringRules";
 import AdminNav from "../AdminNav";
 
-export default async function OperationsPage({searchParams}:{searchParams:Promise<{project?:string}>}){
+export default async function OperationsPage({searchParams}:{searchParams:Promise<{project?:string;brand?:string}>}){
  const query=await searchParams;
  const [projectRows,refs]=await Promise.all([listOperationsProjects(),getOperationsReferenceData()]);
- const projects:any[]=projectRows as any[];
+ let projects:any[]=projectRows as any[];
  const users:any[]=refs.users as any[];
- const brands:any[]=refs.brands as any[];
+ const brands:any[]=refs.brands as any[];const selectedBrand=query.brand||"";if(selectedBrand)projects=projects.filter((p:any)=>p.brand_id===selectedBrand);
  let selectedId=query.project||projects[0]?.id||"";
  let board:any=selectedId?await getOperationsBoard(String(selectedId)):null;
  if(!board&&projects.length&&selectedId!==projects[0].id){
@@ -19,10 +19,10 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
  }
 
  return <main className="admin">
-  <AdminNav active="operations" brands={brands}/>
+  <AdminNav active="operations" brands={brands} brand={selectedBrand}/>
   <header className="adminHead">
    <div><p className="eyebrow">WGOS · OPERATIONS</p><h1>Operations Board</h1><p>Projects, deliverables, dependencies, ownership, approvals and deadlines in one native workspace.</p></div>
-   <div className="adminActions"><Link href="/admin">Commercial Command →</Link><NewProjectForm brands={brands} users={users}/></div>
+   <div className="adminActions"><Link href={selectedBrand?"/admin?brand="+encodeURIComponent(selectedBrand):"/admin"}>Commercial Command →</Link><NewProjectForm brands={brands} users={users}/></div>
   </header>
 
   <section className="principle">
@@ -38,7 +38,7 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
       const total=Number(p.task_count||0),done=Number(p.done_count||0);
       const progress=total?Math.round(done/total*100):0;
       const active=String(p.id)===String(selectedId);
-      return <Link key={p.id} href={"/admin/operations?project="+encodeURIComponent(p.id)} style={{display:"block",padding:12,border:"1px solid rgba(255,255,255,.12)",borderRadius:12,textDecoration:"none",background:active?"rgba(255,255,255,.07)":"transparent"}}>
+      return <Link key={p.id} href={"/admin/operations?project="+encodeURIComponent(p.id)+(selectedBrand?"&brand="+encodeURIComponent(selectedBrand):"")} style={{display:"block",padding:12,border:"1px solid rgba(255,255,255,.12)",borderRadius:12,textDecoration:"none",background:active?"rgba(255,255,255,.07)":"transparent"}}>
        <strong>{p.title}</strong>
        <small style={{display:"block",marginTop:4,opacity:.7}}>{p.brand_name} · {p.status}</small>
        <div style={{display:"flex",justifyContent:"space-between",gap:8,marginTop:8,fontSize:12}}>
