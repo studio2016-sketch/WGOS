@@ -16,3 +16,6 @@ body{background:radial-gradient(circle at 75% -10%,rgba(198,168,106,.08),transpa
 .admin button:hover:not(:disabled){border-color:#66583b}.admin input,.admin select,.admin textarea{min-height:42px}
 .adminPanel>div[style*="display:grid"]{row-gap:10px}
 @media(max-width:900px){.topNav{margin:-20px -4px 22px;overflow-x:auto}.topNav:before{margin-right:8px}.dashboardCards,.adminGrid{grid-template-columns:1fr}.adminHead h1{font-size:34px}}
+
+.topNav{min-height:62px}.topNav:before{display:none}.wordmark{display:flex;align-items:baseline;gap:10px;font:18px Georgia,serif;color:var(--gold);letter-spacing:.08em;padding:8px 10px;white-space:nowrap}.wordmark small{font:8px Arial,sans-serif;color:#657075;letter-spacing:.12em}.navLinks{display:flex;gap:4px}.brandFilter{margin-left:auto;display:flex!important;align-items:center;gap:9px;color:#777f83!important}.brandFilter select{width:auto;min-width:170px;margin:0!important;padding:8px 30px 8px 10px!important;background:#111517!important}
+@media(max-width:760px){.topNav{flex-wrap:wrap}.wordmark{width:100%;padding-bottom:0}.wordmark small{display:none}.navLinks{order:2}.brandFilter{order:3;margin-left:auto}.brandFilter select{min-width:135px}}
