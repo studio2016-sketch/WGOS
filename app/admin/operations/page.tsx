@@ -3,6 +3,7 @@ import {getOperationsBoard,getOperationsReferenceData,listOperationsProjects} fr
 import NewProjectForm from "./NewProjectForm";
 import OperationsBoardClient from "./OperationsBoardClient";
 import RecurringRules from "./RecurringRules";
+import AdminNav from "../AdminNav";
 
 export default async function OperationsPage({searchParams}:{searchParams:Promise<{project?:string}>}){
  const query=await searchParams;
@@ -18,6 +19,7 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
  }
 
  return <main className="admin">
+  <AdminNav active="operations"/>
   <header className="adminHead">
    <div><p className="eyebrow">WGOS · OPERATIONS</p><h1>Operations Board</h1><p>Projects, deliverables, dependencies, ownership, approvals and deadlines in one native workspace.</p></div>
    <div className="adminActions"><Link href="/admin">Commercial Command →</Link><NewProjectForm brands={brands} users={users}/></div>
