@@ -1,37 +1,9 @@
 "use client";
-import {FormEvent,useState} from "react";
-import {useRouter,useSearchParams} from "next/navigation";
-
+import {FormEvent,useEffect,useState} from "react";
+import {useRouter} from "next/navigation";
 export default function ResetPassword(){
- const router=useRouter();
- const params=useSearchParams();
- const [password,setPassword]=useState("");
- const [confirm,setConfirm]=useState("");
- const [busy,setBusy]=useState(false);
- const [error,setError]=useState("");
-
- async function submit(e:FormEvent){
-  e.preventDefault();setError("");
-  if(password.length<8){setError("Password must be at least 8 characters.");return}
-  if(password!==confirm){setError("Passwords do not match.");return}
-  const token=params.get("token");
-  if(!token){setError("This password reset link is missing its secure token. Request a new link from the sign-in page.");return}
-  setBusy(true);
-  const r=await fetch("/api/auth/reset-password",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({newPassword:password,token})});
-  let d:any={};try{d=await r.json()}catch{}
-  if(r.ok){router.replace("/login?reset=success");router.refresh();return}
-  setError(d?.message||d?.error||"This reset link could not be completed. Request a new password reset link.");
-  setBusy(false);
- }
- return <main className="admin"><section className="principle" style={{maxWidth:720,margin:"10vh auto"}}>
-  <p className="eyebrow">WGOS · SECURE ACCESS</p><h1>Set Your Password</h1>
-  <p>Create a password for your authorized WGOS identity. The secure reset token is verified by Neon Auth.</p>
-  <form onSubmit={submit} style={{display:"grid",gap:14,marginTop:28}}>
-   <label>New password<input type="password" autoComplete="new-password" required minLength={8} value={password} onChange={e=>setPassword(e.target.value)}/></label>
-   <label>Confirm password<input type="password" autoComplete="new-password" required minLength={8} value={confirm} onChange={e=>setConfirm(e.target.value)}/></label>
-   <button className="primary" disabled={busy}>{busy?"Setting password…":"Set Password →"}</button>
-  </form>
-  {error&&<p className="muted">{error}</p>}
-  <p className="privateNote">If this link has expired or was already used, return to the sign-in page and request a new password setup/reset email.</p>
- </section></main>
+ const router=useRouter(); const [token,setToken]=useState(""); const [password,setPassword]=useState(""); const [confirm,setConfirm]=useState(""); const [busy,setBusy]=useState(false); const [error,setError]=useState("");
+ useEffect(()=>{setToken(new URLSearchParams(window.location.search).get("token")||"")},[]);
+ async function submit(e:FormEvent){e.preventDefault();setError("");if(password.length<8){setError("Password must be at least 8 characters.");return}if(password!==confirm){setError("Passwords do not match.");return}if(!token){setError("This password reset link is missing its secure token. Request a new link from the sign-in page.");return}setBusy(true);const r=await fetch("/api/auth/reset-password",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({newPassword:password,token})});let d:any={};try{d=await r.json()}catch{}if(r.ok){router.replace("/login?reset=success");router.refresh();return}setError(d?.message||d?.error||"This reset link could not be completed. Request a new password reset link.");setBusy(false)}
+ return <main className="admin"><section className="principle" style={{maxWidth:720,margin:"10vh auto"}}><p className="eyebrow">WGOS · SECURE ACCESS</p><h1>Set Your Password</h1><p>Create a password for your authorized WGOS identity. The secure reset token is verified by Neon Auth.</p><form onSubmit={submit} style={{display:"grid",gap:14,marginTop:28}}><label>New password<input type="password" autoComplete="new-password" required minLength={8} value={password} onChange={e=>setPassword(e.target.value)}/></label><label>Confirm password<input type="password" autoComplete="new-password" required minLength={8} value={confirm} onChange={e=>setConfirm(e.target.value)}/></label><button className="primary" disabled={busy}>{busy?"Setting password…":"Set Password →"}</button></form>{error&&<p className="muted">{error}</p>}<p className="privateNote">If this link has expired or was already used, return to the sign-in page and request a new password setup/reset email.</p></section></main>
 }
