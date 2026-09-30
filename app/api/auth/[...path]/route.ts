@@ -1,6 +1,6 @@
 import {NextResponse} from "next/server";
 
-const allowed=new Set(["sign-in/email","sign-out","get-session","request-password-reset","reset-password","send-verification-email","verify-email"]);
+const allowed=new Set(["sign-in/email","sign-out","get-session","request-password-reset","reset-password","send-verification-email","verify-email","email-otp/send-verification-otp","email-otp/verify-email"]);
 
 function cleanSetCookie(value:string){
  return value.replace(/;\s*Domain=[^;]+/ig,"");
