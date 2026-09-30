@@ -21,10 +21,10 @@ export default async function AdminPage({searchParams}:{searchParams:Promise<{br
  <ExecutiveAttention proposals={proposals} readiness={readiness} agreements={lifecycle.agreements} projects={lifecycle.projects}/>
  <section className="principle"><strong>Lifecycle:</strong> relationship → opportunity → proposal → contract → payment → project → delivery → relationship history.</section>
  <section className="adminGrid dashboardCards"><article className="adminPanel"><p className="eyebrow">OPEN PIPELINE</p><h2>{"$"+pipelineValue.toLocaleString(undefined,{maximumFractionDigits:0})}</h2><p>{opportunities.filter((o:any)=>!["WON","LOST"].includes(o.stage)).length} active opportunities</p></article><article className="adminPanel"><p className="eyebrow">GOVERNANCE</p><h2>Brand-native</h2><p>Every commercial record carries originating brand and legal context.</p></article><article className="adminPanel"><p className="eyebrow">DELIVERY</p><h2>Operations</h2><p>Won work can activate directly into the native WGOS Operations Board.</p></article></section>
- <RelationshipWorkspace organizations={refs.organizations} contacts={refs.contacts} brands={refs.brands}/>
  <OpportunityWorkspace opportunities={opportunities} proposals={proposals}/>
  <LifecycleWorkspace proposals={proposals} agreements={lifecycle.agreements} payments={lifecycle.payments} projects={lifecycle.projects}/>
  <ContractingReadiness rows={readiness}/>
  <IntegrationStatus/>
+ <RelationshipWorkspace organizations={refs.organizations} contacts={refs.contacts} brands={refs.brands}/>
  <CommercialForms brands={refs.brands} organizations={refs.organizations} contacts={refs.contacts} opportunities={opportunities} proposals={proposals} readiness={readiness}/></main>;
 }
