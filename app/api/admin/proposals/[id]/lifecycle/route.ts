@@ -1,6 +1,6 @@
 import {NextResponse} from "next/server";
 import {requireApiUser,requireApiProposal} from "../../../../../../lib/authz";
-import {acceptProposalSnapshot,createAgreementFromAcceptedProposal} from "../../../../../../lib/commercial-lifecycle";
+import {createAgreementFromAcceptedProposal} from "../../../../../../lib/commercial-lifecycle";
 
 export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
  const auth=await requireApiUser();
@@ -11,10 +11,6 @@ export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
   if(!access.ok)return NextResponse.json({ok:false,error:access.error},{status:access.status});
   const body=await req.json();
   const actor=String((auth.identity as any).auth_user_id);
-  if(body.action==="accept"){
-   const snapshot=await acceptProposalSnapshot({proposalId:id,clientEmail:body.clientEmail||null,actor});
-   return NextResponse.json({ok:true,snapshot});
-  }
   if(body.action==="agreement"){
    const agreement=await createAgreementFromAcceptedProposal({proposalId:id,actor});
    return NextResponse.json({ok:true,agreement});
