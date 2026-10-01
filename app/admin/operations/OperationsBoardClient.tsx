@@ -17,7 +17,8 @@ const projectStatuses=["PLANNING","ACTIVE","BLOCKED","COMPLETE","CANCELLED"];
 const priorities=["LOW","MEDIUM","HIGH","CRITICAL"];
 
 const label=(v:string)=>v.replaceAll("_"," ");
-const dateOnly=(v?:string|null)=>v?String(v).slice(0,10):"";\nconst taskTone=(t:Task)=>{const overdue=!["DONE","CANCELLED"].includes(t.status)&&Boolean(t.due_at)&&new Date(String(t.due_at)+"T23:59:59").getTime()<Date.now();if(t.status==="BLOCKED"||Number(t.incomplete_dependency_count)>0)return "blocked";if(overdue)return "overdue";if(t.priority==="CRITICAL")return "critical";if(t.status==="DONE")return "done";if(t.status==="IN_PROGRESS")return "active";return "neutral"};
+const dateOnly=(v?:string|null)=>v?String(v).slice(0,10):"";
+const taskTone=(t:Task)=>{const overdue=!["DONE","CANCELLED"].includes(t.status)&&Boolean(t.due_at)&&new Date(String(t.due_at)+"T23:59:59").getTime()<Date.now();if(t.status==="BLOCKED"||Number(t.incomplete_dependency_count)>0)return "blocked";if(overdue)return "overdue";if(t.priority==="CRITICAL")return "critical";if(t.status==="DONE")return "done";if(t.status==="IN_PROGRESS")return "active";return "neutral"};
 
 export default function OperationsBoardClient({initialProject,initialTasks,dependencies,users,initialComments,canManageProject=true}:{initialProject:Project;initialTasks:Task[];dependencies:Dependency[];users:User[];initialComments:any[];canManageProject?:boolean}){
  const router=useRouter();
@@ -107,7 +108,9 @@ export default function OperationsBoardClient({initialProject,initialTasks,depen
   setBusy("");
  }
 
- const visibleGroups=groups.filter(g=>!filters.group||filters.group===g);\n const progress=metrics.total?Math.round(metrics.done/metrics.total*100):0;\n const attention=metrics.blocked+metrics.overdue;
+ const visibleGroups=groups.filter(g=>!filters.group||filters.group===g);
+ const progress=metrics.total?Math.round(metrics.done/metrics.total*100):0;
+ const attention=metrics.blocked+metrics.overdue;
 
  return <div style={{display:"grid",gap:18}}>
   {error&&<div className="adminPanel"><p className="muted">{error}</p></div>}
