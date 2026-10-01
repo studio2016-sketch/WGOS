@@ -10,7 +10,8 @@ export async function relationshipReferenceData(){
   sql`SELECT o.*,array_remove(array_agg(ob.brand_id),NULL) brand_ids FROM wgos.organizations o LEFT JOIN wgos.organization_brands ob ON ob.organization_id=o.id GROUP BY o.id ORDER BY o.name`,
   sql`SELECT c.*,o.name organization_name,array_remove(array_agg(cb.brand_id),NULL) brand_ids FROM wgos.contacts c LEFT JOIN wgos.organizations o ON o.id=c.organization_id LEFT JOIN wgos.contact_brands cb ON cb.contact_id=c.id GROUP BY c.id,o.name ORDER BY c.last_name,c.first_name`
  ]);
- return {brands,organizations,contacts};
+ const [opportunityLinks,proposalLinks,projectLinks,threadLinks]=await Promise.all([sql`SELECT id,organization_id,primary_contact_id,brand_id,title,stage,estimated_value FROM wgos.opportunities ORDER BY updated_at DESC`,sql`SELECT p.id,p.organization_id,p.brand_id,p.status,p.version,o.primary_contact_id,o.title opportunity_title FROM wgos.proposals p LEFT JOIN wgos.opportunities o ON o.id=p.opportunity_id ORDER BY p.updated_at DESC`,sql`SELECT p.id,p.organization_id,p.brand_id,p.status,p.title,o.primary_contact_id FROM wgos.projects p LEFT JOIN wgos.opportunities o ON o.id=p.opportunity_id ORDER BY p.updated_at DESC`,sql`SELECT t.id,t.organization_id,t.contact_id,t.brand_id,t.status,t.subject FROM wgos.communication_threads t ORDER BY t.updated_at DESC`]);
+ return {brands,organizations,contacts,opportunityLinks,proposalLinks,projectLinks,threadLinks};
 }
 export async function createOrganization(input:{name:string;type?:string;website?:string|null;notes?:string|null;brandIds:string[];actor:string}){
  const name=input.name.trim();if(!name)throw new Error("Organization name is required.");if(!input.brandIds.length)throw new Error("Select at least one brand.");
