@@ -107,7 +107,7 @@ export default function OperationsBoardClient({initialProject,initialTasks,depen
   setBusy("");
  }
 
- const visibleGroups=groups.filter(g=>!filters.group||filters.group===g);
+ const visibleGroups=groups.filter(g=>!filters.group||filters.group===g);\n const progress=metrics.total?Math.round(metrics.done/metrics.total*100):0;\n const attention=metrics.blocked+metrics.overdue;
 
  return <div style={{display:"grid",gap:18}}>
   {error&&<div className="adminPanel"><p className="muted">{error}</p></div>}
