@@ -1,9 +1,9 @@
 export const SOUND_LEGACY_INSTITUTE_MASTER_TERMS_TITLE="SOUND LEGACY INSTITUTE — MASTER STUDENT ENROLLMENT, MUSIC EDUCATION & COMMUNITY PROGRAM AGREEMENT";
-export const SOUND_LEGACY_INSTITUTE_MASTER_TERMS_VERSION="2026.2";
+export const SOUND_LEGACY_INSTITUTE_MASTER_TERMS_VERSION="2026.1";
 export const SOUND_LEGACY_INSTITUTE_MASTER_TERMS_2026_1=`SOUND LEGACY INSTITUTE
 MASTER STUDENT ENROLLMENT, MUSIC EDUCATION & COMMUNITY PROGRAM AGREEMENT
 Texas Master Terms
-Version: 2026.2
+Version: 2026.1
 Effective Date: [______]
 
 This Master Agreement governs enrollment in and participation in educational, artistic, performance, community, and related programs offered by Sound Legacy Institute (“SLI”). For a minor Student, “Parent” means the parent or legal guardian accepting this Agreement. “Student” means the enrolled learner. The accepting adult and, where applicable, an adult Student are the “Responsible Party.” Program-specific enrollment confirmations, tuition schedules, handbooks, policies, consent forms, and addenda incorporated into this Agreement are collectively the “Enrollment Documents.”
