@@ -12,3 +12,13 @@ export async function proposalPublicUrl(proposalId:string){const sql=db();const 
 export async function listProposals(){const sql=db();return sql`SELECT p.*,o.title opportunity_title,b.name brand_name,org.name organization_name FROM wgos.proposals p LEFT JOIN wgos.opportunities o ON o.id=p.opportunity_id JOIN wgos.brands b ON b.id=p.brand_id LEFT JOIN wgos.organizations org ON org.id=p.organization_id ORDER BY p.updated_at DESC`;}
 export async function updateProposalFinancials(input:{proposalId:string;oneTimeTotal:number;depositAmount:number;actor:string}){const sql=db();const rows=await sql`UPDATE wgos.proposals SET one_time_total=${Math.max(0,input.oneTimeTotal)},deposit_amount=${Math.max(0,input.depositAmount)},updated_at=now() WHERE id=${input.proposalId}::uuid AND status='DRAFT' RETURNING *`;const p:any=rows[0];if(!p)throw new Error("Editable proposal not found.");await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata) VALUES(${input.actor},'PROPOSAL_PRICING_UPDATED','proposal',${String(p.id)},${JSON.stringify({oneTimeTotal:input.oneTimeTotal,depositAmount:input.depositAmount})}::jsonb)`;return p;}
 export async function approveProposal(input:{proposalId:string;actor:string}){const sql=db();const rows=await sql`UPDATE wgos.proposals SET status='APPROVED',approved_by_subject=${input.actor},approved_at=now(),updated_at=now() WHERE id=${input.proposalId}::uuid AND status='DRAFT' RETURNING *`;const p:any=rows[0];if(!p)throw new Error("Draft proposal not found.");await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata) VALUES(${input.actor},'PROPOSAL_APPROVED','proposal',${String(p.id)},'{}'::jsonb)`;return p;}
+
+export async function clientExperienceReadiness(){const sql=db();return sql`
+ SELECT b.id,b.name,x.public_domain,x.sender_name,x.sender_email,x.reply_to_email,x.proposal_path_prefix,x.contract_path_prefix,x.portal_path_prefix,x.payment_path_prefix,
+ (CASE WHEN NULLIF(trim(COALESCE(x.public_domain,'')),'') IS NOT NULL THEN 1 ELSE 0 END+
+  CASE WHEN NULLIF(trim(COALESCE(x.sender_name,'')),'') IS NOT NULL AND NULLIF(trim(COALESCE(x.sender_email,'')),'') IS NOT NULL THEN 1 ELSE 0 END+
+  CASE WHEN NULLIF(trim(COALESCE(x.proposal_path_prefix,'')),'') IS NOT NULL THEN 1 ELSE 0 END+
+  CASE WHEN NULLIF(trim(COALESCE(x.contract_path_prefix,'')),'') IS NOT NULL THEN 1 ELSE 0 END+
+  CASE WHEN NULLIF(trim(COALESCE(x.portal_path_prefix,'')),'') IS NOT NULL THEN 1 ELSE 0 END+
+  CASE WHEN NULLIF(trim(COALESCE(x.payment_path_prefix,'')),'') IS NOT NULL THEN 1 ELSE 0 END)::int readiness_points
+ FROM wgos.brands b LEFT JOIN wgos.brand_experience_profiles x ON x.brand_id=b.id ORDER BY b.name`;}
