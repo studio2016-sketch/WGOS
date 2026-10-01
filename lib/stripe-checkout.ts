@@ -3,13 +3,14 @@ import {db} from "./db";
 import {stripe} from "./stripe";
 
 function publicBase(){return String(process.env.WGOS_PUBLIC_BASE_URL||"https://wgos.app").replace(/\/$/,"");}
+function brandBase(domain:any){const host=String(domain||"").trim().replace(/^https?:\/\//,"").replace(/\/$/,"");return host?`https://${host}`:publicBase();}
 function moneyToCents(value:any){const amount=Number(value||0);if(!Number.isFinite(amount)||amount<=0)throw new Error("A positive payment amount is required.");return Math.round(amount*100);}
 
 export async function createAgreementCheckout(input:{agreementId:string;actor:string}){
  const sql=db();
- const rows:any[]=await sql`SELECT a.id agreement_id,a.status agreement_status,p.id proposal_id,p.brand_id,p.currency,p.deposit_amount,p.one_time_total,p.title proposal_title,s.id snapshot_id,s.client_email,b.name brand_name,pp.payment_mode,pp.complete_for_payment,pp.statement_descriptor
+ const rows:any[]=await sql`SELECT a.id agreement_id,a.status agreement_status,p.id proposal_id,p.brand_id,p.currency,p.deposit_amount,p.one_time_total,p.title proposal_title,s.id snapshot_id,s.client_email,b.name brand_name,x.public_domain,x.payment_path_prefix,pp.payment_mode,pp.complete_for_payment,pp.statement_descriptor
  FROM wgos.agreements a JOIN wgos.proposals p ON p.id=a.proposal_id JOIN wgos.accepted_snapshots s ON s.proposal_id=p.id AND s.proposal_version=p.version
- JOIN wgos.brands b ON b.id=p.brand_id LEFT JOIN wgos.brand_payment_profiles pp ON pp.brand_id=p.brand_id
+ JOIN wgos.brands b ON b.id=p.brand_id LEFT JOIN wgos.brand_experience_profiles x ON x.brand_id=p.brand_id LEFT JOIN wgos.brand_payment_profiles pp ON pp.brand_id=p.brand_id
  WHERE a.id=${input.agreementId}::uuid ORDER BY s.accepted_at DESC LIMIT 1`;
  const row:any=rows[0];
  if(!row)throw new Error("Agreement or accepted proposal snapshot not found.");
@@ -23,7 +24,7 @@ export async function createAgreementCheckout(input:{agreementId:string;actor:st
   line_items:[{price_data:{currency,product_data:{name:deposit>0?`${row.brand_name} — Booking Deposit`:`${row.brand_name} — Payment`,description:String(row.proposal_title||"Service agreement")},unit_amount:moneyToCents(amount)},quantity:1}],
   metadata:{wgos_agreement_id:String(row.agreement_id),wgos_proposal_id:String(row.proposal_id),wgos_snapshot_id:String(row.snapshot_id),wgos_brand_id:String(row.brand_id),wgos_payment_kind:deposit>0?"DEPOSIT":"FULL_PAYMENT"},
   payment_intent_data:{metadata:{wgos_agreement_id:String(row.agreement_id),wgos_proposal_id:String(row.proposal_id),wgos_brand_id:String(row.brand_id)},statement_descriptor:row.statement_descriptor?String(row.statement_descriptor).slice(0,22):undefined},
-  success_url:`${publicBase()}/payment-complete?session_id={CHECKOUT_SESSION_ID}`,cancel_url:`${publicBase()}/payment-cancelled`,integration_identifier:"wgos_checkout_hzdpmqzr"
+  success_url:`${brandBase(row.public_domain)}${String(row.payment_path_prefix||"/pay").replace(/\/$/,"")}/complete?session_id={CHECKOUT_SESSION_ID}`,cancel_url:`${brandBase(row.public_domain)}${String(row.payment_path_prefix||"/pay").replace(/\/$/,"")}/cancelled`,integration_identifier:"wgos_checkout_hzdpmqzr"
  });
  if(!session.url)throw new Error("Stripe did not return a checkout URL.");
  await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata) VALUES(${input.actor},'STRIPE_CHECKOUT_CREATED','agreement',${String(row.agreement_id)},jsonb_build_object('proposalId',${String(row.proposal_id)},'sessionId',${session.id},'amount',${amount}))`;
