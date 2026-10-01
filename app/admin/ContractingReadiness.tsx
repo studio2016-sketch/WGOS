@@ -4,7 +4,8 @@ const short:{[k:string]:string}={bassOne:"B1",cgSuccess:"CG",charminJermaine:"C&
 export default function ContractingReadiness({rows}:{rows:any[]}){
  const [message]=useState("");
  const legal=(r:any)=>Boolean(r.complete_for_signing)&&Number(r.verified_signers||0)>0&&Number(r.active_entities||0)>0;
- const fullyReady=(r:any)=>legal(r)&&r.terms_status==="APPROVED"&&Boolean(r.complete_for_payment);\n const ready=rows.filter(fullyReady).length,drafts=rows.filter(r=>r.terms_status==="DRAFT").length,missing=rows.filter(r=>!r.terms_status).length,payments=rows.filter(r=>r.complete_for_payment).length;
+ const fullyReady=(r:any)=>legal(r)&&r.terms_status==="APPROVED"&&Boolean(r.complete_for_payment);
+ const ready=rows.filter(fullyReady).length,drafts=rows.filter(r=>r.terms_status==="DRAFT").length,missing=rows.filter(r=>!r.terms_status).length,payments=rows.filter(r=>r.complete_for_payment).length;
  return <section className="readinessWorkspace"><div className="readinessHero"><div><p className="eyebrow">CONTRACTS & PAYMENTS</p><h2>Contracting Readiness</h2><p>See exactly what is ready, what needs review, and what must happen next for every brand.</p></div></div>
  <div className="readinessMetrics"><article className="metricReady"><strong>{ready}</strong><span>TRANSACTION READY</span><small>Legal, terms & payment complete</small></article><article className="metricDraft"><strong>{drafts}</strong><span>TERMS IN REVIEW</span><small>Draft master terms</small></article><article className="metricMissing"><strong>{missing}</strong><span>TERMS MISSING</span><small>Master terms not created</small></article><article><strong>{payments}</strong><span>PAYMENTS ACTIVE</span><small>Provider commissioned</small></article></div>
  {message&&<p className="systemMessage">{message}</p>}
