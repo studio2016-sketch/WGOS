@@ -12,7 +12,12 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
  const users:any[]=refs.users as any[];
  const brands:any[]=refs.brands as any[];const selectedBrand=query.brand||"";if(selectedBrand)projects=projects.filter((p:any)=>p.brand_id===selectedBrand);
  let selectedId=query.project||projects[0]?.id||"";
- const totalTasks=projects.reduce((n:number,p:any)=>n+Number(p.task_count||0),0);\n const doneTasks=projects.reduce((n:number,p:any)=>n+Number(p.done_count||0),0);\n const blockedTasks=projects.reduce((n:number,p:any)=>n+Number(p.blocked_count||0),0);\n const overdueTasks=projects.reduce((n:number,p:any)=>n+Number(p.overdue_count||0),0);\n const portfolioProgress=totalTasks?Math.round(doneTasks/totalTasks*100):0;\n let board:any=selectedId?await getOperationsBoard(String(selectedId)):null;
+ const totalTasks=projects.reduce((n:number,p:any)=>n+Number(p.task_count||0),0);
+ const doneTasks=projects.reduce((n:number,p:any)=>n+Number(p.done_count||0),0);
+ const blockedTasks=projects.reduce((n:number,p:any)=>n+Number(p.blocked_count||0),0);
+ const overdueTasks=projects.reduce((n:number,p:any)=>n+Number(p.overdue_count||0),0);
+ const portfolioProgress=totalTasks?Math.round(doneTasks/totalTasks*100):0;
+ let board:any=selectedId?await getOperationsBoard(String(selectedId)):null;
  if(!board&&projects.length&&selectedId!==projects[0].id){
   selectedId=projects[0].id;
   board=await getOperationsBoard(String(selectedId));
@@ -25,7 +30,9 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
    <div className="adminActions"><Link href={selectedBrand?"/admin?brand="+encodeURIComponent(selectedBrand):"/admin"}>Commercial Command →</Link><NewProjectForm brands={brands} users={users}/></div>
   </header>
 
-  <section className="opsPulse"><article><small>ACTIVE PROJECTS</small><strong>{projects.length}</strong><span>current portfolio</span></article><article><small>PORTFOLIO PROGRESS</small><strong>{portfolioProgress}%</strong><span>{doneTasks} of {totalTasks} tasks complete</span></article><article><small>BLOCKED</small><strong>{blockedTasks}</strong><span>{blockedTasks?"needs intervention":"clear"}</span></article><article><small>OVERDUE</small><strong>{overdueTasks}</strong><span>{overdueTasks?"needs movement":"on schedule"}</span></article></section>\n\n  <section className="principle">
+  <section className="opsPulse"><article><small>ACTIVE PROJECTS</small><strong>{projects.length}</strong><span>current portfolio</span></article><article><small>PORTFOLIO PROGRESS</small><strong>{portfolioProgress}%</strong><span>{doneTasks} of {totalTasks} tasks complete</span></article><article><small>BLOCKED</small><strong>{blockedTasks}</strong><span>{blockedTasks?"needs intervention":"clear"}</span></article><article><small>OVERDUE</small><strong>{overdueTasks}</strong><span>{overdueTasks?"needs movement":"on schedule"}</span></article></section>
+
+  <section className="principle">
    <strong>Operating rule:</strong> routine work moves here. Executive attention is reserved for approvals, exceptions, blocked dependencies and consequential decisions.
   </section>
 
