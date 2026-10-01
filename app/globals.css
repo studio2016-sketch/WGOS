@@ -120,3 +120,12 @@ html,body{background-color:#080a0b!important}body{background-image:none!importan
 .recordCard{transition:background .15s ease,padding .15s ease}.recordCard:hover{background:#111617;padding-left:9px;padding-right:9px}
 .recordAvatar{box-shadow:inset 0 0 18px rgba(94,156,245,.08)}.recordAvatar.org{box-shadow:inset 0 0 18px rgba(177,124,243,.09)}
 .readinessMetrics article:nth-child(4){border-color:#294761;background:linear-gradient(145deg,rgba(47,112,163,.15),#101415)}.readinessMetrics article:nth-child(4) strong,.readinessMetrics article:nth-child(4) span{color:#79b7e8}
+
+/* Project-level command intelligence */
+.projectPulse{display:grid!important;grid-template-columns:1.5fr repeat(3,1fr)!important;gap:8px!important;margin:0!important;padding:0!important}
+.projectPulse article{min-height:122px;border:1px solid #293033;background:#101415;border-radius:9px;padding:17px;position:relative;overflow:hidden}
+.projectPulse article:before{content:"";position:absolute;inset:0 0 auto;height:3px;background:#5e9cf5}.projectPulse article:nth-child(2):before{background:#b17cf3}.projectPulse article.warn:before{background:#d5a94f}.projectPulse article.risk:before{background:#ef7c70}
+.projectPulse small{display:block;color:#7f898e;font-size:8px;letter-spacing:.12em}.projectPulse strong{display:block;font:30px Georgia,serif;margin:20px 0 5px}.projectPulse span{color:#717b80;font-size:9px}
+.projectProgress>div{height:4px;background:#252c2f;border-radius:8px;overflow:hidden;margin:12px 0 8px}.projectProgress>div i{display:block;height:100%;background:linear-gradient(90deg,#5e9cf5,#4dd4a0);border-radius:8px;transition:width .25s ease}
+.projectProgress strong{margin-bottom:0}.projectAttention{display:flex!important;align-items:center;justify-content:space-between;gap:16px;padding:14px 17px!important;border:1px solid #5b392e!important;border-left:3px solid #ef7c70!important;background:linear-gradient(90deg,rgba(110,43,35,.17),#0d1011)!important;border-radius:7px}.projectAttention p{margin:0 0 4px!important}.projectAttention strong{font:17px Georgia,serif}.projectAttention>span{color:#d2a08f;font-size:10px}
+@media(max-width:760px){.projectPulse{grid-template-columns:1fr 1fr!important}.projectPulse article{min-height:108px}.projectPulse strong{margin-top:15px}.projectAttention{align-items:flex-start;flex-direction:column}}
