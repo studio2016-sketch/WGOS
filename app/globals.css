@@ -137,3 +137,16 @@ html,body{background-color:#080a0b!important}body{background-image:none!importan
 .taskRow.blocked{background:linear-gradient(90deg,rgba(173,126,38,.055),transparent 28%)}.taskRow.overdue,.taskRow.critical{background:linear-gradient(90deg,rgba(183,68,55,.05),transparent 28%)}
 .taskTitleCell{min-width:0}.taskTitleCell>input{width:100%}.taskSignals{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}.taskSignals span{font-size:6px;letter-spacing:.09em;padding:3px 5px;border:1px solid #4a3c2b;border-radius:3px;color:#c9a66b;background:#15120d}.taskRow.overdue .taskSignals span,.taskRow.critical .taskSignals span{border-color:#57332e;color:#db8c80;background:#160f0e}
 .taskDetailSummary{cursor:pointer;font-size:11px;color:#818b90;padding:3px 0}.taskDetailSummary:hover{color:#c9b77f}
+
+.operationsLayout{display:grid;grid-template-columns:minmax(235px,300px) minmax(0,1fr);gap:18px;align-items:start}
+.operationsCanvas{min-width:0}
+.projectRail{position:sticky;top:72px;max-height:calc(100vh - 92px);overflow:auto}
+.projectRail>div{display:grid;gap:7px}
+.projectSelect{display:block;padding:12px;border:1px solid #272e31;border-radius:9px;text-decoration:none;background:#0d1011}
+.projectSelect:hover{border-color:#465156}
+.projectSelect.active{border-color:#675832;background:#12130f;box-shadow:inset 3px 0 #c6a86a}
+.projectSelect>strong{display:block;color:#e5e2da;font-size:11px}
+.projectSelect>small{display:block;margin-top:4px;color:#747e83;font-size:8px;text-transform:uppercase;letter-spacing:.07em}
+.projectSelectMeta{display:flex;justify-content:space-between;gap:8px;margin-top:9px;font-size:8px;color:#899398}
+.projectSelectMeta span:last-child{text-align:right}
+@media(max-width:820px){.operationsLayout{grid-template-columns:1fr}.projectRail{position:relative;top:auto;max-height:none}.projectRail>div{display:flex;overflow-x:auto;padding-bottom:4px}.projectSelect{min-width:210px}.operationsCanvas{width:100%}}
