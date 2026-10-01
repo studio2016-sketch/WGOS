@@ -67,3 +67,16 @@ body{background:radial-gradient(circle at 75% -10%,rgba(198,168,106,.08),transpa
  .termsSectionNav span{font-size:11px;line-height:1.35}
  .termsSectionNav b{font-size:12px;padding-top:1px}
 }
+
+.termsProgress{position:sticky;top:65px;z-index:29;max-width:900px;height:2px;margin:-10px auto 8px;background:#252b2d}.termsProgress i{display:block;height:100%;background:var(--gold);transition:width .2s ease}
+.termsMobileDock{display:none}
+@media(max-width:680px){
+ .termsReaderBar>div strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:48vw;margin-left:auto;margin-right:auto}
+ .termsProgress{top:59px;margin-left:-5px;margin-right:-5px}
+ .termsMobileDock{position:sticky;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:stretch;gap:1px;bottom:6px;z-index:28;max-width:900px;margin:10px -5px 0;background:#303638;border:1px solid #343b3d;box-shadow:0 -12px 36px rgba(0,0,0,.35)}
+ .termsMobileDock button{border:0;background:#111516;color:#d9dddb;min-height:52px;padding:8px 10px;font-size:9px}
+ .termsMobileDock button:disabled{color:#4f585b}
+ .termsMobileDock .dockSection{min-width:0;border-left:1px solid #303638;border-right:1px solid #303638}
+ .dockSection small{display:block;color:var(--gold);font-size:7px;letter-spacing:.08em;margin-bottom:3px}
+ .dockSection span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:9px}
+}
