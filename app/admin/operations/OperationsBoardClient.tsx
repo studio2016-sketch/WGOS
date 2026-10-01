@@ -1,5 +1,5 @@
 "use client";
-import {useMemo,useState} from "react";
+import {useEffect,useMemo,useState} from "react";
 import {useRouter} from "next/navigation";
 import TaskUpdates from "./TaskUpdates";
 
@@ -33,7 +33,7 @@ export default function OperationsBoardClient({initialProject,initialTasks,depen
  const [error,setError]=useState("");
  const [filters,setFilters]=useState({q:"",status:"",assignee:"",priority:"",group:""});
  const [focus,setFocus]=useState<"all"|"attention"|"blocked"|"overdue">("all");
- const [selectedTask,setSelectedTask]=useState(initialTaskId);
+ const [selectedTask,setSelectedTask]=useState(initialTaskId);useEffect(()=>{if(!selectedTask)return;const el=document.getElementById("task-"+selectedTask);if(el){const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;requestAnimationFrame(()=>el.scrollIntoView({behavior:reduced?"auto":"smooth",block:"center"}));}},[selectedTask]);
  const [newTask,setNewTask]=useState({title:"",groupName:"General",priority:"MEDIUM",assigneeSubject:"",dueAt:"",requiresApproval:false,approvalRole:"OWNER"});
 
  const groups=useMemo(()=>Array.from(new Set(tasks.map(t=>t.group_name||"General"))),[tasks]);
