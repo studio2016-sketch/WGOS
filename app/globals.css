@@ -259,3 +259,13 @@ body{background:linear-gradient(180deg,#07090a 0%,#090c0e 60%,#07090a 100%)}
 
 /* Command palette result language */
 .searchResults button{position:relative;padding-right:34px!important}.searchResults .resultKind{font-style:normal!important}.searchResults .kindTASK{color:#70b9ff!important}.searchResults .kindASSET{color:#66d8ae!important}.searchResults .kindPROJECT{color:#aa82ff!important}.searchResults .kindOPPORTUNITY{color:#e8b657!important}.searchResults .kindCONTACT,.searchResults .kindORGANIZATION{color:#e58ad4!important}.searchResults .resultOpen{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-style:normal;color:#59656c;opacity:0;transition:.14s ease}.searchResults button:hover .resultOpen,.searchResults button.selected .resultOpen{opacity:1;color:#dce5e9;transform:translate(2px,-50%)}
+
+
+/* Exact record focus */
+.selectedRecord{position:relative!important;border-color:rgba(91,164,255,.52)!important;box-shadow:0 0 0 1px rgba(91,164,255,.12),0 12px 38px rgba(34,94,180,.13),inset 3px 0 0 rgba(215,181,105,.78)!important;background-image:linear-gradient(100deg,rgba(55,137,255,.07),rgba(141,72,255,.035),transparent 72%)!important}
+.selectedRecord:before{content:"FOCUSED";position:absolute;z-index:3;right:10px;top:8px;font-size:6px;letter-spacing:.14em;color:#d9bd78;border:1px solid rgba(217,189,120,.28);background:rgba(9,12,15,.82);padding:4px 6px;border-radius:999px;pointer-events:none}
+.recordFocus{width:24px!important;height:24px!important;min-width:24px;padding:0!important;margin-right:5px!important;border-radius:50%!important;color:#66737b!important;background:transparent!important;border:1px solid var(--hair)!important;vertical-align:middle}
+.recordFocus:hover{color:#d9bd78!important;border-color:rgba(217,189,120,.35)!important;background:rgba(217,189,120,.05)!important}
+.recordCard{cursor:pointer;transition:border-color .15s ease,background .15s ease,transform .15s ease}.recordCard:hover{border-color:rgba(93,157,255,.24);transform:translateY(-1px)}
+.opportunityCard,.lifecycleCard,.equipmentRow,.taskRow{transition:border-color .15s ease,box-shadow .15s ease,background .15s ease}
+@media(max-width:650px){.selectedRecord:before{right:7px;top:6px}.recordFocus{width:28px!important;height:28px!important;min-width:28px}}
