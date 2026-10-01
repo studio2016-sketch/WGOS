@@ -6,12 +6,17 @@ The Neon connector currently requires the dedicated WGOS Neon project ID. Never 
 ## Migration commissioning
 1. Identify the dedicated WGOS Neon project ID.
 2. Inspect default branch/database and current wgos schema.
-3. Compare applied schema to migrations 019-027.
+3. Compare the applied schema to the canonical migration set, 019-028.
 4. Prepare outstanding migrations on a temporary Neon branch.
 5. Run structural and lifecycle tests on the temporary branch.
 6. Present test results and exact production migration for explicit approval.
 7. Only after approval, complete the prepared migration on production.
 8. Record migration completion in audit/system health history.
+
+## Canonical migration set
+Apply only migrations `019` through `028`, in numerical order, after the temporary-branch test passes.
+
+`029-reconciled-commissioning.sql` is an archived reconciliation draft, not an executable migration. It references obsolete schema names and overlaps the canonical set; do not include it in a deployment or migration runner.
 
 ## Provider commissioning
 Google Workspace, e-sign, payments and accounting are activated independently. Each adapter must prove a real authenticated round trip before integration_registry may show CONNECTED.

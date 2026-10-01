@@ -24,7 +24,7 @@ Status legend: BUILT = code/schema exists; ACTIVATE = requires production migrat
 | Audit/approvals/document versions | BUILT | Apply governance migration |
 | Data governance/idempotency/health | BUILT | Apply migration + restore/export test |
 | Accounting | ACTIVATE | Provider decision + mapping |
-| Production DB migrations 019-026 | ACTIVATE | Review/test/explicit production approval |
+| Production DB migrations 019-028 | ACTIVATE | Review/test/explicit production approval; exclude archived migration 029 |
 | Branded public proposal/sign/pay/portal UI | BUILT FOUNDATION | Wire each public site after DB activation |
 
 ## Definition of platform completion
