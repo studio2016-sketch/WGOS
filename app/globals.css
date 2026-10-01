@@ -80,3 +80,5 @@ body{background:radial-gradient(circle at 75% -10%,rgba(198,168,106,.08),transpa
  .dockSection small{display:block;color:var(--gold);font-size:7px;letter-spacing:.08em;margin-bottom:3px}
  .dockSection span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:9px}
 }
+
+.protectionBadge{display:flex;flex-wrap:wrap;gap:7px 12px;align-items:center;margin-top:12px;padding:9px 11px;border:1px solid;font-size:9px;letter-spacing:.04em}.protectionBadge b{font-size:9px;letter-spacing:.08em}.protectionBadge span{color:#98a0a2}.protectionBadge.protected{border-color:#246f50;background:rgba(22,91,63,.12);color:#62d49e}.protectionBadge.legacy{border-color:#8a6729;background:rgba(167,117,26,.11);color:#e2b955}
