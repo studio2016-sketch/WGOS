@@ -1,9 +1,9 @@
 import {NextResponse} from "next/server";
-import {requireApiUser,requireApiProposal} from "../../../../../../lib/authz";
+import {requireApiAdmin,requireApiProposal} from "../../../../../../lib/authz";
 import {createAgreementFromAcceptedProposal} from "../../../../../../lib/commercial-lifecycle";
 
 export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
- const auth=await requireApiUser();
+ const auth=await requireApiAdmin();
  if(!auth.ok)return NextResponse.json({ok:false,error:auth.error},{status:auth.status});
  try{
   const {id}=await params;
