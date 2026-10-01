@@ -8,7 +8,8 @@ export default async function WorkPage({searchParams}:{searchParams:Promise<{pro
  const query=await searchParams;
  const isGlobal=Boolean(identity&&["OWNER","ADMIN"].includes(String(identity.role)));
  const rows:any[]=await listOperationsProjects(identity?.auth_user_id||null,isGlobal) as any[];
- let selectedId=query.project||rows[0]?.id||"";
+ const allowed=new Set(rows.map((p:any)=>String(p.id)));
+ let selectedId=query.project&&allowed.has(String(query.project))?String(query.project):rows[0]?.id||"";
  let board:any=selectedId?await getOperationsBoard(String(selectedId)):null;
  if(!board&&rows.length&&selectedId!==rows[0].id){
   selectedId=rows[0].id;
