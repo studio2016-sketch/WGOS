@@ -36,3 +36,8 @@ export async function requireApiProposal(identity:any,proposalId:string){
  if(["OWNER","ADMIN"].includes(String(identity?.role)))return {ok:true as const};
  const sql=db();const rows=await sql`SELECT 1 FROM wgos.proposals p JOIN wgos.brand_memberships m ON m.brand_id=p.brand_id AND m.auth_user_id=${String(identity.auth_user_id)} AND m.active=true WHERE p.id=${proposalId}::uuid LIMIT 1`;return rows[0]?{ok:true as const}:{ok:false as const,status:403,error:"PROPOSAL_ACCESS_REQUIRED"};
 }
+
+export async function requireApiAgreement(identity:any,agreementId:string){
+ if(["OWNER","ADMIN"].includes(String(identity?.role)))return {ok:true as const};
+ const sql=db();const rows=await sql`SELECT 1 FROM wgos.agreements a JOIN wgos.proposals p ON p.id=a.proposal_id JOIN wgos.brand_memberships m ON m.brand_id=p.brand_id AND m.auth_user_id=${String(identity.auth_user_id)} AND m.active=true WHERE a.id=${agreementId}::uuid LIMIT 1`;return rows[0]?{ok:true as const}:{ok:false as const,status:403,error:"AGREEMENT_ACCESS_REQUIRED"};
+}

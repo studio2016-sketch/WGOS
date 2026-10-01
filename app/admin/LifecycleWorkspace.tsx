@@ -3,12 +3,25 @@ import {useEffect,useMemo,useState} from "react";
 const steps=["PROPOSAL","ACCEPTED","AGREEMENT","SIGNED","PAID","PROJECT"];
 export default function LifecycleWorkspace({proposals,agreements,payments,projects}:{proposals:any[];agreements:any[];payments:any[];projects:any[]}){
  const [filter,setFilter]=useState("ALL");useEffect(()=>{const h=(e:any)=>setFilter(e.detail||"ALL");window.addEventListener("wgos:brand-filter",h);return()=>window.removeEventListener("wgos:brand-filter",h)},[]);
+ const [busy,setBusy]=useState("");const [message,setMessage]=useState("");
  const agreementByProposal=useMemo(()=>new Map(agreements.map(a=>[a.proposal_id,a])),[agreements]);const projectByProposal=useMemo(()=>new Map(projects.map(p=>[p.proposal_id,p])),[projects]);
  const paymentByProposal=useMemo(()=>{const m=new Map<string,number>();payments.filter(x=>["PAID","SUCCEEDED"].includes(x.status)).forEach(x=>m.set(x.proposal_id,(m.get(x.proposal_id)||0)+Number(x.amount||0)));return m},[payments]);
  const rows=proposals.filter(p=>filter==="ALL"||p.brand_id===filter);
  function state(p:any){const a:any=agreementByProposal.get(p.id),project:any=projectByProposal.get(p.id),paid=paymentByProposal.get(p.id)||0;let n=0;if(p.status!=="DRAFT")n=1;if(["ACCEPTED"].includes(p.status)||a)n=2;if(a)n=3;if(a?.status==="SIGNED")n=4;if(Number(p.deposit_amount||0)===0?a?.status==="SIGNED":paid>=Number(p.deposit_amount||0))n=Math.max(n,5);if(project)n=6;return {a,project,paid,n};}
  function next(n:number){return n<=0?"Send proposal":n===1?"Capture acceptance":n===2?"Prepare agreement":n===3?"Collect signature":n===4?"Collect payment":n===5?"Activate project":"Manage delivery";}
+ async function advance(proposalId:string,agreementId?:string){
+  setBusy(proposalId);setMessage("");
+  try{
+   const endpoint=agreementId?"/api/admin/agreements/"+agreementId+"/activate":"/api/admin/proposals/"+proposalId+"/lifecycle";
+   const response=await fetch(endpoint,{method:"POST",headers:{"content-type":"application/json"},body:agreementId?undefined:JSON.stringify({action:"agreement"})});
+   const result=await response.json();
+   if(!response.ok)throw new Error(result.error||"Unable to advance this record");
+   setMessage(agreementId?"Project activated. It is now available in Operations.":"Agreement created and ready for signature commissioning.");
+   window.location.reload();
+  }catch(e){setMessage(e instanceof Error?e.message:"Unable to advance this record");}finally{setBusy("");}
+ }
  return <section className="adminPanel lifecycleWorkspace"><div className="workspaceTitle"><div><p className="eyebrow">COMMERCIAL LIFECYCLE</p><h2>Proposal to Delivery</h2><p className="muted">Provider-confirmed milestones remain authoritative for signatures and payments.</p></div></div>
- {rows.length===0?<p className="muted">No proposals yet.</p>:<div className="lifecycleList">{rows.map(p=>{const s=state(p);return <article className="lifecycleCard" key={p.id}><div className="lifeTitle"><div><strong>{p.opportunity_title||"Proposal"}</strong><small>{p.brand_name} · v{p.version}</small></div><span className="status">{s.project?.status||s.a?.status||p.status}</span></div><div className="lifeSteps">{steps.map((x,i)=><div key={x} className={i<s.n?"complete":i===s.n?"current":""}><i/><span>{x}</span></div>)}</div><div className="lifeMeta"><span>Total <b>{"$"+Number(p.one_time_total||0).toLocaleString()}</b></span><span>Deposit <b>{"$"+Number(p.deposit_amount||0).toLocaleString()}</b></span><span>Confirmed paid <b>{"$"+s.paid.toLocaleString()}</b></span>{s.project&&<span>Project <b>{s.project.status}</b></span>}</div><div className="lifeAction"><small>NEXT</small><strong>{next(s.n)}</strong></div></article>})}</div>}
+ {message&&<p className="lifecycleMessage" role="status">{message}</p>}
+ {rows.length===0?<p className="muted">No proposals yet.</p>:<div className="lifecycleList">{rows.map(p=>{const s=state(p);const canCreateAgreement=p.status==="ACCEPTED"&&!s.a;const canActivate=Boolean(s.a)&&s.a.status==="SIGNED"&&!s.project&&(Number(p.deposit_amount||0)===0||s.paid>=Number(p.deposit_amount||0));return <article className="lifecycleCard" key={p.id}><div className="lifeTitle"><div><strong>{p.opportunity_title||"Proposal"}</strong><small>{p.brand_name} · v{p.version}</small></div><span className="status">{s.project?.status||s.a?.status||p.status}</span></div><div className="lifeSteps">{steps.map((x,i)=><div key={x} className={i<s.n?"complete":i===s.n?"current":""}><i/><span>{x}</span></div>)}</div><div className="lifeMeta"><span>Total <b>{"$"+Number(p.one_time_total||0).toLocaleString()}</b></span><span>Deposit <b>{"$"+Number(p.deposit_amount||0).toLocaleString()}</b></span><span>Confirmed paid <b>{"$"+s.paid.toLocaleString()}</b></span>{s.project&&<span>Project <b>{s.project.status}</b></span>}</div><div className="lifeAction"><div><small>NEXT</small><strong>{next(s.n)}</strong></div>{canCreateAgreement&&<button className="lifecycleButton" disabled={busy===p.id} onClick={()=>advance(p.id)}>{busy===p.id?"Creating…":"Create Agreement →"}</button>}{canActivate&&<button className="lifecycleButton" disabled={busy===p.id} onClick={()=>advance(p.id,String(s.a.id))}>{busy===p.id?"Activating…":"Activate Project →"}</button>}</div></article>})}</div>}
  </section>;
 }
