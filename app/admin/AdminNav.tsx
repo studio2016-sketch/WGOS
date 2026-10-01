@@ -4,7 +4,7 @@ import BrandFilter from "./BrandFilter";
 export default function AdminNav({active,brands=[],brand}:{active:"commercial"|"operations"|"communications"|"equipment";brands?:any[];brand?:string}){
  const q=brand?"?brand="+encodeURIComponent(brand):"";
  return <nav className="topNav" aria-label="WGOS workspace">
-  <Link href={"/admin"+q} className="wordmark" aria-label="WGOS home"><b>WGOS</b><small>Williams Global Operating System</small></Link>
+  <Link href={"/admin"+q} className="wordmark" aria-label="WGOS command center"><b>WGOS</b><small>COMMAND CENTER</small></Link>
   <div className="workspaceSwitch" aria-label="Workspace">
    <Link className={active==="commercial"?"active":""} href={"/admin"+q}><i>01</i><span>Commercial</span></Link>
    <Link className={active==="operations"?"active":""} href={"/admin/operations"+q}><i>02</i><span>Operations</span></Link>
