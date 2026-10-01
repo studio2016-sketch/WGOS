@@ -1,13 +1,13 @@
 # WGOS Migration Manifest
 
-## Production sequence
+## Live production schema
 
-Run the following files once, in numerical order, after validating them on a temporary Neon branch:
+The dedicated WGOS production project uses the reconciled model in `029-reconciled-commissioning.sql`, including `contacts`, `agreements`, and `payments`. The live application queries this model.
 
-`019-council-governance-primitives.sql` through `028-production-advancing.sql`.
+## Superseded migration family
 
-Every file in that range is additive or idempotent and extends the canonical `wgos` schema.
+Files `019` through `028` model an earlier `people`, `contracts`, and `payment_events` shape. They must not be applied to the reconciled production project, whether individually or as a batch.
 
-## Archived file
+## Future releases
 
-`029-reconciled-commissioning.sql` is intentionally excluded. It was an earlier reconciliation draft that overlaps the canonical sequence and references obsolete schema identifiers such as `contacts` and `agreements`. It must not be executed by a migration runner.
+Add a new numerically ordered migration that extends the reconciled live schema. First test it on a temporary Neon branch, compare the schema to production, and obtain explicit approval before applying it to production.
