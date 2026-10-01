@@ -17,7 +17,7 @@ const projectStatuses=["PLANNING","ACTIVE","BLOCKED","COMPLETE","CANCELLED"];
 const priorities=["LOW","MEDIUM","HIGH","CRITICAL"];
 
 const label=(v:string)=>v.replaceAll("_"," ");
-const dateOnly=(v?:string|null)=>v?String(v).slice(0,10):"";
+const dateOnly=(v?:string|null)=>v?String(v).slice(0,10):"";\nconst taskTone=(t:Task)=>{const overdue=!["DONE","CANCELLED"].includes(t.status)&&Boolean(t.due_at)&&new Date(String(t.due_at)+"T23:59:59").getTime()<Date.now();if(t.status==="BLOCKED"||Number(t.incomplete_dependency_count)>0)return "blocked";if(overdue)return "overdue";if(t.priority==="CRITICAL")return "critical";if(t.status==="DONE")return "done";if(t.status==="IN_PROGRESS")return "active";return "neutral"};
 
 export default function OperationsBoardClient({initialProject,initialTasks,dependencies,users,initialComments,canManageProject=true}:{initialProject:Project;initialTasks:Task[];dependencies:Dependency[];users:User[];initialComments:any[];canManageProject?:boolean}){
  const router=useRouter();
@@ -154,9 +154,9 @@ export default function OperationsBoardClient({initialProject,initialTasks,depen
       <div style={{display:"grid",gridTemplateColumns:"minmax(260px,2fr) 150px 120px 180px 145px 90px",gap:8,padding:"8px 0",opacity:.65,fontSize:12}}>
        <span>ITEM</span><span>STATUS</span><span>PRIORITY</span><span>OWNER</span><span>DUE</span><span></span>
       </div>
-      {rows.map(task=><div key={task.id} style={{borderTop:"1px solid rgba(255,255,255,.1)",padding:"10px 0"}}>
+      {rows.map(task=><div key={task.id} className={"taskRow "+taskTone(task)}>
        <div style={{display:"grid",gridTemplateColumns:"minmax(260px,2fr) 150px 120px 180px 145px 90px",gap:8,alignItems:"center"}}>
-        <input value={task.title} onChange={e=>patchTask(task.id,"title",e.target.value)}/>
+        <div className="taskTitleCell"><input value={task.title} onChange={e=>patchTask(task.id,"title",e.target.value)}/><div className="taskSignals">{task.status==="BLOCKED"&&<span>BLOCKED</span>}{Number(task.incomplete_dependency_count)>0&&<span>{task.incomplete_dependency_count} DEPENDENC{Number(task.incomplete_dependency_count)===1?"Y":"IES"}</span>}{task.requires_approval&&<span>APPROVAL</span>}{task.priority==="CRITICAL"&&<span>CRITICAL</span>}</div></div>
         <select value={task.status} onChange={e=>patchTask(task.id,"status",e.target.value)}>{statuses.map(s=><option key={s}>{s}</option>)}</select>
         <select value={task.priority} onChange={e=>patchTask(task.id,"priority",e.target.value)}>{priorities.map(p=><option key={p}>{p}</option>)}</select>
         <select value={task.assignee_subject||""} onChange={e=>patchTask(task.id,"assignee_subject",e.target.value)}><option value="">Unassigned</option>{users.map(u=><option key={u.auth_user_id} value={u.auth_user_id}>{u.display_name||u.email||u.auth_user_id}</option>)}</select>
@@ -164,7 +164,7 @@ export default function OperationsBoardClient({initialProject,initialTasks,depen
         <button disabled={busy===task.id} onClick={()=>saveTask(task)}>{busy===task.id?"…":"Save"}</button>
        </div>
        <details style={{marginTop:8}}>
-        <summary style={{cursor:"pointer",fontSize:13}}>Details · {Number(task.incomplete_dependency_count)>0?task.incomplete_dependency_count+" dependency blocker(s)":task.dependency_count?task.dependency_count+" dependencies":"no dependencies"}{task.requires_approval?" · approval required":""}</summary>
+        <summary className="taskDetailSummary">Details · {Number(task.incomplete_dependency_count)>0?task.incomplete_dependency_count+" dependency blocker(s)":task.dependency_count?task.dependency_count+" dependencies":"no dependencies"}{task.requires_approval?" · approval required":""}</summary>
         <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr",gap:12,marginTop:12}}>
          <label>Description<textarea rows={3} value={task.description||""} onChange={e=>patchTask(task.id,"description",e.target.value)}/></label>
          <label>Group<input value={task.group_name} onChange={e=>patchTask(task.id,"group_name",e.target.value)}/></label>
