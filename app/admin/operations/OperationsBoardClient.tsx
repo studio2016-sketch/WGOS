@@ -20,7 +20,7 @@ const label=(v:string)=>v.replaceAll("_"," ");
 const dateOnly=(v?:string|null)=>v?String(v).slice(0,10):"";
 const taskTone=(t:Task)=>{const overdue=!["DONE","CANCELLED"].includes(t.status)&&Boolean(t.due_at)&&new Date(String(t.due_at)+"T23:59:59").getTime()<Date.now();if(t.status==="BLOCKED"||Number(t.incomplete_dependency_count)>0)return "blocked";if(overdue)return "overdue";if(t.priority==="CRITICAL")return "critical";if(t.status==="DONE")return "done";if(t.status==="IN_PROGRESS")return "active";return "neutral"};
 
-export default function OperationsBoardClient({initialProject,initialTasks,dependencies,users,initialComments,canManageProject=true}:{initialProject:Project;initialTasks:Task[];dependencies:Dependency[];users:User[];initialComments:any[];canManageProject?:boolean}){
+export default function OperationsBoardClient({initialProject,initialTasks,dependencies,users,initialComments,canManageProject=true,initialTaskId=""}:{initialProject:Project;initialTasks:Task[];dependencies:Dependency[];users:User[];initialComments:any[];canManageProject?:boolean;initialTaskId?:string}){
  const router=useRouter();
  const [project,setProject]=useState({...initialProject});
  const [tasks,setTasks]=useState(initialTasks.map(t=>({...t,due_at:dateOnly(t.due_at)})));
@@ -33,6 +33,7 @@ export default function OperationsBoardClient({initialProject,initialTasks,depen
  const [error,setError]=useState("");
  const [filters,setFilters]=useState({q:"",status:"",assignee:"",priority:"",group:""});
  const [focus,setFocus]=useState<"all"|"attention"|"blocked"|"overdue">("all");
+ const [selectedTask,setSelectedTask]=useState(initialTaskId);
  const [newTask,setNewTask]=useState({title:"",groupName:"General",priority:"MEDIUM",assigneeSubject:"",dueAt:"",requiresApproval:false,approvalRole:"OWNER"});
 
  const groups=useMemo(()=>Array.from(new Set(tasks.map(t=>t.group_name||"General"))),[tasks]);
@@ -162,9 +163,9 @@ export default function OperationsBoardClient({initialProject,initialTasks,depen
       <div style={{display:"grid",gridTemplateColumns:"minmax(260px,2fr) 150px 120px 180px 145px 90px",gap:8,padding:"8px 0",opacity:.65,fontSize:12}}>
        <span>ITEM</span><span>STATUS</span><span>PRIORITY</span><span>OWNER</span><span>DUE</span><span></span>
       </div>
-      {rows.map(task=><div key={task.id} className={"taskRow "+taskTone(task)}>
+      {rows.map(task=><div id={"task-"+task.id} key={task.id} className={"taskRow "+taskTone(task)+(selectedTask===task.id?" selectedRecord":"")}>
        <div style={{display:"grid",gridTemplateColumns:"minmax(260px,2fr) 150px 120px 180px 145px 90px",gap:8,alignItems:"center"}}>
-        <div className="taskTitleCell"><input value={task.title} onChange={e=>patchTask(task.id,"title",e.target.value)}/><div className="taskSignals">{task.status==="BLOCKED"&&<span>BLOCKED</span>}{Number(task.incomplete_dependency_count)>0&&<span>{task.incomplete_dependency_count} DEPENDENC{Number(task.incomplete_dependency_count)===1?"Y":"IES"}</span>}{task.requires_approval&&<span>APPROVAL</span>}{task.priority==="CRITICAL"&&<span>CRITICAL</span>}</div></div>
+        <div className="taskTitleCell"><button className="recordFocus" aria-label={"Focus "+task.title} onClick={()=>setSelectedTask(selectedTask===task.id?"":task.id)}>◎</button><input value={task.title} onChange={e=>patchTask(task.id,"title",e.target.value)}/><div className="taskSignals">{task.status==="BLOCKED"&&<span>BLOCKED</span>}{Number(task.incomplete_dependency_count)>0&&<span>{task.incomplete_dependency_count} DEPENDENC{Number(task.incomplete_dependency_count)===1?"Y":"IES"}</span>}{task.requires_approval&&<span>APPROVAL</span>}{task.priority==="CRITICAL"&&<span>CRITICAL</span>}</div></div>
         <select value={task.status} onChange={e=>patchTask(task.id,"status",e.target.value)}>{statuses.map(s=><option key={s}>{s}</option>)}</select>
         <select value={task.priority} onChange={e=>patchTask(task.id,"priority",e.target.value)}>{priorities.map(p=><option key={p}>{p}</option>)}</select>
         <select value={task.assignee_subject||""} onChange={e=>patchTask(task.id,"assignee_subject",e.target.value)}><option value="">Unassigned</option>{users.map(u=><option key={u.auth_user_id} value={u.auth_user_id}>{u.display_name||u.email||u.auth_user_id}</option>)}</select>
