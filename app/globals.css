@@ -108,3 +108,9 @@ html,body{background-color:#080a0b!important}body{background-image:none!importan
 .lifecycleCard{position:relative;overflow:hidden}.lifeAction{display:flex;align-items:center;gap:9px;margin:14px -17px -17px;padding:10px 17px;border-top:1px solid #202729;background:linear-gradient(90deg,#0a0d0e,#101313)}.lifeAction small{font-size:7px;letter-spacing:.13em;color:#626d72}.lifeAction strong{font-size:10px;color:#d8c58e;font-weight:500}
 .opportunityCard .status,.lifecycleCard .status{position:relative;overflow:hidden}.opportunityCard .status:before,.lifecycleCard .status:before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;margin-right:5px;opacity:.8}
 @media(max-width:600px){.oppAction,.lifeAction{margin-top:12px}.oppAction strong{font-size:9px}}
+
+.opsPulse{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:0!important;margin:0 0 14px}
+.opsPulse article{position:relative;overflow:hidden;min-height:118px;padding:17px;border:1px solid #293033;border-radius:10px;background:#101415}
+.opsPulse article:before{content:"";position:absolute;inset:0 0 auto;height:3px;background:#5e9cf5}.opsPulse article:nth-child(2):before{background:#4dd4a0}.opsPulse article:nth-child(3):before{background:#d5a94f}.opsPulse article:nth-child(4):before{background:#ef7c70}
+.opsPulse small{display:block;color:#818b90;font-size:8px;letter-spacing:.12em}.opsPulse strong{display:block;font:30px Georgia,serif;margin:20px 0 5px}.opsPulse span{color:#707b80;font-size:9px}
+@media(max-width:700px){.opsPulse{grid-template-columns:1fr 1fr}.opsPulse article{min-height:105px}.opsPulse strong{margin-top:15px}}
