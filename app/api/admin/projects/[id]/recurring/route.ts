@@ -1,5 +1,5 @@
 import {NextResponse} from "next/server";
-import {requireApiAdmin} from "../../../../../../lib/authz";
+import {requireApiAdmin,requireApiProject} from "../../../../../../lib/authz";
 import {createRecurringTaskRule} from "../../../../../../lib/operations-board";
 
 export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
@@ -7,6 +7,7 @@ export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
  if(!auth.ok)return NextResponse.json({created:false,error:auth.error},{status:auth.status});
  try{
   const {id}=await params;
+  const access=await requireApiProject(auth.identity,id);if(!access.ok)return NextResponse.json({created:false,error:access.error},{status:access.status});
   const body=await req.json();
   const rule:any=await createRecurringTaskRule({
    projectId:id,
