@@ -2,7 +2,7 @@
 import {useEffect,useMemo,useState} from "react";
 const steps=["PROPOSAL","ACCEPTED","AGREEMENT","SIGNED","PAID","PROJECT"];
 export default function LifecycleWorkspace({proposals,agreements,payments,projects,initialProposalId=""}:{proposals:any[];agreements:any[];payments:any[];projects:any[];initialProposalId?:string}){
- const [filter,setFilter]=useState("ALL");const [selected,setSelected]=useState(initialProposalId);useEffect(()=>{const h=(e:any)=>setFilter(e.detail||"ALL");window.addEventListener("wgos:brand-filter",h);return()=>window.removeEventListener("wgos:brand-filter",h)},[]);
+ const [filter,setFilter]=useState("ALL");const [selected,setSelected]=useState(initialProposalId);useEffect(()=>{const h=(e:any)=>setFilter(e.detail||"ALL");window.addEventListener("wgos:brand-filter",h);return()=>window.removeEventListener("wgos:brand-filter",h)},[]);useEffect(()=>{if(!selected)return;const el=document.getElementById("proposal-"+selected);if(el){const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;requestAnimationFrame(()=>el.scrollIntoView({behavior:reduced?"auto":"smooth",block:"center"}));}},[selected]);
  const [busy,setBusy]=useState("");const [message,setMessage]=useState("");
  const agreementByProposal=useMemo(()=>new Map(agreements.map(a=>[a.proposal_id,a])),[agreements]);const projectByProposal=useMemo(()=>new Map(projects.map(p=>[p.proposal_id,p])),[projects]);
  const paymentByProposal=useMemo(()=>{const m=new Map<string,number>();payments.filter(x=>["PAID","SUCCEEDED"].includes(x.status)).forEach(x=>m.set(x.proposal_id,(m.get(x.proposal_id)||0)+Number(x.amount||0)));return m},[payments]);
