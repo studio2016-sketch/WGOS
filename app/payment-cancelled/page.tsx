@@ -1,0 +1,1 @@
+export default function PaymentCancelled(){return <main className="clientProposal"><section className="acceptPanel"><p className="eyebrow">PAYMENT NOT COMPLETED</p><h1>Checkout was cancelled.</h1><p>No payment was made. Return to your agreement or contact the originating brand when you are ready.</p></section></main>;}
