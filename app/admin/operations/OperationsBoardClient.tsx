@@ -115,7 +115,7 @@ export default function OperationsBoardClient({initialProject,initialTasks,depen
 
  const visibleGroups=groups.filter(g=>!filters.group||filters.group===g);
  const progress=metrics.total?Math.round(metrics.done/metrics.total*100):0;
- const attention=metrics.blocked+metrics.overdue;
+ const attention=metrics.blocked+metrics.overdue;const approvalCount=tasks.filter(t=>t.requires_approval&&!["DONE","CANCELLED"].includes(t.status)).length;const unassigned=tasks.filter(t=>!t.assignee_subject&&!["DONE","CANCELLED"].includes(t.status)).length;
 
  return <div style={{display:"grid",gap:18}}>
   {error&&<div className="adminPanel"><p className="muted">{error}</p></div>}
@@ -140,7 +140,7 @@ export default function OperationsBoardClient({initialProject,initialTasks,depen
    <div><small>OVERDUE</small><b>{metrics.overdue}</b></div>
   </section>
 
-  <section className="adminPanel">
+  <section className="workQueue"><div className="workQueueHead"><div><p className="eyebrow">WORK QUEUE</p><h2>Execution View</h2></div><div className="queueSignals"><span><b>{filtered.length}</b> VISIBLE</span><span><b>{approvalCount}</b> APPROVALS</span><span><b>{unassigned}</b> UNASSIGNED</span></div></div></section><section className="adminPanel filterConsole">
    <div style={{display:"grid",gridTemplateColumns:"2fr repeat(4,minmax(130px,1fr))",gap:10}}>
     <label>Search<input value={filters.q} onChange={e=>setFilters({...filters,q:e.target.value})} placeholder="Task or description"/></label>
     <label>Status<select value={filters.status} onChange={e=>setFilters({...filters,status:e.target.value})}><option value="">All</option>{statuses.map(s=><option key={s}>{s}</option>)}</select></label>
