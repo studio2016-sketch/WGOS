@@ -86,3 +86,18 @@
 /* Capture-safe application canvas: Safari Full Page must preserve the live dark surface. */
 html,body{background-color:#080a0b!important}body{background-image:none!important}.admin{background-color:#080a0b!important;background-clip:border-box}.admin>*{position:relative}.topNav{background-color:rgba(8,10,11,.96)}
 @media print{html,body,.admin{background:#080a0b!important;color:var(--text)!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.admin:before{display:none}.adminPanel,.attentionStrip,.opportunityCard,.lifecycleCard,.readinessWorkspace{background-color:#0b0e0f!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}
+
+/* WGOS dashboard language — information-rich color on a quiet cinematic canvas */
+.commandOverview{display:grid!important;grid-template-columns:minmax(220px,.72fr) minmax(0,2fr);gap:14px;margin:0 0 14px;padding:0!important}
+.pulseLead{border:1px solid #302d25;border-radius:10px;padding:22px;background:linear-gradient(145deg,#15130f,#0c1011);box-shadow:0 20px 60px rgba(0,0,0,.16)}
+.pulseLead h2{font:30px/1.05 Georgia,serif;margin:12px 0 10px;letter-spacing:-.025em}.pulseLead>p:last-child{color:var(--muted);font-size:11px;line-height:1.55;margin:0}
+.pulseMetrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.pulseCard{position:relative;overflow:hidden;min-height:144px;border:1px solid #293033;border-radius:10px;padding:17px;background:#101415;box-shadow:0 16px 42px rgba(0,0,0,.12)}
+.pulseCard:before{content:"";position:absolute;inset:0 0 auto;height:3px;background:var(--pulse,#c6a86a)}.pulseCard:after{content:"";position:absolute;width:90px;height:90px;border-radius:50%;right:-35px;top:-42px;background:var(--glow,rgba(198,168,106,.12));filter:blur(3px)}
+.pulseCard small{display:block;position:relative;z-index:1;color:#8c969a;font-size:8px;letter-spacing:.12em}.pulseCard strong{display:block;position:relative;z-index:1;font:clamp(24px,3vw,34px) Georgia,serif;margin:28px 0 6px}.pulseCard strong em{font:14px Arial,sans-serif;color:#687176;font-style:normal}.pulseCard span{position:relative;z-index:1;color:#788287;font-size:9px}
+.pulseCard.pipeline{--pulse:#d5a94f;--glow:rgba(213,169,79,.2)}.pulseCard.accepted{--pulse:#4dd4a0;--glow:rgba(77,212,160,.18)}.pulseCard.delivery{--pulse:#5e9cf5;--glow:rgba(94,156,245,.18)}.pulseCard.readiness{--pulse:#b17cf3;--glow:rgba(177,124,243,.18)}
+.lifecycleRibbon{display:flex!important;align-items:center;gap:9px;overflow-x:auto;white-space:nowrap;margin:0 0 18px!important;padding:11px 14px!important;border:1px solid #202628!important;background:#0b0e0f!important;font-size:9px!important}.lifecycleRibbon strong{color:var(--gold)!important}.lifecycleRibbon span{color:#8b9498}.lifecycleRibbon i{color:#424a4e;font-style:normal}
+.attentionItem:nth-child(1).active{box-shadow:inset 0 2px #d5a94f}.attentionItem:nth-child(2).active{box-shadow:inset 0 2px #5e9cf5}.attentionItem:nth-child(3).active{box-shadow:inset 0 2px #4dd4a0}.attentionItem:nth-child(4).active{box-shadow:inset 0 2px #b17cf3}.attentionItem:nth-child(5).active{box-shadow:inset 0 2px #ef7c70}.attentionItem:nth-child(6).active{box-shadow:inset 0 2px #55c7dd}
+@media(max-width:1050px){.commandOverview{grid-template-columns:1fr}.pulseMetrics{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:700px){.pulseMetrics{grid-template-columns:1fr 1fr}.pulseCard{min-height:122px}.pulseCard strong{margin-top:20px}.pulseLead{padding:18px}.pulseLead h2{font-size:27px}}
+@media(max-width:380px){.pulseMetrics{grid-template-columns:1fr}}
