@@ -296,3 +296,16 @@ a.timelineEvent{text-decoration:none!important;color:inherit!important;border-ra
 
 /* WGOS relationship brief */
 .relationshipBrief{grid-column:1/-1;margin-top:10px;padding:13px 14px;border-radius:10px;border:1px solid rgba(117,82,210,.2);background:radial-gradient(circle at 10% 0%,rgba(92,58,195,.12),transparent 38%),linear-gradient(145deg,rgba(12,17,25,.8),rgba(6,10,14,.4))}.relationshipBrief>small{font-size:6px;letter-spacing:.16em;color:#927de1}.relationshipBrief h4{font:17px Georgia,serif;color:#edf0f3;margin:5px 0 4px}.relationshipBrief p{font-size:7.5px;color:#7f8b92;margin:0 0 10px}.relationshipBrief>div{display:grid;grid-template-columns:1fr 1fr;gap:8px;border-top:1px solid rgba(255,255,255,.045);padding-top:8px}.relationshipBrief span{font-size:7px;color:#a4adb2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.relationshipBrief b{font-size:5.5px;letter-spacing:.11em;color:#625b82;margin-right:7px}@media(max-width:650px){.relationshipBrief>div{grid-template-columns:1fr}.relationshipBrief h4{font-size:15px}}
+
+/* WGOS Autopilot decision surface */
+.decisionQueue{margin:18px 0;padding:22px;display:grid;grid-template-columns:minmax(220px,.75fr) minmax(360px,1.65fr) auto;gap:20px;align-items:center;overflow:hidden;position:relative}
+.decisionQueue:before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:linear-gradient(180deg,#7ee7ff,#b18cff,#f0c66b)}
+.decisionQueue .attentionIntro p:last-child{max-width:42ch;color:var(--muted)}
+.decisionList{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:9px}
+.decisionItem{display:grid;gap:4px;padding:13px 14px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.035);text-decoration:none;color:inherit;transition:.18s ease}
+.decisionItem:hover{transform:translateY(-2px);border-color:rgba(126,231,255,.42);background:rgba(126,231,255,.06)}
+.decisionItem>span{font-size:10px;letter-spacing:.14em;color:#7ee7ff;font-weight:800}
+.decisionItem strong{font-size:14px}.decisionItem small{color:var(--muted);line-height:1.35}.decisionItem b{font-size:11px;margin-top:3px}
+.autopilotFooter{min-width:110px;text-align:center;padding:12px;border-left:1px solid rgba(255,255,255,.09)}
+.autopilotFooter strong{display:block;font-size:30px;line-height:1}.autopilotFooter span{display:block;margin-top:6px;font-size:10px;color:var(--muted);max-width:12ch}
+@media(max-width:900px){.decisionQueue{grid-template-columns:1fr}.autopilotFooter{text-align:left;border-left:0;border-top:1px solid rgba(255,255,255,.09)}.autopilotFooter span{max-width:none}}
