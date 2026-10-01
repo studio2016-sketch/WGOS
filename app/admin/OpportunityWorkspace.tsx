@@ -1,6 +1,6 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
-const stages=["NEW","QUALIFYING","DISCOVERY","PROPOSAL","NEGOTIATION","WON","LOST"];
+const stages=["NEW","QUALIFYING","DISCOVERY","PROPOSAL","NEGOTIATION","WON","LOST"];\nconst nextAction=(stage:string,hasProposal:boolean)=>stage==="NEW"?"Qualify lead":stage==="QUALIFYING"?"Start discovery":stage==="DISCOVERY"?"Build proposal":stage==="PROPOSAL"?(hasProposal?"Review proposal":"Create proposal"):stage==="NEGOTIATION"?"Close terms":stage==="WON"?"Activate delivery":stage==="LOST"?"Archive":"Review";
 export default function OpportunityWorkspace({opportunities,proposals}:{opportunities:any[];proposals:any[]}){
  const [filter,setFilter]=useState("ALL");useEffect(()=>{const h=(e:any)=>setFilter(e.detail||"ALL");window.addEventListener("wgos:brand-filter",h);return()=>window.removeEventListener("wgos:brand-filter",h)},[]);
  const rows=useMemo(()=>opportunities.filter(o=>filter==="ALL"||o.brand_id===filter),[opportunities,filter]);
