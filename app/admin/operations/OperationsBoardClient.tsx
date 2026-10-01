@@ -133,7 +133,7 @@ export default function OperationsBoardClient({initialProject,initialTasks,depen
    </div>
   </section>
 
-  <section className="stats">
+  <section className="deliveryHealth"><div className="deliveryProgress"><div><p className="eyebrow">DELIVERY HEALTH</p><strong>{progress}%</strong><span>COMPLETE</span></div><i><b style={{width:progress+"%"}}/></i></div><button className={focus==="attention"?"active":""} onClick={()=>setFocus(focus==="attention"?"all":"attention")}><small>ATTENTION</small><strong>{attention}</strong></button><button className={focus==="blocked"?"active":""} onClick={()=>setFocus(focus==="blocked"?"all":"blocked")}><small>BLOCKED</small><strong>{metrics.blocked}</strong></button><button className={focus==="overdue"?"active":""} onClick={()=>setFocus(focus==="overdue"?"all":"overdue")}><small>OVERDUE</small><strong>{metrics.overdue}</strong></button></section><section className="stats">
    <div><small>TASKS</small><b>{metrics.total}</b></div>
    <div><small>DONE</small><b>{metrics.done}</b></div>
    <div><small>BLOCKED</small><b>{metrics.blocked}</b></div>
