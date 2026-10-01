@@ -17,6 +17,7 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
  const blockedTasks=projects.reduce((n:number,p:any)=>n+Number(p.blocked_count||0),0);
  const overdueTasks=projects.reduce((n:number,p:any)=>n+Number(p.overdue_count||0),0);
  const portfolioProgress=totalTasks?Math.round(doneTasks/totalTasks*100):0;
+ const deliveryDecisions=projects.filter((p:any)=>Number(p.blocked_count||0)>0||Number(p.overdue_count||0)>0).sort((a:any,b:any)=>(Number(b.blocked_count||0)+Number(b.overdue_count||0))-(Number(a.blocked_count||0)+Number(a.overdue_count||0)));
  let board:any=selectedId?await getOperationsBoard(String(selectedId)):null;
  if(!board&&projects.length&&selectedId!==projects[0].id){
   selectedId=projects[0].id;
@@ -31,6 +32,8 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
   </header>
 
   <section className="opsPulse"><article><small>ACTIVE PROJECTS</small><strong>{projects.length}</strong><span>current portfolio</span></article><article><small>PORTFOLIO PROGRESS</small><strong>{portfolioProgress}%</strong><span>{doneTasks} of {totalTasks} tasks complete</span></article><article><small>BLOCKED</small><strong>{blockedTasks}</strong><span>{blockedTasks?"needs intervention":"clear"}</span></article><article><small>OVERDUE</small><strong>{overdueTasks}</strong><span>{overdueTasks?"needs movement":"on schedule"}</span></article></section>
+
+  <section className="adminPanel deliveryDecisionQueue"><div className="attentionIntro"><p className="eyebrow">DELIVERY AUTOPILOT · EXCEPTIONS</p><h2>{deliveryDecisions.length?deliveryDecisions.length+" project"+(deliveryDecisions.length===1?"":"s")+" need intervention":"Delivery is operating cleanly"}</h2><p>{deliveryDecisions.length?"WGOS is suppressing routine delivery noise and surfacing the projects with blocked or overdue work.":"No blocked or overdue project work is currently competing for executive attention."}</p></div><div className="deliveryDecisionList">{deliveryDecisions.slice(0,5).map((p:any)=><Link key={"decision-"+p.id} href={"/admin/operations?project="+encodeURIComponent(p.id)+(selectedBrand?"&brand="+encodeURIComponent(selectedBrand):"")} className="deliveryDecisionItem"><span>{p.brand_name}</span><strong>{p.title}</strong><small>{Number(p.blocked_count||0)} blocked · {Number(p.overdue_count||0)} overdue</small><b>Resolve →</b></Link>)}</div></section>
 
   <section className="principle">
    <strong>Operating rule:</strong> routine work moves here. Executive attention is reserved for approvals, exceptions, blocked dependencies and consequential decisions.
