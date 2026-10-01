@@ -172,6 +172,7 @@ export default function OperationsBoardClient({initialProject,initialTasks,depen
         <input type="date" value={dateOnly(task.due_at)} onChange={e=>patchTask(task.id,"due_at",e.target.value)}/>
         <button disabled={busy===task.id} onClick={()=>saveTask(task)}>{busy===task.id?"…":"Save"}</button>
        </div>
+       {selectedTask===task.id&&<div className="recordContext taskContext"><div><small>STATUS</small><strong>{label(task.status)}</strong></div><div><small>OWNER</small><strong>{task.assignee_name||task.assignee_email||"Unassigned"}</strong></div><div><small>DEPENDENCIES</small><strong>{Number(task.incomplete_dependency_count)>0?task.incomplete_dependency_count+" blocking":task.dependency_count?task.dependency_count+" linked":"Clear"}</strong></div><span className="contextHint">{task.requires_approval?"Approval required before completion.":task.due_at?"Due "+dateOnly(task.due_at):"No due date recorded."}</span></div>}
        <details style={{marginTop:8}}>
         <summary className="taskDetailSummary">Details · {Number(task.incomplete_dependency_count)>0?task.incomplete_dependency_count+" dependency blocker(s)":task.dependency_count?task.dependency_count+" dependencies":"no dependencies"}{task.requires_approval?" · approval required":""}</summary>
         <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr",gap:12,marginTop:12}}>
