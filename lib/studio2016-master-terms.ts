@@ -1,6 +1,6 @@
 export const STUDIO2016_MASTER_TERMS_TITLE="STUDIO2016 — MASTER PRODUCTION, AVL, SYSTEMS & CREATIVE SERVICES AGREEMENT";
 export const STUDIO2016_MASTER_TERMS_VERSION="2026.1";
-export const STUDIO2016_MASTER_TERMS_2026_1=\`STUDIO2016
+export const STUDIO2016_MASTER_TERMS_2026_1=`STUDIO2016
 MASTER PRODUCTION, AVL, SYSTEMS & CREATIVE SERVICES AGREEMENT
 Texas Master Terms
 Version: 2026.1
@@ -126,4 +126,4 @@ Name: _______________________________________
 Title/Capacity: _______________________________
 Signature: ___________________________________
 Date: _______________________________________
-\`;
+`;
