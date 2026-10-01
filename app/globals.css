@@ -325,3 +325,11 @@ a.timelineEvent{text-decoration:none!important;color:inherit!important;border-ra
 .communicationDecisionItem:hover{transform:translateY(-2px);border-color:rgba(126,231,255,.42);background:rgba(126,231,255,.06)}
 .communicationDecisionItem span{font-size:10px;letter-spacing:.12em;color:#7ee7ff;font-weight:800}.communicationDecisionItem strong{font-size:14px}.communicationDecisionItem small{color:var(--muted)}.communicationDecisionItem b{font-size:11px;margin-top:3px}
 @media(max-width:900px){.communicationQueue{grid-template-columns:1fr}.communicationDecisionList{grid-template-columns:1fr}}
+
+.salesAutopilot{margin:0 0 18px;padding:20px;display:grid;grid-template-columns:minmax(220px,.72fr) minmax(440px,1.9fr);gap:20px;align-items:center}
+.salesAutopilot .attentionIntro p:last-child{color:var(--muted);max-width:46ch}
+.salesDecisionList{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:9px}
+.salesDecisionItem{appearance:none;text-align:left;display:grid;gap:4px;padding:13px 14px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.035);color:inherit;cursor:pointer;transition:.18s ease}
+.salesDecisionItem:hover{transform:translateY(-2px);border-color:rgba(177,140,255,.48);background:rgba(177,140,255,.07)}
+.salesDecisionItem span{font-size:10px;letter-spacing:.1em;color:#b18cff;font-weight:800}.salesDecisionItem strong{font-size:14px}.salesDecisionItem small{color:var(--muted);line-height:1.35}.salesDecisionItem b{font-size:11px;margin-top:3px}
+@media(max-width:900px){.salesAutopilot{grid-template-columns:1fr}.salesDecisionList{grid-template-columns:1fr}}
