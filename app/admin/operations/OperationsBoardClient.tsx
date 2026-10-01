@@ -32,17 +32,22 @@ export default function OperationsBoardClient({initialProject,initialTasks,depen
  const [busy,setBusy]=useState("");
  const [error,setError]=useState("");
  const [filters,setFilters]=useState({q:"",status:"",assignee:"",priority:"",group:""});
+ const [focus,setFocus]=useState<"all"|"attention"|"blocked"|"overdue">("all");
  const [newTask,setNewTask]=useState({title:"",groupName:"General",priority:"MEDIUM",assigneeSubject:"",dueAt:"",requiresApproval:false,approvalRole:"OWNER"});
 
  const groups=useMemo(()=>Array.from(new Set(tasks.map(t=>t.group_name||"General"))),[tasks]);
  const filtered=useMemo(()=>tasks.filter(t=>{
+  const overdue=!["DONE","CANCELLED"].includes(t.status)&&Boolean(t.due_at)&&new Date(String(t.due_at)+"T23:59:59").getTime()<Date.now();
+  if(focus==="attention"&&!(t.status==="BLOCKED"||Number(t.incomplete_dependency_count)>0||overdue))return false;
+  if(focus==="blocked"&&!(t.status==="BLOCKED"||Number(t.incomplete_dependency_count)>0))return false;
+  if(focus==="overdue"&&!overdue)return false;
   if(filters.q&&!((t.title+" "+(t.description||"")).toLowerCase().includes(filters.q.toLowerCase())))return false;
   if(filters.status&&t.status!==filters.status)return false;
   if(filters.assignee&&String(t.assignee_subject||"")!==filters.assignee)return false;
   if(filters.priority&&t.priority!==filters.priority)return false;
   if(filters.group&&t.group_name!==filters.group)return false;
   return true;
- }),[tasks,filters]);
+ }),[tasks,filters,focus]);
 
  const metrics=useMemo(()=>{
   const active=tasks.filter(t=>!["DONE","CANCELLED"].includes(t.status));
