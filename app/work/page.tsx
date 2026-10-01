@@ -10,10 +10,10 @@ export default async function WorkPage({searchParams}:{searchParams:Promise<{pro
  const rows:any[]=await listOperationsProjects(identity?.auth_user_id||null,isGlobal) as any[];
  const allowed=new Set(rows.map((p:any)=>String(p.id)));
  let selectedId=query.project&&allowed.has(String(query.project))?String(query.project):rows[0]?.id||"";
- let board:any=selectedId?await getOperationsBoard(String(selectedId)):null;
+ let board:any=selectedId?await getOperationsBoard(String(selectedId),identity?.auth_user_id||null,isGlobal):null;
  if(!board&&rows.length&&selectedId!==rows[0].id){
   selectedId=rows[0].id;
-  board=await getOperationsBoard(String(selectedId));
+  board=await getOperationsBoard(String(selectedId),identity?.auth_user_id||null,isGlobal);
  }
 
  return <main className="admin">
