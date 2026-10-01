@@ -46,3 +46,8 @@ export async function requireApiCommunicationThread(identity:any,threadId:string
  if(["OWNER","ADMIN"].includes(String(identity?.role)))return {ok:true as const};
  const sql=db();const rows=await sql`SELECT 1 FROM wgos.communication_threads t JOIN wgos.brand_memberships m ON m.brand_id=t.brand_id AND m.auth_user_id=${String(identity.auth_user_id)} AND m.active=true WHERE t.id=${threadId}::uuid LIMIT 1`;return rows[0]?{ok:true as const}:{ok:false as const,status:403,error:"COMMUNICATION_ACCESS_REQUIRED"};
 }
+
+export async function requireApiEquipment(identity:any,assetId:string){
+ if(["OWNER","ADMIN"].includes(String(identity?.role)))return {ok:true as const};
+ const sql=db();const rows=await sql`SELECT 1 FROM wgos.equipment_assets e JOIN wgos.brand_memberships m ON m.brand_id=e.brand_id AND m.auth_user_id=${String(identity.auth_user_id)} AND m.active=true WHERE e.id=${assetId}::uuid LIMIT 1`;return rows[0]?{ok:true as const}:{ok:false as const,status:403,error:"EQUIPMENT_ACCESS_REQUIRED"};
+}
