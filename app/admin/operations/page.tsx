@@ -29,8 +29,8 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
    <strong>Operating rule:</strong> routine work moves here. Executive attention is reserved for approvals, exceptions, blocked dependencies and consequential decisions.
   </section>
 
-  <div style={{display:"grid",gridTemplateColumns:"minmax(230px,300px) minmax(0,1fr)",gap:18,alignItems:"start"}}>
-   <aside className="adminPanel" style={{position:"sticky",top:16}}>
+  <div className="operationsLayout">
+   <aside className="adminPanel projectRail">
     <p className="eyebrow">PROJECTS</p>
     <div style={{display:"grid",gap:8}}>
      {projects.length===0&&<p className="muted">No projects yet. Create the first internal or client project above.</p>}
@@ -38,10 +38,10 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
       const total=Number(p.task_count||0),done=Number(p.done_count||0);
       const progress=total?Math.round(done/total*100):0;
       const active=String(p.id)===String(selectedId);
-      return <Link key={p.id} href={"/admin/operations?project="+encodeURIComponent(p.id)+(selectedBrand?"&brand="+encodeURIComponent(selectedBrand):"")} style={{display:"block",padding:12,border:"1px solid rgba(255,255,255,.12)",borderRadius:12,textDecoration:"none",background:active?"rgba(255,255,255,.07)":"transparent"}}>
+      return <Link key={p.id} href={"/admin/operations?project="+encodeURIComponent(p.id)+(selectedBrand?"&brand="+encodeURIComponent(selectedBrand):"")} className={"projectSelect "+(active?"active":"")}>
        <strong>{p.title}</strong>
-       <small style={{display:"block",marginTop:4,opacity:.7}}>{p.brand_name} · {p.status}</small>
-       <div style={{display:"flex",justifyContent:"space-between",gap:8,marginTop:8,fontSize:12}}>
+       <small>{p.brand_name} · {p.status}</small>
+       <div className="projectSelectMeta">
         <span>{progress}% complete</span><span>{Number(p.blocked_count||0)} blocked · {Number(p.overdue_count||0)} overdue</span>
        </div>
       </Link>;
@@ -49,7 +49,7 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
     </div>
    </aside>
 
-   <section style={{minWidth:0}}>
+   <section className="operationsCanvas">
     {!board?<div className="adminPanel"><div className="emptyAttention"><h2>Create a project to begin.</h2><p>WGOS projects can be internal initiatives or automatically activated from paid client work.</p></div></div>:
      <div style={{display:"grid",gap:18}}>
       <OperationsBoardClient initialProject={board.project as any} initialTasks={board.tasks as any[]} dependencies={board.dependencies as any[]} users={board.users as any[]} initialComments={board.comments as any[]}/>
