@@ -5,7 +5,7 @@ import OperationsBoardClient from "./OperationsBoardClient";
 import RecurringRules from "./RecurringRules";
 import AdminNav from "../AdminNav";
 
-export default async function OperationsPage({searchParams}:{searchParams:Promise<{project?:string;brand?:string}>}){
+export default async function OperationsPage({searchParams}:{searchParams:Promise<{project?:string;brand?:string;task?:string}>}){
  const query=await searchParams;
  const [projectRows,refs]=await Promise.all([listOperationsProjects(),getOperationsReferenceData()]);
  let projects:any[]=projectRows as any[];
@@ -59,7 +59,7 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
    <section className="operationsCanvas">
     {!board?<div className="adminPanel"><div className="emptyAttention"><h2>Create a project to begin.</h2><p>WGOS projects can be internal initiatives or automatically activated from paid client work.</p></div></div>:
      <div style={{display:"grid",gap:18}}>
-      <OperationsBoardClient initialProject={board.project as any} initialTasks={board.tasks as any[]} dependencies={board.dependencies as any[]} users={board.users as any[]} initialComments={board.comments as any[]}/>
+      <OperationsBoardClient initialProject={board.project as any} initialTasks={board.tasks as any[]} dependencies={board.dependencies as any[]} users={board.users as any[]} initialComments={board.comments as any[]} initialTaskId={query.task||""}/>
       <RecurringRules projectId={String(board.project.id)} users={board.users as any[]} initial={board.recurringRules as any[]}/>
      </div>}
    </section>
