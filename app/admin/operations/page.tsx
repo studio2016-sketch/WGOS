@@ -36,7 +36,7 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
    <strong>Operating rule:</strong> routine work moves here. Executive attention is reserved for approvals, exceptions, blocked dependencies and consequential decisions.
   </section>
 
-  <div className="operationsLayout">
+  <section className="projectShowcase"><div className="workspaceTitle"><div><p className="eyebrow">ACTIVE DELIVERY</p><h2>Project Portfolio</h2><p className="muted">Visual health across current work. Open a project below for full delivery control.</p></div></div><div className="projectGallery">{projects.slice(0,6).map((p:any)=>{const total=Number(p.task_count||0),done=Number(p.done_count||0),progress=total?Math.round(done/total*100):0,risk=Number(p.blocked_count||0)+Number(p.overdue_count||0);return <Link key={"gallery-"+p.id} href={"/admin/operations?project="+encodeURIComponent(p.id)+(selectedBrand?"&brand="+encodeURIComponent(selectedBrand):"")} className={"projectVisual "+(String(p.id)===String(selectedId)?"active":"")}><div className="projectGlow"/><div className="projectVisualTop"><span>{p.brand_name}</span><em>{p.status}</em></div><div className="projectVisualBody"><small>{risk?risk+" ATTENTION":"ON TRACK"}</small><h3>{p.title}</h3><p>{total} tasks · {done} complete</p></div><div className="projectProgress"><i style={{width:progress+"%"}}/><span>{progress}%</span></div></Link>})}</div></section><div className="operationsLayout">
    <aside className="adminPanel projectRail">
     <p className="eyebrow">PROJECTS</p>
     <div style={{display:"grid",gap:8}}>
