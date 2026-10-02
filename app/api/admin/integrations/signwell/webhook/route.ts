@@ -1,7 +1,7 @@
 import {NextResponse} from "next/server";
-import {requireApiAdmin} from "../../../../../../../lib/authz";
-import {ensureSignWellWebhook,verifySignWellConnection,signWellMode} from "../../../../../../../lib/signwell";
-import {recordIntegrationVerification} from "../../../../../../../lib/integration-registry";
+import {requireApiAdmin} from "../../../../../../lib/authz";
+import {ensureSignWellWebhook,verifySignWellConnection,signWellMode} from "../../../../../../lib/signwell";
+import {recordIntegrationVerification} from "../../../../../../lib/integration-registry";
 
 export async function POST(){
  const auth=await requireApiAdmin();
