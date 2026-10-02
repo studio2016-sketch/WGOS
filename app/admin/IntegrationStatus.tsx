@@ -1,8 +1,14 @@
 "use client";
 import {useState} from "react";
-export default function IntegrationStatus(){
- const [state,setState]=useState<any>({signwell:"unchecked",stripe:"unchecked"});
+export default function IntegrationStatus({initial=[]}:{initial?:any[]}){
+ const map=Object.fromEntries(initial.map((x:any)=>[String(x.provider).toLowerCase(),x]));
+ const [state,setState]=useState<any>({
+  signwell:map.signwell?.status==="CONNECTED"?"connected":map.signwell?.status==="ERROR"?"attention":"unchecked",
+  stripe:map.stripe?.status==="CONNECTED"?"connected":map.stripe?.status==="ERROR"?"attention":"unchecked",
+  signwellDetail:map.signwell?.status==="CONNECTED"?"Verified":map.signwell?.last_error||"",
+  stripeDetail:map.stripe?.status==="CONNECTED"?"Verified":map.stripe?.last_error||""
+ });
  async function check(provider:"signwell"|"stripe"){setState((s:any)=>({...s,[provider]:"checking",[provider+"Detail"]:""}));try{const r=await fetch(`/api/admin/integrations/${provider}/verify`,{cache:"no-store"});const j=await r.json();setState((s:any)=>({...s,[provider]:j.connected?"connected":"attention",[provider+"Detail"]:j.connected?"Verified":"Not verified"}));}catch{setState((s:any)=>({...s,[provider]:"attention",[provider+"Detail"]:"Unable to verify"}));}}
  const label=(provider:"signwell"|"stripe")=>state[provider]==="connected"?"CONNECTED":state[provider]==="checking"?"CHECKING…":state[provider+"Detail"]||"NOT VERIFIED";
- return <section className="adminPanel integrationPanel"><div className="integrationHead"><div><p className="eyebrow">PROVIDER COMMISSIONING</p><h2>Integration Health</h2><p className="muted">External providers remain authoritative for signatures and payments.</p></div><div className="providerLegend"><span>● LIVE CHECK</span><small>Verify against provider</small></div></div><div className="integrationRow"><div><strong>SignWell</strong><small>Electronic signature provider</small></div><span className={"status "+state.signwell}>{label("signwell")}</span><button onClick={()=>check("signwell")} disabled={state.signwell==="checking"}>Verify Connection</button></div><div className="integrationRow"><div><strong>Stripe</strong><small>Hosted checkout, payment confirmations and receipts</small></div><span className={"status "+state.stripe}>{label("stripe")}</span><button onClick={()=>check("stripe")} disabled={state.stripe==="checking"}>Verify Connection</button></div></section>;
+ return <section className="adminPanel integrationPanel"><div className="integrationHead"><div><p className="eyebrow">PROVIDER COMMISSIONING</p><h2>Integration Health</h2><p className="muted">External providers remain authoritative for signatures and payments. Successful live checks are persisted in WGOS.</p></div><div className="providerLegend"><span>● LIVE CHECK</span><small>Verify against provider</small></div></div><div className="integrationRow"><div><strong>SignWell</strong><small>Electronic signature provider</small></div><span className={"status "+state.signwell}>{label("signwell")}</span><button onClick={()=>check("signwell")} disabled={state.signwell==="checking"}>Verify Connection</button></div><div className="integrationRow"><div><strong>Stripe</strong><small>Hosted checkout, payment confirmations and receipts</small></div><span className={"status "+state.stripe}>{label("stripe")}</span><button onClick={()=>check("stripe")} disabled={state.stripe==="checking"}>Verify Connection</button></div></section>;
 }
