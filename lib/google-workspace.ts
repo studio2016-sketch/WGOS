@@ -3,6 +3,9 @@ import "server-only";
 const TOKEN_URL="https://oauth2.googleapis.com/token";
 
 function required(name:string){const v=process.env[name];if(!v)throw new Error(name+" is not configured");return v;}
+export function googleManagementConfigured(){return Boolean(process.env.GOOGLE_CLIENT_ID&&process.env.GOOGLE_CLIENT_SECRET&&process.env.GOOGLE_REFRESH_TOKEN_MGMT&&process.env.GOOGLE_GMAIL_ACCOUNT)}
+export function googleDriveConfigured(){return Boolean(process.env.GOOGLE_CLIENT_ID&&process.env.GOOGLE_CLIENT_SECRET&&process.env.GOOGLE_REFRESH_TOKEN_DRIVE)}
+
 async function accessToken(refreshEnv:"GOOGLE_REFRESH_TOKEN_MGMT"|"GOOGLE_REFRESH_TOKEN_DRIVE"){
  const body=new URLSearchParams({
   client_id:required("GOOGLE_CLIENT_ID"),
@@ -78,4 +81,9 @@ export async function sendGoogleEmail(input:{to:string;subject:string;body:strin
  const d=await googleJson("https://gmail.googleapis.com/gmail/v1/users/me/messages/send",token,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({raw:b64url(lines)})});
  if(!d?.id)throw new Error("Gmail did not return a message id.");
  return {messageId:String(d.id),threadId:d.threadId?String(d.threadId):null};
+}
+
+export async function getGoogleGmailThread(threadId:string){
+ const token=await accessToken("GOOGLE_REFRESH_TOKEN_MGMT");
+ return googleJson("https://gmail.googleapis.com/gmail/v1/users/me/threads/"+encodeURIComponent(threadId)+"?format=full",token);
 }
