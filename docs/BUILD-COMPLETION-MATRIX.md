@@ -13,7 +13,7 @@ Status legend: BUILT = code/schema exists; ACTIVATE = requires production migrat
 | Opportunity pipeline | ACTIVE | Manual and public-site opportunity creation are live with Sales Autopilot signals |
 | Public web inquiry capture | ACTIVE | All six configured brand sites submit directly into WGOS CRM, communications and notification workflows |
 | Proposal engine | BUILT | Live schema present; brand templates |
-| Contract/e-sign abstraction | PROVIDER-READY | SignWell creation, secure agreement access and verified completion webhook built; authenticated provider verification + LIVE commissioning remain |
+| Contract/e-sign abstraction | TEST COMMISSIONED | SignWell authenticated (HTTP 200), WGOS webhook registered/verified, secure agreement/signature lifecycle built; promotion from TEST to LIVE remains intentional |
 | Client portal identity model | VERIFIED FOUNDATION | Token-gated brand-native workspaces live across configured brands; valid-token end-to-end test still required |
 | Invoicing/payments/refunds | PROVIDER-READY | Independent per-brand Stripe checkout/webhook architecture built; brand credentials + commissioning remain |
 | Communications | ACTIVE / CONNECTED | Google Gmail connection is verified; governed send, reply threading and reply synchronization are built and active |
@@ -52,7 +52,7 @@ WGOS is production-complete only when the full sandbox lifecycle succeeds under 
 Autonomous software work is no longer the primary blocker for the configured commercial lifecycle. Remaining gates are external commissioning or operator-controlled infrastructure:
 - Custom-domain attachment is incomplete for Jermaine Williams, Charmin Greene, Sound Legacy Institute and CG Success.
 - Per-brand Stripe payment profiles remain DISABLED until each independent account's key and webhook secret are configured and verified.
-- SignWell is implemented behind governed actions; authenticated provider verification and intentional TEST/LIVE promotion remain.
+- SignWell is authenticated and webhook-commissioned in TEST mode; intentional TEST→LIVE promotion remains before client signature traffic.
 - A real provider-backed sandbox lifecycle remains an acceptance test before declaring the platform production-complete. Backup/restore has been validated independently.
 
 ## Backup / restore validation — 2026-10-02
@@ -75,3 +75,11 @@ Autonomous software work is no longer the primary blocker for the configured com
 - A live dummy-credential probe through `https://wgos.app/api/auth/sign-in/email` changed from `403 Invalid origin` to the expected `401 Invalid email or password`, proving the origin defect is resolved without using or altering the owner account.
 - The temporary public probe route was removed after verification.
 - Current production deployment and six configured brand deployments were rechecked; all were READY and no runtime error groups were present in the selected two-hour window.
+
+## SignWell provider commissioning — 2026-10-02
+- Verified the configured SignWell API key against the live provider `/me` endpoint: HTTP 200.
+- Confirmed WGOS remained in `TEST` mode during commissioning.
+- Registered `https://wgos.app/api/webhooks/signwell` with SignWell and re-read provider hooks to verify it persisted.
+- Persisted `signwell / esign / CONNECTED` in `wgos.integration_registry` with TEST-mode and webhook metadata.
+- No agreement was sent and no client was contacted. LIVE promotion remains a deliberate operational gate.
+- WGOS production Stripe credentials were also checked during this pass and are not configured; per-brand payment profiles remain correctly DISABLED.
