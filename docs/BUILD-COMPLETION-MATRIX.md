@@ -38,3 +38,10 @@ WGOS is production-complete only when the full sandbox lifecycle succeeds under 
 - Approval-gated client-visible tasks are the only task records exposed publicly until a dedicated client-visibility field is explicitly approved and migrated.
 - Public portal payloads deliberately omit internal task priority, approval metadata, and document storage references.
 - Proposal public paths are canonicalized by proposal ID.
+
+## Automated commercial handoff
+- Proposal acceptance now stays on the originating brand for all six configured public brands while WGOS remains the authority underneath.
+- Accepted proposals publish a `PROPOSAL_ACCEPTED` outbox event.
+- Agreement creation is idempotent by proposal and may be prepared automatically when approved brand terms exist.
+- If approved terms are missing, WGOS raises an internal `AGREEMENT_SETUP_REQUIRED` signal instead of fabricating legal terms.
+- Agreement preparation does not send a signature request; provider dispatch remains a governed SignWell commissioning step.
