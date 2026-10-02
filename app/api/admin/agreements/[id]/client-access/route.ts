@@ -1,6 +1,6 @@
 import {NextResponse} from "next/server";
-import {requireApiAdmin,requireApiAgreement} from "../../../../../../../lib/authz";
-import {issueAgreementAccess} from "../../../../../../../lib/agreement-access";
+import {requireApiAdmin,requireApiAgreement} from "../../../../../../lib/authz";
+import {issueAgreementAccess} from "../../../../../../lib/agreement-access";
 
 export async function POST(_req:Request,{params}:{params:Promise<{id:string}>}){
  const auth=await requireApiAdmin();
