@@ -14,10 +14,10 @@ export async function getClientPortal(token:string){
  const sql=db(),h=hash(token);const access:any[] = await sql`SELECT * FROM wgos.client_portal_access WHERE token_hash=${h} AND status='ACTIVE' AND (expires_at IS NULL OR expires_at>now()) LIMIT 1`;const a=access[0];if(!a)return null;
  const projects:any[]=await sql`SELECT id,title,status,start_at,end_at,updated_at FROM wgos.projects WHERE brand_id=${a.brand_id} AND organization_id=${a.organization_id}::uuid ORDER BY updated_at DESC`;
  const ids=projects.map((p:any)=>p.id);
- const tasks=ids.length?await sql`SELECT id,project_id,title,status,due_at,priority FROM wgos.tasks WHERE project_id=ANY(${ids}::uuid[]) ORDER BY due_at NULLS LAST,position`:[];
+ const tasks=ids.length?await sql`SELECT id,project_id,title,status,due_at FROM wgos.tasks WHERE project_id=ANY(${ids}::uuid[]) AND requires_approval=true ORDER BY due_at NULLS LAST,position`:[];
  const projectRefs=ids.map(String),taskRefs=tasks.map((t:any)=>String(t.id));
- const approvals=ids.length?await sql`SELECT id,entity_type,entity_id,action,status,reason,requested_at,metadata FROM wgos.approval_requests WHERE brand_id=${a.brand_id} AND entity_type IN ('project','task') AND (entity_id=ANY(${projectRefs}::text[]) OR entity_id=ANY(${taskRefs}::text[])) ORDER BY requested_at DESC`:[];
- const documents=ids.length?await sql`SELECT id,entity_type,entity_id,version,artifact_ref,status,created_at FROM wgos.document_versions WHERE brand_id=${a.brand_id} AND entity_type='project' AND entity_id=ANY(${projectRefs}::text[]) AND status<>'RETIRED' ORDER BY created_at DESC`:[];
+ const approvals=ids.length?await sql`SELECT id,entity_type,entity_id,action,status,reason,requested_at FROM wgos.approval_requests WHERE brand_id=${a.brand_id} AND entity_type IN ('project','task') AND (entity_id=ANY(${projectRefs}::text[]) OR entity_id=ANY(${taskRefs}::text[])) ORDER BY requested_at DESC`:[];
+ const documents=ids.length?await sql`SELECT id,entity_type,entity_id,version,status,created_at FROM wgos.document_versions WHERE brand_id=${a.brand_id} AND entity_type='project' AND entity_id=ANY(${projectRefs}::text[]) AND status<>'RETIRED' ORDER BY created_at DESC`:[];
  const invoices=await sql`SELECT id,invoice_number,status,total_cents,due_cents,currency,issued_at,due_at FROM wgos.invoices WHERE brand_id=${a.brand_id} AND organization_id=${a.organization_id}::uuid ORDER BY created_at DESC`;
  await sql`UPDATE wgos.client_portal_access SET last_accessed_at=now() WHERE id=${a.id}::uuid`;return {brandId:a.brand_id,projects,tasks,approvals,documents,invoices};
 }
