@@ -6,6 +6,7 @@ export async function GET(req:Request){
  try{
   const q=new URL(req.url).searchParams,id=q.get("session_id")||"",brand=q.get("brand")||undefined;
   if(!id)return NextResponse.json({ok:false,error:"SESSION_REQUIRED"},{status:400,headers});
+  if(!brand)return NextResponse.json({ok:false,error:"BRAND_REQUIRED"},{status:400,headers});
   const status=await publicCheckoutStatus(id,brand);
   if(!status)return NextResponse.json({ok:false,error:"PAYMENT_SESSION_NOT_FOUND"},{status:404,headers});
   return NextResponse.json({ok:true,status},{headers});
