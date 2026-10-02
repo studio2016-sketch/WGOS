@@ -1,14 +1,17 @@
 import {NextResponse} from "next/server";
-import {requireApiAdmin} from "../../../../lib/authz";
+import {requireApiBrandAdmin,requireApiUser} from "../../../../lib/authz";
 import {createOperationsProject} from "../../../../lib/operations-board";
 
 export async function POST(req:Request){
- const auth=await requireApiAdmin();
+ const auth=await requireApiUser();
  if(!auth.ok)return NextResponse.json({created:false,error:auth.error},{status:auth.status});
  try{
   const body=await req.json();
+  const brandId=String(body.brandId||"");
+  const access=await requireApiBrandAdmin(auth.identity,brandId);
+  if(!access.ok)return NextResponse.json({created:false,error:access.error},{status:access.status});
   const project:any=await createOperationsProject({
-   brandId:String(body.brandId||""),
+   brandId,
    title:String(body.title||""),
    startAt:body.startAt?String(body.startAt):null,
    endAt:body.endAt?String(body.endAt):null,
