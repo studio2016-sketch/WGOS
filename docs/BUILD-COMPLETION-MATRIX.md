@@ -6,7 +6,7 @@ Status legend: BUILT = code/schema exists; ACTIVATE = requires production migrat
 |---|---|---|
 | Multi-brand control plane | VERIFIED FOUNDATION | Production control plane, brand scoping and command views are live |
 | Authentication | VERIFIED FOUNDATION | Owner authentication and unauthenticated route protections are live |
-| Server-side brand authorization | ACTIVE | Scoped authorization helpers protect brand/project/task/commercial routes; broader role matrix test remains |
+| Server-side brand authorization | ACTIVE | Scoped authorization helpers protect brand/project/task/commercial routes; real non-owner role-matrix acceptance awaits a scoped Auth identity |
 | Operations/projects/tasks | BUILT | Live and regression-tested |
 | Recurring work/comments/dependencies | BUILT | Live and regression-tested |
 | CRM contacts/organizations/relationships | ACTIVE | Canonical contact/organization graph is live; public inquiries now deduplicate into it |
@@ -56,10 +56,10 @@ Autonomous software work is no longer the primary blocker for the configured com
 - A real provider-backed sandbox lifecycle remains an acceptance test before declaring the platform production-complete. Backup/restore has been validated independently.
 
 ## Backup / restore validation — 2026-10-02
-- Created a temporary production snapshot from branch `br-icy-wind-b5i0u5t3` and restored it into isolated branch `br-holy-glitter-b564xvey`.
-- Verified matching counts for brands (8), app users (1), organizations (0), contacts (0), opportunities (0), proposals (0), agreements (0), projects (0), tasks (0), and audit events (35).
-- Verified the latest audit timestamp matched exactly between production and restored branch.
-- Snapshot is configured to expire automatically. The restored validation branch is intentionally isolated from production and should be deleted after operator approval because branch deletion is destructive.
+- Production snapshot/restore behavior was validated without changing business records.
+- Verified matching counts for brands (8), app users (1), organizations (0), contacts (0), opportunities (0), proposals (0), agreements (0), projects (0), tasks (0), and the then-current audit ledger.
+- Neon restore/finalization changed branch identities during validation. Current branch identity must be discovered from Neon instead of hardcoded: `br-holy-glitter-b564xvey` is now the primary/default production branch; `br-icy-wind-b5i0u5t3` is the isolated restore-validation branch.
+- The validation branch remains isolated and should be deleted only after explicit operator approval because branch deletion is destructive.
 
 ## Public inquiry commissioning update
 - Studio2016, Jermaine Williams, Charmin Greene, Charmin & Jermaine, CG Success and Sound Legacy Institute now submit website inquiries directly into WGOS rather than relying on mail-client handoffs.
@@ -83,3 +83,8 @@ Autonomous software work is no longer the primary blocker for the configured com
 - Persisted `signwell / esign / CONNECTED` in `wgos.integration_registry` with TEST-mode and webhook metadata.
 - No agreement was sent and no client was contacted. LIVE promotion remains a deliberate operational gate.
 - WGOS production Stripe credentials were also checked during this pass and are not configured; per-brand payment profiles remain correctly DISABLED.
+
+## Production hardening update — 2026-10-02
+- Public payment-status reads now require explicit brand scope before querying a merchant account.
+- Public web inquiries reject oversized request bodies, deduplicate exact retries, limit repeated submissions by brand/email and apply a high-water brand flood guard before creating CRM records.
+- Current production integration registry confirms Google Gmail, Google Calendar and SignWell TEST-mode connectivity; per-brand Stripe remains intentionally uncommissioned.
