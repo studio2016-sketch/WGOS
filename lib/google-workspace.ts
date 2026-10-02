@@ -52,3 +52,10 @@ export async function createGoogleCalendarEvent(input:{title:string;startAt:stri
  if(!d?.id)throw new Error("Google Calendar did not return an event id.");
  return {externalId:String(d.id),htmlLink:d.htmlLink?String(d.htmlLink):null,status:String(d.status||"confirmed")};
 }
+export async function cancelGoogleCalendarEvent(externalId:string){
+ const token=await accessToken("GOOGLE_REFRESH_TOKEN_MGMT");
+ const calendarId=String(process.env.GOOGLE_CALENDAR_ID||process.env.GOOGLE_GMAIL_ACCOUNT||"primary");
+ const r=await fetch("https://www.googleapis.com/calendar/v3/calendars/"+encodeURIComponent(calendarId)+"/events/"+encodeURIComponent(externalId),{method:"DELETE",headers:{Authorization:"Bearer "+token},cache:"no-store"});
+ if(!r.ok&&r.status!==410&&r.status!==404)throw new Error("Google Calendar cancellation failed ("+r.status+").");
+ return {cancelled:true};
+}
