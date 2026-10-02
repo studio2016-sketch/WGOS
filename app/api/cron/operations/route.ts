@@ -1,17 +1,29 @@
 import {NextResponse} from "next/server";
+import {randomUUID} from "crypto";
 import {runDueRecurringTasks} from "../../../../lib/operations-board";
 import {processClientDecisionEvents} from "../../../../lib/workflow-engine";
 import {syncGmailReplies} from "../../../../lib/communications";
+import {recordSystemHealth} from "../../../../lib/system-health";
 
 export async function GET(req:Request){
  const secret=process.env.CRON_SECRET;
  const auth=req.headers.get("authorization")||"";
  if(!secret||auth!=="Bearer "+secret)
   return NextResponse.json({ran:false,error:"UNAUTHORIZED"},{status:401});
- try{
-  const [recurring,decisions,gmail]=await Promise.all([runDueRecurringTasks({actor:null,limit:200}),processClientDecisionEvents({limit:100}),syncGmailReplies({limit:50})]);
-  return NextResponse.json({ran:true,recurring,decisions,gmail});
- }catch(e){
-  return NextResponse.json({ran:false,error:e instanceof Error?e.message:"Recurring work execution failed"},{status:500});
+ const correlationId=randomUUID();
+ const jobs=[
+  ["recurring",()=>runDueRecurringTasks({actor:null,limit:200})],
+  ["decisions",()=>processClientDecisionEvents({limit:100})],
+  ["gmail",()=>syncGmailReplies({limit:50})]
+ ] as const;
+ const settled=await Promise.allSettled(jobs.map(([,fn])=>fn()));
+ const result:any={ran:true,correlationId};
+ let failed=0;
+ for(let i=0;i<jobs.length;i++){
+  const name=jobs[i][0],x=settled[i];
+  if(x.status==="fulfilled")result[name]=x.value;
+  else{failed++;result[name]={ok:false,error:x.reason instanceof Error?x.reason.message:"JOB_FAILED"};}
  }
+ try{await recordSystemHealth({component:"operations_cron",status:failed?"DEGRADED":"OK",correlationId,details:{failed,total:jobs.length,jobs:Object.fromEntries(jobs.map(([name],i)=>[name,settled[i].status]))}});}catch{}
+ return NextResponse.json(result,{status:failed?500:200,headers:{"Cache-Control":"no-store, private"}});
 }
