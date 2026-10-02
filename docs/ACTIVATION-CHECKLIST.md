@@ -7,7 +7,7 @@ WGOS remains provider-neutral at its core. External providers are adapters and m
 2. Verify OWNER identity and brand memberships.
 3. Configure each brand experience profile: public domain, sender identity, proposal/sign/client/pay paths and theme.
 4. Connect Google Workspace for authorized email/calendar/document workflows.
-5. Verify the selected SignWell account from an authenticated WGOS admin session; if the callback is missing, use the governed Register Webhook action; keep TEST mode until provider commissioning is intentionally promoted to LIVE.
+5. SignWell account and webhook are verified in TEST mode. Promote to LIVE only when client signature traffic is intentionally authorized.
 6. Connect the independent Stripe account for each contracting brand using that brand's configured secret/webhook environment-variable names, then switch its payment profile from DISABLED to DIRECT_STRIPE_ACCOUNT only after verification.
 7. Configure signed webhook verification, idempotency and retry/dead-letter handling.
 8. Connect accounting only after payment/legal-entity mappings are verified.
@@ -25,7 +25,7 @@ No external provider is marked CONNECTED until a real authenticated round-trip s
 The application code does not require additional creative approval for these items, but production completion still requires operator/provider configuration:
 - Attach the intended custom domains to the matching Vercel projects for Jermaine Williams, Charmin Greene, Sound Legacy Institute and CG Success. Charmin & Jermaine and Studio2016 are already attached to their production projects.
 - Configure each brand's independent Stripe secret and webhook secret in Vercel, register the brand webhook endpoint `/api/webhooks/stripe/{brandId}` in that Stripe account, verify the account, then commission that brand's payment profile.
-- Run the authenticated SignWell Verify Connection action in WGOS. Signature creation is built and remains governed; do not release live signature traffic until the provider is intentionally in LIVE mode.
+- SignWell is verified and webhook-registered in TEST mode. The remaining e-sign gate is intentional TEST→LIVE promotion before real client signature traffic.
 - Choose/account-map the accounting provider after legal-entity payment mappings are verified.
 
 ## WGOS Auth custom-domain check — 2026-10-02
