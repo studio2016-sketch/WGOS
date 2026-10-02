@@ -46,7 +46,7 @@ Current secure client experience status:
 - Stripe payment verification remains a separate commissioning gate; no test charge should be created against a real client solely for commissioning.
 
 ## Backup and restore validation
-On 2026-10-02, production snapshot restore was tested without modifying production. Snapshot `wgos-prod-validation-20261002` from the production branch was restored into isolated branch `wgos-restore-validation-20261002`. Core record counts and the latest audit timestamp matched production exactly. The test snapshot expires automatically; the isolated restore branch remains only for controlled validation/cleanup.
+On 2026-10-02, production snapshot restore was tested without modifying business records. Core record counts and the latest audit timestamp matched the source production state exactly. Neon restore/finalization changed branch identities during the exercise, so branch IDs must always be resolved from the current `primary/default` flags rather than copied from an earlier runbook. As of the latest verification, `br-holy-glitter-b564xvey` is the current primary/default production branch and `br-icy-wind-b5i0u5t3` is the isolated restore-validation branch named `wgos-restore-validation-20261002 (1)`. The validation branch remains isolated and should only be deleted with explicit operator approval because deletion is destructive.
 
 ## Runtime database target verification — 2026-10-02
 - After the Neon restore operation changed branch identities, a temporary marker was placed only on non-primary branches and a temporary WGOS runtime probe checked for it.
@@ -71,3 +71,8 @@ On 2026-10-02, production snapshot restore was tested without modifying producti
 - WGOS completion webhook registered at `https://wgos.app/api/webhooks/signwell` and confirmed by provider read-back.
 - Integration registry records `signwell / esign / CONNECTED` with webhook readiness metadata.
 - No client document was created or sent during commissioning. TEST→LIVE promotion remains an operator-controlled go-live gate.
+
+## Authorization acceptance status — 2026-10-02
+- The current production Auth directory contains one WGOS identity, the existing OWNER account.
+- OWNER access and unauthenticated protections are commissioned; brand-scoped authorization helpers are deployed.
+- A real cross-brand role-matrix acceptance test requires at least one non-owner scoped Auth identity. Do not fabricate a login email or silently repurpose the master OWNER account for this test.
