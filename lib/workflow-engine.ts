@@ -4,7 +4,7 @@ import {createAgreementFromAcceptedProposal} from "./commercial-lifecycle";
 
 export async function processClientDecisionEvents(input:{limit?:number}={}){
  const sql=db(),limit=Math.max(1,Math.min(Number(input.limit||100),250));
- const events:any[]=await sql`SELECT id,brand_id,topic,payload FROM wgos.outbox_events WHERE topic IN ('CLIENT_DECISION','PROPOSAL_ACCEPTED') AND status='PENDING' AND next_attempt_at<=now() ORDER BY created_at LIMIT ${limit}`;
+ const events:any[]=await sql`SELECT id,brand_id,topic,payload FROM wgos.outbox_events WHERE topic IN ('CLIENT_DECISION','PROPOSAL_ACCEPTED','AGREEMENT_SIGNED','PAYMENT_CONFIRMED') AND status='PENDING' AND next_attempt_at<=now() ORDER BY created_at LIMIT ${limit}`;
  let processed=0,advanced=0,failed=0;
  for(const event of events){
   try{
@@ -20,6 +20,30 @@ export async function processClientDecisionEvents(input:{limit?:number}={}){
      if(msg.includes("Approved agreement terms are required")){
       await sql`INSERT INTO wgos.notification_events(brand_id,recipient_subject,channel,event_type,status,payload) VALUES(${event.brand_id},'OWNER','IN_APP','AGREEMENT_SETUP_REQUIRED','PENDING',jsonb_build_object('proposal_id',${proposalId},'reason',${msg}))`;
      }else throw e;
+    }
+   }
+   if(event.topic==="AGREEMENT_SIGNED"){
+    const agreementId=String(payload.agreement_id||"");
+    const rows:any[]=await sql`SELECT a.id,p.id proposal_id,p.deposit_amount,
+      COALESCE((SELECT sum(pay.amount) FROM wgos.payments pay WHERE pay.proposal_id=p.id AND pay.status IN ('PAID','SUCCEEDED')),0)::numeric paid
+     FROM wgos.agreements a JOIN wgos.proposals p ON p.id=a.proposal_id WHERE a.id=${agreementId}::uuid LIMIT 1`;
+    const a=rows[0];if(a){
+     const deposit=Number(a.deposit_amount||0),paid=Number(a.paid||0);
+     await sql`INSERT INTO wgos.notification_events(brand_id,recipient_subject,channel,event_type,status,payload)
+      VALUES(${event.brand_id},'OWNER','IN_APP',${deposit>paid?'PAYMENT_REQUIRED':'DELIVERY_READY_FOR_ACTIVATION'},'PENDING',
+       jsonb_build_object('agreement_id',${agreementId},'proposal_id',${String(a.proposal_id)},'deposit_required',${deposit},'paid',${paid}))`;
+    }
+   }
+   if(event.topic==="PAYMENT_CONFIRMED"){
+    const proposalId=String(payload.proposal_id||"");
+    const rows:any[]=await sql`SELECT p.id,p.deposit_amount,a.id agreement_id,a.status agreement_status,
+      COALESCE((SELECT sum(pay.amount) FROM wgos.payments pay WHERE pay.proposal_id=p.id AND pay.status IN ('PAID','SUCCEEDED')),0)::numeric paid
+     FROM wgos.proposals p LEFT JOIN LATERAL(SELECT id,status FROM wgos.agreements aa WHERE aa.proposal_id=p.id ORDER BY aa.created_at DESC LIMIT 1)a ON true
+     WHERE p.id=${proposalId}::uuid LIMIT 1`;
+    const p=rows[0];if(p&&p.agreement_status==="SIGNED"&&Number(p.paid||0)>=Number(p.deposit_amount||0)){
+     await sql`INSERT INTO wgos.notification_events(brand_id,recipient_subject,channel,event_type,status,payload)
+      VALUES(${event.brand_id},'OWNER','IN_APP','DELIVERY_READY_FOR_ACTIVATION','PENDING',
+       jsonb_build_object('proposal_id',${proposalId},'agreement_id',${String(p.agreement_id)},'paid',${Number(p.paid||0)}))`;
     }
    }
    if(event.topic==="CLIENT_DECISION"&&entityType==="task"&&decision==="APPROVED"){
