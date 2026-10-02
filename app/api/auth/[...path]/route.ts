@@ -1,6 +1,7 @@
 import {NextResponse} from "next/server";
 
 const allowed=new Set(["sign-in/email","sign-out","get-session","request-password-reset","reset-password","send-verification-email","verify-email","email-otp/send-verification-otp","email-otp/verify-email"]);
+const internalAuthOrigin=()=>String(process.env.NEON_AUTH_TRUSTED_ORIGIN||"https://wgos.vercel.app").replace(/\/$/,"");
 
 function cleanSetCookie(value:string){
  return value.replace(/;\s*Domain=[^;]+/ig,"");
@@ -12,6 +13,17 @@ function originAllowed(req:Request,incomingUrl:URL){
  if(site==="cross-site")return false;
  if(origin&&origin!==incomingUrl.origin)return false;
  return true;
+}
+
+async function requestBody(req:Request,suffix:string){
+ if(["GET","HEAD"].includes(req.method))return undefined;
+ const raw=Buffer.from(await req.arrayBuffer());
+ if(suffix!=="request-password-reset")return raw;
+ try{
+  const data=JSON.parse(raw.toString("utf8"));
+  if(data&&typeof data==="object")data.redirectTo=internalAuthOrigin()+"/reset-password";
+  return Buffer.from(JSON.stringify(data));
+ }catch{return raw}
 }
 
 async function proxy(req:Request,{params}:{params:Promise<{path:string[]}>}){
@@ -28,7 +40,10 @@ async function proxy(req:Request,{params}:{params:Promise<{path:string[]}>}){
  for(const name of ["content-type","accept","cookie","user-agent","x-forwarded-for"]){
   const value=req.headers.get(name);if(value)headers.set(name,value);
  }
- const upstream=await fetch(target,{method:req.method,headers,body:["GET","HEAD"].includes(req.method)?undefined:await req.arrayBuffer(),redirect:"manual",cache:"no-store"});
+ const trusted=internalAuthOrigin();
+ headers.set("origin",trusted);
+ headers.set("referer",trusted+"/login");
+ const upstream=await fetch(target,{method:req.method,headers,body:await requestBody(req,suffix),redirect:"manual",cache:"no-store"});
  const out=new Headers();
  out.set("cache-control","no-store, private");
  const contentType=upstream.headers.get("content-type");if(contentType)out.set("content-type",contentType);
