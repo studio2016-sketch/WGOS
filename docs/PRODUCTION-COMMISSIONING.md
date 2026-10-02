@@ -31,3 +31,16 @@ Google Workspace, e-sign, payments and accounting are activated independently. E
 - Export succeeds.
 - Backup/restore test succeeds.
 - Public proposal/sign/pay/client URLs remain on originating brand domains.
+
+## Client experience readiness ladder
+For every client-facing capability, use: Configured -> Published -> Reachable -> Functionally Tested -> Provider Verified -> Client-Ready.
+
+Current secure client experience status:
+- Studio2016, Jermaine Williams, Charmin Greene, Charmin & Jermaine, CG Success and Sound Legacy Institute: proposal and client-workspace routes published on their native sites.
+- WGOS public client API rejects missing access with 401 and invalid/revoked access with 403.
+- Client decisions are restricted to pending approvals within the token's brand + organization scope and are audit logged.
+- Client decision events feed the workflow outbox, internal notification queue and Executive Autopilot.
+- Approval-gated tasks may auto-complete only when the task itself requires approval; waiting dependents release to READY only when all dependencies are DONE.
+- Do not expose arbitrary internal task records, document storage references or internal approval metadata to public clients.
+- SignWell authenticated provider verification remains a separate commissioning gate; no test signature should be sent solely for commissioning.
+- Stripe payment verification remains a separate commissioning gate; no test charge should be created against a real client solely for commissioning.
