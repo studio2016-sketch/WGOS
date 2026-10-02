@@ -19,16 +19,18 @@ export async function createAgreementCheckout(input:{agreementId:string;actor:st
  const deposit=Number(row.deposit_amount||0);const total=Number(row.one_time_total||0);const amount=deposit>0?deposit:total;
  const currency=String(row.currency||"USD").trim().toLowerCase();
  const client=stripe();
+ const paymentPrefix=String(row.payment_path_prefix||"/pay").replace(/\/$/,"");
  const session=await client.checkout.sessions.create({
   mode:"payment",customer_email:row.client_email||undefined,
   line_items:[{price_data:{currency,product_data:{name:deposit>0?`${row.brand_name} — Booking Deposit`:`${row.brand_name} — Payment`,description:String(row.proposal_title||"Service agreement")},unit_amount:moneyToCents(amount)},quantity:1}],
   metadata:{wgos_agreement_id:String(row.agreement_id),wgos_proposal_id:String(row.proposal_id),wgos_snapshot_id:String(row.snapshot_id),wgos_brand_id:String(row.brand_id),wgos_payment_kind:deposit>0?"DEPOSIT":"FULL_PAYMENT"},
   payment_intent_data:{metadata:{wgos_agreement_id:String(row.agreement_id),wgos_proposal_id:String(row.proposal_id),wgos_brand_id:String(row.brand_id)},statement_descriptor:row.statement_descriptor?String(row.statement_descriptor).slice(0,22):undefined},
-  success_url:`${brandBase(row.public_domain)}${String(row.payment_path_prefix||"/pay").replace(/\/$/,"")}/complete?session_id={CHECKOUT_SESSION_ID}`,cancel_url:`${brandBase(row.public_domain)}${String(row.payment_path_prefix||"/pay").replace(/\/$/,"")}/cancelled`,integration_identifier:"wgos_checkout_hzdpmqzr"
+  success_url:`${brandBase(row.public_domain)}${paymentPrefix}/complete?session_id={CHECKOUT_SESSION_ID}`,cancel_url:`${brandBase(row.public_domain)}${paymentPrefix}/cancelled`,integration_identifier:"wgos_checkout_hzdpmqzr"
  });
  if(!session.url)throw new Error("Stripe did not return a checkout URL.");
  await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata) VALUES(${input.actor},'STRIPE_CHECKOUT_CREATED','agreement',${String(row.agreement_id)},jsonb_build_object('proposalId',${String(row.proposal_id)},'sessionId',${session.id},'amount',${amount}))`;
- return {url:session.url,sessionId:session.id,amount,currency:currency.toUpperCase()};
+ const clientUrl=`${brandBase(row.public_domain)}${paymentPrefix}/${row.agreement_id}?session_id=${encodeURIComponent(session.id)}`;
+ return {url:session.url,clientUrl,sessionId:session.id,amount,currency:currency.toUpperCase()};
 }
 
 export async function recordStripeCheckoutPayment(sessionId:string){
