@@ -1,5 +1,6 @@
 import "server-only";
 import {db} from "./db";
+import {createHash} from "crypto";
 
 const clean=(v:unknown,max=1000)=>String(v??"").trim().slice(0,max);
 const emailOk=(v:string)=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -14,6 +15,11 @@ export async function submitPublicInquiry(input:{
  const phone=clean(input.phone,80),organizationName=clean(input.organizationName,180),message=clean(input.message,6000);
  if(clean(input.honeypot,200))return {received:true,discarded:true};
  if(!brandId||!name||!emailOk(email))throw new Error("Name and a valid email are required.");
+
+ const detailsForHash=input.details&&typeof input.details==="object"?input.details:{};
+ const fingerprint=createHash("sha256").update(JSON.stringify({brandId,name,email,phone,organizationName,title:clean(input.title,220),message,details:detailsForHash})).digest("hex");
+ const prior:any[]=await sql`SELECT response_body FROM wgos.idempotency_keys WHERE scope=${"public-inquiry:"+brandId} AND key=${fingerprint} AND (expires_at IS NULL OR expires_at>now()) LIMIT 1`;
+ if(prior[0])return {received:true,duplicate:true};
 
  const brandRows:any[]=await sql`SELECT b.id,b.name,x.public_domain FROM wgos.brands b
   JOIN wgos.brand_experience_profiles x ON x.brand_id=b.id
@@ -51,12 +57,6 @@ export async function submitPublicInquiry(input:{
  }
 
  const title=clean(input.title,220)||`Website inquiry — ${name}`;
- const duplicate:any[]=await sql`SELECT id FROM wgos.opportunities
-  WHERE brand_id=${brandId} AND primary_contact_id=${contactId}::uuid
-   AND source='PUBLIC_WEB_INQUIRY' AND created_at>now()-interval '10 minutes'
-  ORDER BY created_at DESC LIMIT 1`;
- if(duplicate[0])return {received:true,duplicate:true};
-
  const rawDetails=input.details&&typeof input.details==="object"?input.details:{};
  const details:any={};
  for(const [k,v] of Object.entries(rawDetails).slice(0,40)){
@@ -89,5 +89,8 @@ export async function submitPublicInquiry(input:{
  await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata)
  VALUES('public:brand-site','PUBLIC_WEB_INQUIRY_RECEIVED','opportunity',${opportunityId},
   jsonb_build_object('brandId',${brandId},'contactId',${contactId},'threadId',${threadId},'domain',${String(brand.public_domain)}))`;
+ await sql`INSERT INTO wgos.idempotency_keys(scope,key,request_hash,response_code,response_body,expires_at)
+ VALUES(${"public-inquiry:"+brandId},${fingerprint},${fingerprint},202,'{"received":true}'::jsonb,now()+interval '15 minutes')
+ ON CONFLICT (scope,key) DO NOTHING`;
  return {received:true};
 }
