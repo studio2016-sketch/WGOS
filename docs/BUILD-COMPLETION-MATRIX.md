@@ -4,28 +4,29 @@ Status legend: BUILT = code/schema exists; ACTIVATE = requires production migrat
 
 | Capability | Status | Completion gate |
 |---|---|---|
-| Multi-brand control plane | BUILT | Production verification |
-| Authentication | BUILT | Account verification |
-| Server-side brand authorization | BUILT | Live schema present; complete role tests |
+| Multi-brand control plane | VERIFIED FOUNDATION | Production control plane, brand scoping and command views are live |
+| Authentication | VERIFIED FOUNDATION | Owner authentication and unauthenticated route protections are live |
+| Server-side brand authorization | ACTIVE | Scoped authorization helpers protect brand/project/task/commercial routes; broader role matrix test remains |
 | Operations/projects/tasks | BUILT | Live and regression-tested |
 | Recurring work/comments/dependencies | BUILT | Live and regression-tested |
-| CRM contacts/organizations/relationships | BUILT | Live schema present; lifecycle test |
-| Opportunity pipeline | BUILT | Live schema present; lifecycle test |
+| CRM contacts/organizations/relationships | ACTIVE | Canonical contact/organization graph is live; public inquiries now deduplicate into it |
+| Opportunity pipeline | ACTIVE | Manual and public-site opportunity creation are live with Sales Autopilot signals |
+| Public web inquiry capture | ACTIVE | All six configured brand sites submit directly into WGOS CRM, communications and notification workflows |
 | Proposal engine | BUILT | Live schema present; brand templates |
 | Contract/e-sign abstraction | PROVIDER-READY | SignWell creation, secure agreement access and verified completion webhook built; authenticated provider verification + LIVE commissioning remain |
 | Client portal identity model | VERIFIED FOUNDATION | Token-gated brand-native workspaces live across configured brands; valid-token end-to-end test still required |
 | Invoicing/payments/refunds | PROVIDER-READY | Independent per-brand Stripe checkout/webhook architecture built; brand credentials + commissioning remain |
-| Communications | BUILT | Google/email adapter activation |
-| Calendar | ACTIVE FOUNDATION | Native Schedule Command + governed calendar records live; external Google Calendar action commissioning remains governed |
+| Communications | ACTIVE / CONNECTED | Google Gmail connection is verified; governed send, reply threading and reply synchronization are built and active |
+| Calendar | ACTIVE / CONNECTED | Google Calendar connection is verified; native schedule records and governed synchronization controls are live |
 | Crew/equipment | BUILT | Live schema present + populate inventory |
-| Global search/reporting | BUILT | Apply migrations + permission tests |
+| Global search/reporting | ACTIVE | Global search and exact-record routing are deployed; permission regression remains part of final acceptance |
 | Workflow/retry/dead-letter | ACTIVE FOUNDATION | Recurring worker + governed client-decision workflow processing active; retry/dead-letter failure test remains |
 | AI authority/execution ledger | BUILT | Apply migrations + action policy seeds |
 | Audit/approvals/document versions | ACTIVE | Governance schema live; client approvals audited and surfaced in Autopilot |
 | Data governance/idempotency/health | RESTORE VERIFIED | Reconciled schema live, authenticated export built; production snapshot restore validated on an isolated Neon branch |
 | Accounting | ACTIVATE | Provider decision + mapping |
 | Production schema | VERIFIED | Reconciled contacts/agreements/payments model is live; future changes require branch test and explicit production approval |
-| Branded public proposal/sign/pay/portal UI | BUILT / DOMAIN COMMISSIONING | Proposal, agreement, payment handoff/return and client workspace experiences are built across all six configured brands; four custom domains still need Vercel attachment |
+| Branded public proposal/sign/pay/portal UI | BUILT / DOMAIN COMMISSIONING | Proposal, agreement, payment handoff/return, client workspace and direct inquiry capture are built across all six configured brands; four custom domains still need Vercel attachment |
 
 ## Definition of platform completion
 WGOS is production-complete only when the full sandbox lifecycle succeeds under each relevant permission class and the backup/restore/export tests pass. A successful Vercel build alone is not completion.
@@ -59,3 +60,9 @@ Autonomous software work is no longer the primary blocker for the configured com
 - Verified matching counts for brands (8), app users (1), organizations (0), contacts (0), opportunities (0), proposals (0), agreements (0), projects (0), tasks (0), and audit events (35).
 - Verified the latest audit timestamp matched exactly between production and restored branch.
 - Snapshot is configured to expire automatically. The restored validation branch is intentionally isolated from production and should be deleted after operator approval because branch deletion is destructive.
+
+## Public inquiry commissioning update
+- Studio2016, Jermaine Williams, Charmin Greene, Charmin & Jermaine, CG Success and Sound Legacy Institute now submit website inquiries directly into WGOS rather than relying on mail-client handoffs.
+- WGOS unifies contacts by email, associates brand relationships, creates NEW opportunities, records discovery context, creates an inbound communication thread, raises a `NEW_WEB_INQUIRY` notification and writes an audit event.
+- Exact browser retries are deduplicated for 15 minutes through the existing idempotency primitive; materially different follow-up inquiries are retained.
+- Studio2016 retains supplemental Resend delivery when configured, but WGOS is now the authoritative intake path.
