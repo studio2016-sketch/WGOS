@@ -65,20 +65,22 @@ export async function cancelGoogleCalendarEvent(externalId:string){
 
 function b64url(value:string){return Buffer.from(value,"utf8").toString("base64").replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");}
 function headerSafe(value:unknown){return String(value??"").replace(/[\r\n]+/g," ").trim();}
-export async function sendGoogleEmail(input:{to:string;subject:string;body:string;fromName?:string|null;replyTo?:string|null}){
+export async function sendGoogleEmail(input:{to:string;subject:string;body:string;fromName?:string|null;replyTo?:string|null;threadId?:string|null;inReplyTo?:string|null;references?:string|null}){
  const token=await accessToken("GOOGLE_REFRESH_TOKEN_MGMT");
  const account=headerSafe(process.env.GOOGLE_GMAIL_ACCOUNT||"");if(!account)throw new Error("GOOGLE_GMAIL_ACCOUNT is not configured");
  const lines=[
   "To: "+headerSafe(input.to),
   "From: "+(input.fromName?headerSafe(input.fromName)+" <"+account+">":account),
   input.replyTo?"Reply-To: "+headerSafe(input.replyTo):"",
+  input.inReplyTo?"In-Reply-To: "+headerSafe(input.inReplyTo):"",
+  input.references?"References: "+headerSafe(input.references):"",
   "Subject: "+headerSafe(input.subject),
   "MIME-Version: 1.0",
   'Content-Type: text/plain; charset="UTF-8"',
   "Content-Transfer-Encoding: 8bit",
   "",String(input.body||"")
  ].filter((x,i)=>x!==""||i>=7).join("\r\n");
- const d=await googleJson("https://gmail.googleapis.com/gmail/v1/users/me/messages/send",token,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({raw:b64url(lines)})});
+ const d=await googleJson("https://gmail.googleapis.com/gmail/v1/users/me/messages/send",token,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({raw:b64url(lines),...(input.threadId?{threadId:input.threadId}:{})})});
  if(!d?.id)throw new Error("Gmail did not return a message id.");
  return {messageId:String(d.id),threadId:d.threadId?String(d.threadId):null};
 }
