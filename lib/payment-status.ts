@@ -12,6 +12,9 @@ export async function publicCheckoutStatus(sessionId:string){
   amountTotal:Number(session.amount_total||0),
   currency:String(session.currency||"usd").toUpperCase(),
   brandId:String(meta.wgos_brand_id),
-  paymentKind:String(meta.wgos_payment_kind||"PAYMENT")
+  agreementId:String(meta.wgos_agreement_id||""),
+  proposalId:String(meta.wgos_proposal_id||""),
+  paymentKind:String(meta.wgos_payment_kind||"PAYMENT"),
+  checkoutUrl:session.payment_status==="paid"?null:(session.status==="open"?session.url||null:null)
  };
 }
