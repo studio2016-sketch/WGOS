@@ -6,20 +6,31 @@ function cleanSetCookie(value:string){
  return value.replace(/;\s*Domain=[^;]+/ig,"");
 }
 
+function originAllowed(req:Request,incomingUrl:URL){
+ const origin=req.headers.get("origin");
+ const site=String(req.headers.get("sec-fetch-site")||"").toLowerCase();
+ if(site==="cross-site")return false;
+ if(origin&&origin!==incomingUrl.origin)return false;
+ return true;
+}
+
 async function proxy(req:Request,{params}:{params:Promise<{path:string[]}>}){
  const base=process.env.NEON_AUTH_BASE_URL;
- if(!base)return NextResponse.json({error:"AUTH_NOT_CONFIGURED"},{status:503});
+ if(!base)return NextResponse.json({error:"AUTH_NOT_CONFIGURED"},{status:503,headers:{"Cache-Control":"no-store, private"}});
  const {path}=await params;
  const suffix=(path||[]).join("/");
- if(!allowed.has(suffix))return NextResponse.json({error:"AUTH_ROUTE_NOT_ALLOWED"},{status:404});
+ if(!allowed.has(suffix))return NextResponse.json({error:"AUTH_ROUTE_NOT_ALLOWED"},{status:404,headers:{"Cache-Control":"no-store, private"}});
  const incomingUrl=new URL(req.url);
+ if(req.method==="POST"&&!originAllowed(req,incomingUrl))
+  return NextResponse.json({error:"AUTH_ORIGIN_REJECTED"},{status:403,headers:{"Cache-Control":"no-store, private"}});
  const target=base.replace(/\/$/,"")+"/"+suffix+incomingUrl.search;
  const headers=new Headers();
- for(const name of ["content-type","accept","cookie","origin","referer","user-agent","x-forwarded-for"]){
+ for(const name of ["content-type","accept","cookie","user-agent","x-forwarded-for"]){
   const value=req.headers.get(name);if(value)headers.set(name,value);
  }
  const upstream=await fetch(target,{method:req.method,headers,body:["GET","HEAD"].includes(req.method)?undefined:await req.arrayBuffer(),redirect:"manual",cache:"no-store"});
  const out=new Headers();
+ out.set("cache-control","no-store, private");
  const contentType=upstream.headers.get("content-type");if(contentType)out.set("content-type",contentType);
  const location=upstream.headers.get("location");if(location)out.set("location",location);
  const getSetCookie=(upstream.headers as any).getSetCookie?.bind(upstream.headers);
