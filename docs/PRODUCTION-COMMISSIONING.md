@@ -76,3 +76,9 @@ On 2026-10-02, production snapshot restore was tested without modifying business
 - The current production Auth directory contains one WGOS identity, the existing OWNER account.
 - OWNER access and unauthenticated protections are commissioned; brand-scoped authorization helpers are deployed.
 - A real cross-brand role-matrix acceptance test requires at least one non-owner scoped Auth identity. Do not fabricate a login email or silently repurpose the master OWNER account for this test.
+
+## Isolated brand-authorization matrix — 2026-10-02
+- Created synthetic TEAM identities only on the isolated restore-validation branch; production Auth and app-user records were not changed.
+- Validated the intended management matrix across all eight brands: Charmin scope = Charmin Greene, CG Success, Dionne's Boutique, Charmin & Jermaine and Sound Legacy Institute; Jermaine scope = Jermaine Williams, Studio2016, Charmin & Jermaine and Sound Legacy Institute; Dr. Duane Greene scope = Bass One Basses only.
+- Every expected allow and every expected deny passed for both active membership access and BRAND_ADMIN/MANAGER management eligibility.
+- This proves the membership data model and authorization predicates. Final live acceptance still requires real non-owner Auth identities; the master OWNER login must not be repurposed as a restricted Jermaine identity.
