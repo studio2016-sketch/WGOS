@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireApiAdmin } from "../../../../../../lib/authz";
-import { verifySignWellConnection } from "../../../../../../lib/signwell";
+import { verifySignWellConnection,signWellWebhookReadiness } from "../../../../../../lib/signwell";
 import {recordIntegrationVerification} from "../../../../../../lib/integration-registry";
 
 export const dynamic = "force-dynamic";
@@ -15,10 +15,10 @@ export async function GET() {
   }
 
   try {
-    const result = await verifySignWellConnection();
-    await recordIntegrationVerification({provider:"signwell",capability:"esign",connected:result.connected,error:result.connected?null:"HTTP_"+result.status,metadata:{mode:result.mode}});
+    const [result,webhook] = await Promise.all([verifySignWellConnection(),signWellWebhookReadiness()]);
+    await recordIntegrationVerification({provider:"signwell",capability:"esign",connected:result.connected,error:result.connected?null:"HTTP_"+result.status,metadata:{mode:result.mode,webhookConfigured:webhook.configured,webhookStatus:webhook.status}});
     return NextResponse.json(
-      { provider: "signwell", connected: result.connected, providerStatus: result.status, mode: result.mode },
+      { provider: "signwell", connected: result.connected, providerStatus: result.status, mode: result.mode, webhookConfigured:webhook.configured, webhookStatus:webhook.status },
       { status: result.connected ? 200 : 503 },
     );
   } catch {
