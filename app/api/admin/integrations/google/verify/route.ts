@@ -10,8 +10,9 @@ export async function GET(req:Request){
  if(!["gmail","calendar","drive"].includes(capability))return NextResponse.json({provider:"google",connected:false,error:"UNSUPPORTED_CAPABILITY"},{status:400});
  try{
   const result=capability==="gmail"?await verifyGoogleGmail():capability==="calendar"?await verifyGoogleCalendar():await verifyGoogleDrive();
-  await recordIntegrationVerification({provider:"google",capability,connected:true,metadata:result});
-  return NextResponse.json({provider:"google",capability,connected:true,...result});
+  const {connected,...metadata}=result;
+  await recordIntegrationVerification({provider:"google",capability,connected:Boolean(connected),metadata});
+  return NextResponse.json({provider:"google",capability,...result});
  }catch(e){
   try{await recordIntegrationVerification({provider:"google",capability,connected:false,error:e instanceof Error?e.message:"PROVIDER_VERIFICATION_FAILED"});}catch{}
   return NextResponse.json({provider:"google",capability,connected:false,error:"PROVIDER_VERIFICATION_FAILED"},{status:503});
