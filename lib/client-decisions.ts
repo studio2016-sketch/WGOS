@@ -27,14 +27,16 @@ export async function decideClientApproval(input:{token:string;approvalId:string
  if(!scoped)throw new Error("Approval is outside this client workspace.");
 
  const finalStatus=input.decision==="APPROVED"?"APPROVED":"REVISION_REQUESTED";
+ const dbStatus=finalStatus==="APPROVED"?"APPROVED":"REJECTED";
  const note=String(input.note||"").trim();
  const updated:any[]=await sql`UPDATE wgos.approval_requests
- SET status=${finalStatus},
-     decided_by='client:portal',
+ SET status=${dbStatus},
+     decided_by=NULL,
      decided_at=now(),
      metadata=COALESCE(metadata,'{}'::jsonb)||jsonb_build_object(
        'clientDecisionNote',${note},
        'clientDecisionSource','CLIENT_PORTAL',
+       'clientDecision',${finalStatus},
        'clientDecisionAt',now()
      )
  WHERE id=${input.approvalId}::uuid AND status='PENDING'
