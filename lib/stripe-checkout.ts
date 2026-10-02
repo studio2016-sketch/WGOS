@@ -15,7 +15,7 @@ export async function createAgreementCheckout(input:{agreementId:string;actor:st
  const row:any=rows[0];
  if(!row)throw new Error("Agreement or accepted proposal snapshot not found.");
  if(String(row.agreement_status)!=="SIGNED")throw new Error("A completed signature is required before payment collection.");
- if(!row.complete_for_payment||String(row.payment_mode)!=="STRIPE_CHECKOUT")throw new Error("Stripe Checkout is not commissioned for this brand.");
+ if(!row.complete_for_payment||String(row.payment_mode)!=="DIRECT_STRIPE_ACCOUNT")throw new Error("Direct Stripe Checkout is not commissioned for this brand.");
  const deposit=Number(row.deposit_amount||0);const total=Number(row.one_time_total||0);const amount=deposit>0?deposit:total;
  const currency=String(row.currency||"USD").trim().toLowerCase();
  const client=stripe();
