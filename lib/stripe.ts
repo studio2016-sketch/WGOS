@@ -2,6 +2,7 @@ import "server-only";
 import Stripe from "stripe";
 
 export function stripeConfigured(){return Boolean(process.env.STRIPE_SECRET_KEY);}
+export function stripeMode(){const key=String(process.env.STRIPE_SECRET_KEY||"");return key.startsWith("sk_live_")?"LIVE":key.startsWith("sk_test_")?"TEST":"UNKNOWN";}
 
 export function stripe(){
  const key=process.env.STRIPE_SECRET_KEY;
@@ -12,5 +13,5 @@ export function stripe(){
 export async function verifyStripeConnection(){
  const client=stripe();
  await client.balance.retrieve();
- return {connected:true};
+ return {connected:true,mode:stripeMode()};
 }
