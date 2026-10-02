@@ -58,3 +58,9 @@ On 2026-10-02, production snapshot restore was tested without modifying producti
 - The reconciled schema successfully linked a prospect organization/contact through a WON opportunity, ACCEPTED proposal and immutable accepted snapshot, SIGNED agreement, COMPLETED signature envelope, provider-attributed PAID deposit, ACTIVE project, and DONE delivery task.
 - The fixture also created an inbound communication thread and audit record, validating the canonical relationship path without contacting SignWell, Stripe, Gmail, or a real client.
 - This validates the internal database lifecycle. A provider-backed sandbox round trip remains required before the commercial lifecycle is declared fully client-ready.
+
+## Authentication origin commissioning — 2026-10-02
+- WGOS is the browser-facing auth origin boundary. POST requests to `/api/auth/*` reject `Sec-Fetch-Site: cross-site` and explicit origins that do not match the incoming WGOS origin.
+- Approved auth requests are proxied to Neon Auth using the fixed internal trusted origin `https://wgos.vercel.app`; browser `Origin` / `Referer` values are not forwarded upstream.
+- Password-reset redirect targets are normalized to the internal trusted WGOS hostname.
+- Live dummy-credential verification through the canonical `wgos.app` proxy returned a normal `401 Invalid email or password` response, confirming the earlier `403 Invalid origin` failure is resolved.
