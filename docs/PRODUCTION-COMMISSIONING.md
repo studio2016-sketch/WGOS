@@ -64,3 +64,10 @@ On 2026-10-02, production snapshot restore was tested without modifying producti
 - Approved auth requests are proxied to Neon Auth using the fixed internal trusted origin `https://wgos.vercel.app`; browser `Origin` / `Referer` values are not forwarded upstream.
 - Password-reset redirect targets are normalized to the internal trusted WGOS hostname.
 - Live dummy-credential verification through the canonical `wgos.app` proxy returned a normal `401 Invalid email or password` response, confirming the earlier `403 Invalid origin` failure is resolved.
+
+## SignWell TEST commissioning — 2026-10-02
+- Provider authentication verified successfully (HTTP 200).
+- SignWell mode is `TEST`.
+- WGOS completion webhook registered at `https://wgos.app/api/webhooks/signwell` and confirmed by provider read-back.
+- Integration registry records `signwell / esign / CONNECTED` with webhook readiness metadata.
+- No client document was created or sent during commissioning. TEST→LIVE promotion remains an operator-controlled go-live gate.
