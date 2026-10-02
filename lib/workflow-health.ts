@@ -3,7 +3,7 @@ import {db} from "./db";
 
 export async function workflowHealth(){
  const sql=db();
- const [summary,dead]=await Promise.all([
+ const [summary,dead,health]=await Promise.all([
   sql`SELECT
    count(*) FILTER(WHERE status='PENDING')::int pending,
    count(*) FILTER(WHERE status='FAILED')::int failed,
@@ -15,9 +15,10 @@ export async function workflowHealth(){
    JOIN wgos.outbox_events o ON o.id=d.outbox_event_id
    JOIN wgos.brands b ON b.id=o.brand_id
    WHERE d.resolved_at IS NULL
-   ORDER BY d.failed_at DESC LIMIT 25`
+   ORDER BY d.failed_at DESC LIMIT 25`,
+  sql`SELECT component,status,correlation_id,details,occurred_at FROM wgos.system_health_events ORDER BY occurred_at DESC LIMIT 20`
  ]);
- return {summary:summary[0]||{pending:0,failed:0,processed:0},dead};
+ return {summary:summary[0]||{pending:0,failed:0,processed:0},dead,health};
 }
 
 export async function retryDeadLetter(input:{id:string;actor:string}){
