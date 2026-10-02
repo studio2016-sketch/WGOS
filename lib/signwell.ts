@@ -28,6 +28,16 @@ export async function signWellWebhookReadiness(){
  return {configured:Boolean(match),status:response.status,expected,hookId:match?.id?String(match.id):null};
 }
 
+export async function ensureSignWellWebhook(){
+ const expected=String(process.env.SIGNWELL_WEBHOOK_URL||"https://wgos.app/api/webhooks/signwell").replace(/\/$/,"");
+ const current=await signWellWebhookReadiness();
+ if(current.configured)return {configured:true,created:false,status:current.status,expected,hookId:current.hookId||null};
+ const response=await fetch(`${SIGNWELL_API_BASE}/hooks`,{method:"POST",headers:{"X-Api-Key":apiKey(),"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({callback_url:expected}),cache:"no-store"});
+ const text=await response.text(),data:any=safeJson(text);
+ if(!response.ok)throw new Error(`SignWell webhook registration failed (${response.status}).`);
+ return {configured:true,created:true,status:response.status,expected,hookId:data?.id?String(data.id):null};
+}
+
 export async function createSignWellAgreementDocument(input:{
  agreementId:string;agreementHash:string;proposalId:string;snapshotHash:string;
  title:string;brandName:string;organizationName?:string|null;clientName:string;clientEmail:string;
