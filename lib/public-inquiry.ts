@@ -21,6 +21,16 @@ export async function submitPublicInquiry(input:{
  const prior:any[]=await sql`SELECT response_body FROM wgos.idempotency_keys WHERE scope=${"public-inquiry:"+brandId} AND key=${fingerprint} AND (expires_at IS NULL OR expires_at>now()) LIMIT 1`;
  if(prior[0])return {received:true,duplicate:true};
 
+ const recentEmail:any[]=await sql`SELECT count(*)::int n FROM wgos.opportunities
+  WHERE brand_id=${brandId} AND source='PUBLIC_WEB_INQUIRY'
+    AND lower(contact_email)=lower(${email}) AND created_at>now()-interval '15 minutes'`;
+ if(Number(recentEmail[0]?.n||0)>=5)throw new Error("Too many inquiries from this email. Please try again later.");
+
+ const recentBrand:any[]=await sql`SELECT count(*)::int n FROM wgos.opportunities
+  WHERE brand_id=${brandId} AND source='PUBLIC_WEB_INQUIRY'
+    AND created_at>now()-interval '1 minute'`;
+ if(Number(recentBrand[0]?.n||0)>=60)throw new Error("Inquiry service is temporarily busy. Please try again shortly.");
+
  const brandRows:any[]=await sql`SELECT b.id,b.name,x.public_domain FROM wgos.brands b
   JOIN wgos.brand_experience_profiles x ON x.brand_id=b.id
   WHERE b.id=${brandId} AND x.public_domain IS NOT NULL LIMIT 1`;
