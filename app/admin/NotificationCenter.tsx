@@ -13,6 +13,7 @@ export default function NotificationCenter({rows:initial}:{rows:any[]}){
   else if(x.event_type==="AGREEMENT_SIGNED"){label="SIGNED";title="Agreement signed · "+x.brand_name;note="Signature completion was verified against the provider record.";href="/admin#commercial-lifecycle"}
   else if(x.event_type==="PAYMENT_REQUIRED"){label="PAYMENT";title="Payment required · "+x.brand_name;note="The agreement is signed and the required payment gate remains open.";href="/admin#commercial-lifecycle"}
   else if(x.event_type==="PAYMENT_CONFIRMED"){label="PAID";title="Payment confirmed · "+x.brand_name;note="Stripe confirmed the payment provider-side.";href="/admin#commercial-lifecycle"}
+  else if(x.event_type==="CLIENT_EMAIL_RECEIVED"){label="REPLY";title="Client email received · "+x.brand_name;note="A reply was synchronized from Gmail into the relationship record.";href="/admin/communications?thread="+encodeURIComponent(String(p.thread_id||""))}
   else if(x.event_type==="DELIVERY_READY_FOR_ACTIVATION"){label="READY";title="Delivery ready to activate · "+x.brand_name;note="Signature and required payment gates are satisfied.";href="/admin#commercial-lifecycle"}
   return <div key={x.id}><time>{label}</time><strong>{title}</strong><small>{note||String(x.event_type).replaceAll("_"," ")}</small><span><Link href={href}>Open →</Link> <button type="button" disabled={busy===x.id} onClick={()=>dismiss(x.id)}>{busy===x.id?"Clearing…":"Dismiss"}</button></span></div>})}</div>}
  </section>
