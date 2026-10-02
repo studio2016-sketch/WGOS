@@ -27,3 +27,7 @@ The application code does not require additional creative approval for these ite
 - Configure each brand's independent Stripe secret and webhook secret in Vercel, register the brand webhook endpoint `/api/webhooks/stripe/{brandId}` in that Stripe account, verify the account, then commission that brand's payment profile.
 - Run the authenticated SignWell Verify Connection action in WGOS. Signature creation is built and remains governed; do not release live signature traffic until the provider is intentionally in LIVE mode.
 - Choose/account-map the accounting provider after legal-entity payment mappings are verified.
+
+## WGOS Auth custom-domain check — 2026-10-02
+- Neon Auth production trusted-domain whitelist now includes `https://wgos.app`, `https://www.wgos.app`, and the canonical Vercel hostname.
+- This resolves the custom-domain origin prerequisite for email/password, verification-code and password-reset flows proxied through `/api/auth/*`.
