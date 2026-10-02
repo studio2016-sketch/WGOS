@@ -18,6 +18,16 @@ export async function verifySignWellConnection(){
  return {connected:true,status:response.status,mode:signWellMode()};
 }
 
+export async function signWellWebhookReadiness(){
+ const expected=String(process.env.SIGNWELL_WEBHOOK_URL||"https://wgos.app/api/webhooks/signwell").replace(/\/$/,"");
+ const response=await fetch(`${SIGNWELL_API_BASE}/hooks`,{method:"GET",headers:{"X-Api-Key":apiKey(),Accept:"application/json"},cache:"no-store"});
+ const text=await response.text(),data:any=safeJson(text);
+ if(!response.ok)return {configured:false,status:response.status,expected};
+ const rows=Array.isArray(data)?data:Array.isArray(data?.hooks)?data.hooks:Array.isArray(data?.data)?data.data:[];
+ const match=rows.find((x:any)=>String(x?.callback_url||x?.url||"").replace(/\/$/,"")===expected);
+ return {configured:Boolean(match),status:response.status,expected,hookId:match?.id?String(match.id):null};
+}
+
 export async function createSignWellAgreementDocument(input:{
  agreementId:string;agreementHash:string;proposalId:string;snapshotHash:string;
  title:string;brandName:string;organizationName?:string|null;clientName:string;clientEmail:string;
