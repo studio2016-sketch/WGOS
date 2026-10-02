@@ -1,6 +1,6 @@
 import {NextResponse} from "next/server";
-import {verifySignWellConnection} from "../../../../../lib/signwell";
-import {stripeConfigured,verifyStripeConnection} from "../../../../../lib/stripe";
+import {verifySignWellConnection} from "../../../../lib/signwell";
+import {stripeConfigured,verifyStripeConnection} from "../../../../lib/stripe";
 export const dynamic="force-dynamic";
 export async function GET(){
  const headers={"Cache-Control":"no-store, private","X-Robots-Tag":"noindex, nofollow"};
