@@ -75,7 +75,7 @@ export async function buildSystemExport(){
   sql`SELECT * FROM wgos.run_of_show_items ORDER BY production_event_id,position,id`,
   sql`SELECT * FROM wgos.advancing_checkpoints ORDER BY production_event_id,due_at NULLS LAST,id`,
   sql`SELECT * FROM wgos.approval_requests ORDER BY requested_at,id`,
-  sql`SELECT * FROM wgos.document_templates ORDER BY brand_id,kind,name,version,id`,
+  sql`SELECT * FROM wgos.document_templates ORDER BY brand_id,kind,title,version,id`,
   sql`SELECT * FROM wgos.document_versions ORDER BY created_at,id`,
   sql`SELECT * FROM wgos.automation_rules ORDER BY created_at,id`,
   sql`SELECT * FROM wgos.workflow_definitions ORDER BY created_at,id`,
