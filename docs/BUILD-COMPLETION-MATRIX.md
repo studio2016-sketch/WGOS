@@ -68,7 +68,10 @@ Autonomous software work is no longer the primary blocker for the configured com
 - Studio2016 retains supplemental Resend delivery when configured, but WGOS is now the authoritative intake path.
 
 ## Authentication custom-domain commissioning — 2026-10-02
-- Root cause of the production “Invalid origin” login error was confirmed: Neon Auth trusted the Vercel hostname but not the canonical WGOS custom domain.
-- Added `https://wgos.app` and `https://www.wgos.app` to the Better Auth trusted-domain whitelist on the production Neon branch.
-- Existing `https://wgos.vercel.app` trust remains intact.
-- Current production deployment and six configured brand deployments were rechecked after the change; all were READY and no runtime error groups were present in the selected two-hour window.
+- The production “Invalid origin” login failure was reproduced through a temporary commissioning probe against the exact Neon Auth endpoint used by deployed WGOS.
+- WGOS now owns the browser-origin security boundary: state-changing auth requests reject cross-site or mismatched origins before proxying upstream.
+- After that validation, WGOS forwards the fixed internal origin `https://wgos.vercel.app`, which the live Neon Auth endpoint already trusts. This decouples canonical `wgos.app` login from branch-specific Neon trusted-domain drift.
+- Password-reset requests are similarly normalized to the trusted internal reset URL before being handed to Neon Auth.
+- A live dummy-credential probe through `https://wgos.app/api/auth/sign-in/email` changed from `403 Invalid origin` to the expected `401 Invalid email or password`, proving the origin defect is resolved without using or altering the owner account.
+- The temporary public probe route was removed after verification.
+- Current production deployment and six configured brand deployments were rechecked; all were READY and no runtime error groups were present in the selected two-hour window.
