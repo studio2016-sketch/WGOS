@@ -47,3 +47,14 @@ Current secure client experience status:
 
 ## Backup and restore validation
 On 2026-10-02, production snapshot restore was tested without modifying production. Snapshot `wgos-prod-validation-20261002` from the production branch was restored into isolated branch `wgos-restore-validation-20261002`. Core record counts and the latest audit timestamp matched production exactly. The test snapshot expires automatically; the isolated restore branch remains only for controlled validation/cleanup.
+
+## Runtime database target verification — 2026-10-02
+- After the Neon restore operation changed branch identities, a temporary marker was placed only on non-primary branches and a temporary WGOS runtime probe checked for it.
+- Deployed WGOS returned no non-primary marker while successfully querying the current schema. The remaining legacy Vercel-dev branch lacks the current audit schema and therefore could not be the responding runtime.
+- Result: the production WGOS runtime is not connected to the restore-validation, migration, preview, or legacy Vercel-dev branch. The temporary probe route was removed immediately after verification.
+
+## Isolated lifecycle acceptance — 2026-10-02
+- Synthetic fixture records were created only on the isolated restore-validation branch, never on the production branch.
+- The reconciled schema successfully linked a prospect organization/contact through a WON opportunity, ACCEPTED proposal and immutable accepted snapshot, SIGNED agreement, COMPLETED signature envelope, provider-attributed PAID deposit, ACTIVE project, and DONE delivery task.
+- The fixture also created an inbound communication thread and audit record, validating the canonical relationship path without contacting SignWell, Stripe, Gmail, or a real client.
+- This validates the internal database lifecycle. A provider-backed sandbox round trip remains required before the commercial lifecycle is declared fully client-ready.
