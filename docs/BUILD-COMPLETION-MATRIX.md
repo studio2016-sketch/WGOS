@@ -66,3 +66,9 @@ Autonomous software work is no longer the primary blocker for the configured com
 - WGOS unifies contacts by email, associates brand relationships, creates NEW opportunities, records discovery context, creates an inbound communication thread, raises a `NEW_WEB_INQUIRY` notification and writes an audit event.
 - Exact browser retries are deduplicated for 15 minutes through the existing idempotency primitive; materially different follow-up inquiries are retained.
 - Studio2016 retains supplemental Resend delivery when configured, but WGOS is now the authoritative intake path.
+
+## Authentication custom-domain commissioning — 2026-10-02
+- Root cause of the production “Invalid origin” login error was confirmed: Neon Auth trusted the Vercel hostname but not the canonical WGOS custom domain.
+- Added `https://wgos.app` and `https://www.wgos.app` to the Better Auth trusted-domain whitelist on the production Neon branch.
+- Existing `https://wgos.vercel.app` trust remains intact.
+- Current production deployment and six configured brand deployments were rechecked after the change; all were READY and no runtime error groups were present in the selected two-hour window.
