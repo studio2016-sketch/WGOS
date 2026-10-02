@@ -10,11 +10,12 @@ function apiKey(){
 function safeJson(text:string){try{return JSON.parse(text)}catch{return {}}}
 
 export function signWellConfigured(){return Boolean(process.env.SIGNWELL_API_KEY);}
+export function signWellMode(){return process.env.SIGNWELL_TEST_MODE==="false"?"LIVE":"TEST";}
 
 export async function verifySignWellConnection(){
  const response=await fetch(`${SIGNWELL_API_BASE}/me`,{method:"GET",headers:{"X-Api-Key":apiKey(),Accept:"application/json"},cache:"no-store"});
- if(!response.ok)return {connected:false,status:response.status};
- return {connected:true,status:response.status};
+ if(!response.ok)return {connected:false,status:response.status,mode:signWellMode()};
+ return {connected:true,status:response.status,mode:signWellMode()};
 }
 
 export async function createSignWellAgreementDocument(input:{
