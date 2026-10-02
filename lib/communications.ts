@@ -1,6 +1,6 @@
 import "server-only";
 import {db} from "./db";
-import {sendGoogleEmail} from "./google-workspace";
+import {sendGoogleEmail,getGoogleGmailThread,googleManagementConfigured} from "./google-workspace";
 
 const channels=new Set(["EMAIL","SMS","PHONE","PORTAL","OTHER"]);
 const directions=new Set(["INBOUND","OUTBOUND"]);
@@ -38,4 +38,25 @@ export async function sendCommunicationEmail(input:{threadId:string;body:string;
  const inserted:any[]=await sql`INSERT INTO wgos.communication_messages(thread_id,direction,sender_ref,recipient_refs,body_ref,external_message_ref,metadata) VALUES(${input.threadId}::uuid,'OUTBOUND',${input.actor},${JSON.stringify([String(t.contact_email)])}::jsonb,${body},${result.messageId},${JSON.stringify({provider:"GOOGLE_GMAIL",gmailThreadId:result.threadId})}::jsonb) RETURNING *`;
  await sql`UPDATE wgos.communication_threads SET external_thread_ref=COALESCE(external_thread_ref,${result.threadId}),updated_at=now(),status='OPEN' WHERE id=${input.threadId}::uuid`;
  await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata) VALUES(${input.actor},'COMMUNICATION_EMAIL_SENT','communication_thread',${input.threadId},jsonb_build_object('messageId',${result.messageId},'recipient',${String(t.contact_email)}))`;return inserted[0];
+}
+
+function gmailHeader(message:any,name:string){const rows=message?.payload?.headers||[];const hit=rows.find((x:any)=>String(x?.name||"").toLowerCase()===name.toLowerCase());return String(hit?.value||"");}
+function decodeGmailData(data:any){if(!data)return "";try{const normalized=String(data).replace(/-/g,"+").replace(/_/g,"/");return Buffer.from(normalized,"base64").toString("utf8");}catch{return ""}}
+function gmailPlainBody(payload:any):string{if(!payload)return "";if(String(payload.mimeType||"").toLowerCase()==="text/plain"&&payload.body?.data)return decodeGmailData(payload.body.data);for(const p of payload.parts||[]){const found=gmailPlainBody(p);if(found)return found}return ""}
+export async function syncGmailReplies(input:{limit?:number}={}){
+ if(!googleManagementConfigured())return {configured:false,threads:0,ingested:0,errors:0};
+ const sql=db(),limit=Math.max(1,Math.min(Number(input.limit||50),100));
+ const threads:any[]=await sql`SELECT id,brand_id,external_thread_ref FROM wgos.communication_threads WHERE channel='EMAIL' AND status='OPEN' AND external_thread_ref IS NOT NULL ORDER BY updated_at DESC LIMIT ${limit}`;
+ let ingested=0,errors=0;const account=String(process.env.GOOGLE_GMAIL_ACCOUNT||"").toLowerCase();
+ for(const t of threads){try{
+  const remote:any=await getGoogleGmailThread(String(t.external_thread_ref));
+  const known:any[]=await sql`SELECT external_message_ref FROM wgos.communication_messages WHERE thread_id=${t.id}::uuid AND external_message_ref IS NOT NULL`;const seen=new Set(known.map((x:any)=>String(x.external_message_ref)));
+  for(const m of remote?.messages||[]){const id=String(m?.id||"");if(!id||seen.has(id))continue;const labels=new Set((m?.labelIds||[]).map((x:any)=>String(x)));const from=gmailHeader(m,"From"),to=gmailHeader(m,"To");if(labels.has("SENT")||from.toLowerCase().includes(account))continue;const body=(gmailPlainBody(m?.payload)||String(m?.snippet||"")).trim();if(!body)continue;const occurredAt=m?.internalDate?new Date(Number(m.internalDate)).toISOString():new Date().toISOString();
+   const inserted:any[]=await sql`INSERT INTO wgos.communication_messages(thread_id,direction,sender_ref,recipient_refs,body_ref,external_message_ref,occurred_at,metadata) VALUES(${t.id}::uuid,'INBOUND',${from||"client:email"},${JSON.stringify(to?[to]:[])}::jsonb,${body},${id},${occurredAt},jsonb_build_object('provider','GOOGLE_GMAIL','gmailThreadId',${String(t.external_thread_ref)})) RETURNING id`;
+   await sql`UPDATE wgos.communication_threads SET updated_at=now(),status='OPEN' WHERE id=${t.id}::uuid`;
+   await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata) VALUES('service:gmail','COMMUNICATION_EMAIL_RECEIVED','communication_thread',${String(t.id)},jsonb_build_object('messageId',${id},'from',${from}))`;
+   await sql`INSERT INTO wgos.notification_events(brand_id,recipient_subject,channel,event_type,status,payload) VALUES(${t.brand_id},'OWNER','IN_APP','CLIENT_EMAIL_RECEIVED','PENDING',jsonb_build_object('thread_id',${String(t.id)},'message_id',${String(inserted[0]?.id||"")}))`;seen.add(id);ingested++;
+  }
+ }catch{errors++;}}
+ return {configured:true,threads:threads.length,ingested,errors};
 }
