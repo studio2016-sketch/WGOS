@@ -22,7 +22,7 @@ Status legend: BUILT = code/schema exists; ACTIVATE = requires production migrat
 | Workflow/retry/dead-letter | ACTIVE FOUNDATION | Recurring worker + governed client-decision workflow processing active; retry/dead-letter failure test remains |
 | AI authority/execution ledger | BUILT | Apply migrations + action policy seeds |
 | Audit/approvals/document versions | ACTIVE | Governance schema live; client approvals audited and surfaced in Autopilot |
-| Data governance/idempotency/health | ACTIVE FOUNDATION | Reconciled schema live, authenticated export built; restore test remains |
+| Data governance/idempotency/health | RESTORE VERIFIED | Reconciled schema live, authenticated export built; production snapshot restore validated on an isolated Neon branch |
 | Accounting | ACTIVATE | Provider decision + mapping |
 | Production schema | VERIFIED | Reconciled contacts/agreements/payments model is live; future changes require branch test and explicit production approval |
 | Branded public proposal/sign/pay/portal UI | BUILT / DOMAIN COMMISSIONING | Proposal, agreement, payment handoff/return and client workspace experiences are built across all six configured brands; four custom domains still need Vercel attachment |
@@ -52,4 +52,10 @@ Autonomous software work is no longer the primary blocker for the configured com
 - Custom-domain attachment is incomplete for Jermaine Williams, Charmin Greene, Sound Legacy Institute and CG Success.
 - Per-brand Stripe payment profiles remain DISABLED until each independent account's key and webhook secret are configured and verified.
 - SignWell is implemented behind governed actions; authenticated provider verification and intentional TEST/LIVE promotion remain.
-- A real provider-backed sandbox lifecycle and backup/restore exercise remain acceptance tests before declaring the platform production-complete.
+- A real provider-backed sandbox lifecycle remains an acceptance test before declaring the platform production-complete. Backup/restore has been validated independently.
+
+## Backup / restore validation — 2026-10-02
+- Created a temporary production snapshot from branch `br-icy-wind-b5i0u5t3` and restored it into isolated branch `br-holy-glitter-b564xvey`.
+- Verified matching counts for brands (8), app users (1), organizations (0), contacts (0), opportunities (0), proposals (0), agreements (0), projects (0), tasks (0), and audit events (35).
+- Verified the latest audit timestamp matched exactly between production and restored branch.
+- Snapshot is configured to expire automatically. The restored validation branch is intentionally isolated from production and should be deleted after operator approval because branch deletion is destructive.
