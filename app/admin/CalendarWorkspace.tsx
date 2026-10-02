@@ -1,7 +1,7 @@
 "use client";
 import {useMemo,useState} from "react";
 export default function CalendarWorkspace({initial,brands,projects}:{initial:any[];brands:any[];projects:any[]}){
- const [events,setEvents]=useState(initial),[busy,setBusy]=useState(false),[error,setError]=useState(""),[brandId,setBrandId]=useState(brands[0]?.id||""),[projectId,setProjectId]=useState("");
+ const [events,setEvents]=useState(initial),[busy,setBusy]=useState(""),[error,setError]=useState(""),[brandId,setBrandId]=useState(brands[0]?.id||""),[projectId,setProjectId]=useState("");
  const [title,setTitle]=useState(""),[start,setStart]=useState(""),[end,setEnd]=useState("");
  const scopedProjects=projects.filter((p:any)=>!brandId||p.brand_id===brandId);
  const sorted=useMemo(()=>[...events].sort((a,b)=>new Date(a.start_at).getTime()-new Date(b.start_at).getTime()),[events]);
