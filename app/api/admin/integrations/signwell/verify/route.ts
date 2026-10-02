@@ -16,9 +16,9 @@ export async function GET() {
 
   try {
     const result = await verifySignWellConnection();
-    await recordIntegrationVerification({provider:"signwell",capability:"esign",connected:result.connected,error:result.connected?null:"HTTP_"+result.status});
+    await recordIntegrationVerification({provider:"signwell",capability:"esign",connected:result.connected,error:result.connected?null:"HTTP_"+result.status,metadata:{mode:result.mode}});
     return NextResponse.json(
-      { provider: "signwell", connected: result.connected, providerStatus: result.status },
+      { provider: "signwell", connected: result.connected, providerStatus: result.status, mode: result.mode },
       { status: result.connected ? 200 : 503 },
     );
   } catch {
