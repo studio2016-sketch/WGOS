@@ -44,3 +44,6 @@ Current secure client experience status:
 - Do not expose arbitrary internal task records, document storage references or internal approval metadata to public clients.
 - SignWell authenticated provider verification remains a separate commissioning gate; no test signature should be sent solely for commissioning.
 - Stripe payment verification remains a separate commissioning gate; no test charge should be created against a real client solely for commissioning.
+
+## Backup and restore validation
+On 2026-10-02, production snapshot restore was tested without modifying production. Snapshot `wgos-prod-validation-20261002` from the production branch was restored into isolated branch `wgos-restore-validation-20261002`. Core record counts and the latest audit timestamp matched production exactly. The test snapshot expires automatically; the isolated restore branch remains only for controlled validation/cleanup.
