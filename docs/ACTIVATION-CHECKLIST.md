@@ -29,5 +29,7 @@ The application code does not require additional creative approval for these ite
 - Choose/account-map the accounting provider after legal-entity payment mappings are verified.
 
 ## WGOS Auth custom-domain check — 2026-10-02
-- Neon Auth production trusted-domain whitelist now includes `https://wgos.app`, `https://www.wgos.app`, and the canonical Vercel hostname.
-- This resolves the custom-domain origin prerequisite for email/password, verification-code and password-reset flows proxied through `/api/auth/*`.
+- WGOS enforces same-origin / non-cross-site browser auth requests at `/api/auth/*` and proxies approved requests to Neon Auth using the fixed trusted internal origin `https://wgos.vercel.app`.
+- This avoids relying on branch-specific Neon trusted-domain state for the canonical `wgos.app` hostname while preserving the application-level CSRF/origin boundary.
+- Password-reset redirects are normalized to the trusted internal WGOS hostname before upstream submission.
+- Live commissioning probe: the same-origin WGOS sign-in path returns the expected credential rejection for a dummy account rather than `Invalid origin`.
