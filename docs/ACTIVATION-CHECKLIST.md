@@ -7,13 +7,15 @@ WGOS remains provider-neutral at its core. External providers are adapters and m
 2. Verify OWNER identity and brand memberships.
 3. Configure each brand experience profile: public domain, sender identity, proposal/sign/client/pay paths and theme.
 4. Connect Google Workspace for authorized email/calendar/document workflows.
-5. Verify the selected SignWell account from an authenticated WGOS admin session; keep TEST mode until provider commissioning is intentionally promoted to LIVE.
+5. Verify the selected SignWell account from an authenticated WGOS admin session; if the callback is missing, use the governed Register Webhook action; keep TEST mode until provider commissioning is intentionally promoted to LIVE.
 6. Connect the independent Stripe account for each contracting brand using that brand's configured secret/webhook environment-variable names, then switch its payment profile from DISABLED to DIRECT_STRIPE_ACCOUNT only after verification.
 7. Configure signed webhook verification, idempotency and retry/dead-letter handling.
 8. Connect accounting only after payment/legal-entity mappings are verified.
-9. Run sandbox lifecycle test: lead -> opportunity -> proposal -> contract -> payment -> project -> task -> completion.
-10. Run authorization tests for global owner, brand admin, member and unauthorized user.
-11. Run backup/restore and export test before relying on WGOS as sole system of record.
+9. Confirm public website inquiries are reaching WGOS as contacts + NEW opportunities + inbound communication threads.
+10. Run sandbox lifecycle test: lead -> opportunity -> proposal -> contract -> payment -> project -> task -> completion.
+11. Run authorization tests for global owner, brand admin, member and unauthorized user.
+12. Run backup/restore and export test before relying on WGOS as sole system of record.
+
 
 ## Activation rule
 No external provider is marked CONNECTED until a real authenticated round-trip succeeds and the result is recorded in integration_registry.
