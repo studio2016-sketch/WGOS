@@ -64,7 +64,23 @@ export async function processClientDecisionEvents(input:{limit?:number}={}){
    await sql`UPDATE wgos.outbox_events SET status='PROCESSED',processed_at=now(),attempt_count=attempt_count+1,last_error=NULL WHERE id=${event.id}::uuid AND status='PENDING'`;processed++;
   }catch(e){
    failed++;
-   await sql`UPDATE wgos.outbox_events SET attempt_count=attempt_count+1,last_error=${e instanceof Error?e.message:"Workflow processing failed"},next_attempt_at=now()+interval '15 minutes',status=CASE WHEN attempt_count>=4 THEN 'FAILED' ELSE 'PENDING' END WHERE id=${event.id}::uuid`;
+   const error=e instanceof Error?e.message:"Workflow processing failed";
+   const failedRows:any[]=await sql`UPDATE wgos.outbox_events
+    SET attempt_count=attempt_count+1,last_error=${error},next_attempt_at=now()+interval '15 minutes',
+        status=CASE WHEN attempt_count+1>=5 THEN 'FAILED' ELSE 'PENDING' END
+    WHERE id=${event.id}::uuid
+    RETURNING id,topic,payload,status,attempt_count`;
+   const failedEvent=failedRows[0];
+   if(failedEvent?.status==="FAILED"){
+    const existing:any[]=await sql`SELECT id FROM wgos.dead_letter_events WHERE outbox_event_id=${event.id}::uuid AND resolved_at IS NULL LIMIT 1`;
+    if(!existing[0]){
+     await sql`INSERT INTO wgos.dead_letter_events(outbox_event_id,topic,payload,error)
+      VALUES(${event.id}::uuid,${String(event.topic)},${JSON.stringify(event.payload||{})}::jsonb,${error})`;
+    }
+    await sql`INSERT INTO wgos.notification_events(brand_id,recipient_subject,channel,event_type,status,payload)
+     VALUES(${event.brand_id},'OWNER','IN_APP','WORKFLOW_FAILED','PENDING',
+      jsonb_build_object('outbox_event_id',${String(event.id)},'topic',${String(event.topic)},'error',${error}))`;
+   }
   }
  }
  return {seen:events.length,processed,advanced,failed};
