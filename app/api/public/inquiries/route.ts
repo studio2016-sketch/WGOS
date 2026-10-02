@@ -4,6 +4,7 @@ export const dynamic="force-dynamic";
 export async function POST(req:Request){
  const headers={"Cache-Control":"no-store, private","X-Robots-Tag":"noindex, nofollow"};
  try{
+  const length=Number(req.headers.get("content-length")||0);if(length>65536)return NextResponse.json({ok:false,error:"REQUEST_TOO_LARGE"},{status:413,headers});
   const body=await req.json();
   const result=await submitPublicInquiry({
    brandId:String(body?.brandId||""),name:String(body?.name||""),email:String(body?.email||""),
