@@ -33,14 +33,14 @@ export async function upsertDealCommand(input:any){
  const clamp=(v:any)=>Math.max(0,Math.min(20,Math.round(Number(v)||0)));const prob=Math.max(0,Math.min(100,Math.round(Number(input.probability)||0)));
  const expansion=Math.max(0,Number(input.expansionValue)||0);
  const rows=await sql`INSERT INTO wgos.deal_command_profiles(
-  opportunity_id,brand_id,economic_buyer,champion,influencers,decision_criteria,decision_process,budget_range,competitors,urgency_notes,
+  opportunity_id,brand_id,economic_buyer,champion,influencers,decision_criteria,decision_process,budget_range,competitors,urgency_notes,desired_outcome,value_case,success_metrics,close_plan,primary_objection,
   next_commitment,next_commitment_due,expansion_value,probability,fit_score,intent_score,authority_score,urgency_score,value_score,notes,created_by
  ) VALUES(
-  ${opportunityId}::uuid,${String((opp[0] as any).brand_id)},${input.economicBuyer||null},${input.champion||null},${input.influencers||null},${input.decisionCriteria||null},${input.decisionProcess||null},${input.budgetRange||null},${input.competitors||null},${input.urgencyNotes||null},
+  ${opportunityId}::uuid,${String((opp[0] as any).brand_id)},${input.economicBuyer||null},${input.champion||null},${input.influencers||null},${input.decisionCriteria||null},${input.decisionProcess||null},${input.budgetRange||null},${input.competitors||null},${input.urgencyNotes||null},${input.desiredOutcome||null},${input.valueCase||null},${input.successMetrics||null},${input.closePlan||null},${input.primaryObjection||null},
   ${input.nextCommitment||null},${input.nextCommitmentDue||null}::date,${expansion},${prob},${clamp(input.fitScore)},${clamp(input.intentScore)},${clamp(input.authorityScore)},${clamp(input.urgencyScore)},${clamp(input.valueScore)},${input.notes||null},${input.actor||null}
  ) ON CONFLICT(opportunity_id) DO UPDATE SET
   economic_buyer=excluded.economic_buyer,champion=excluded.champion,influencers=excluded.influencers,decision_criteria=excluded.decision_criteria,
-  decision_process=excluded.decision_process,budget_range=excluded.budget_range,competitors=excluded.competitors,urgency_notes=excluded.urgency_notes,
+  decision_process=excluded.decision_process,budget_range=excluded.budget_range,competitors=excluded.competitors,urgency_notes=excluded.urgency_notes,desired_outcome=excluded.desired_outcome,value_case=excluded.value_case,success_metrics=excluded.success_metrics,close_plan=excluded.close_plan,primary_objection=excluded.primary_objection,
   next_commitment=excluded.next_commitment,next_commitment_due=excluded.next_commitment_due,expansion_value=excluded.expansion_value,probability=excluded.probability,
   fit_score=excluded.fit_score,intent_score=excluded.intent_score,authority_score=excluded.authority_score,urgency_score=excluded.urgency_score,value_score=excluded.value_score,
   notes=excluded.notes,updated_at=now() RETURNING *`;return rows[0];
