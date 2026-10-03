@@ -1,0 +1,35 @@
+-- WGOS high-value Deal Command Center
+create table if not exists wgos.deal_command_profiles(
+ id uuid primary key default gen_random_uuid(),
+ opportunity_id uuid not null unique references wgos.opportunities(id) on delete cascade,
+ brand_id text not null references wgos.brands(id) on delete cascade,
+ economic_buyer text,
+ champion text,
+ influencers text,
+ decision_criteria text,
+ decision_process text,
+ budget_range text,
+ competitors text,
+ urgency_notes text,
+ next_commitment text,
+ next_commitment_due date,
+ expansion_value numeric(14,2) not null default 0,
+ probability integer not null default 20,
+ fit_score integer not null default 10,
+ intent_score integer not null default 5,
+ authority_score integer not null default 5,
+ urgency_score integer not null default 5,
+ value_score integer not null default 5,
+ notes text,
+ created_by text,
+ created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now(),
+ constraint deal_probability_chk check(probability between 0 and 100),
+ constraint deal_fit_chk check(fit_score between 0 and 20),
+ constraint deal_intent_chk check(intent_score between 0 and 20),
+ constraint deal_authority_chk check(authority_score between 0 and 20),
+ constraint deal_urgency_chk check(urgency_score between 0 and 20),
+ constraint deal_value_chk check(value_score between 0 and 20)
+);
+create index if not exists deal_command_brand_idx on wgos.deal_command_profiles(brand_id,updated_at desc);
+create index if not exists deal_command_due_idx on wgos.deal_command_profiles(next_commitment_due);
