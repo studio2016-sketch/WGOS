@@ -4,13 +4,14 @@ import NewProjectForm from "./NewProjectForm";
 import OperationsBoardClient from "./OperationsBoardClient";
 import RecurringRules from "./RecurringRules";
 import AdminNav from "../AdminNav";
+import {commandAccess} from "../../../lib/authz";
 
 export default async function OperationsPage({searchParams}:{searchParams:Promise<{project?:string;brand?:string;task?:string}>}){
- const query=await searchParams;
- const [projectRows,refs]=await Promise.all([listOperationsProjects(),getOperationsReferenceData()]);
+ const query=await searchParams;const access=await commandAccess();
+ const [projectRows,refs]=await Promise.all([listOperationsProjects(access.identity.auth_user_id,access.isGlobal),getOperationsReferenceData(access.identity.auth_user_id,access.isGlobal)]);
  let projects:any[]=projectRows as any[];
  const users:any[]=refs.users as any[];
- const brands:any[]=refs.brands as any[];const selectedBrand=query.brand||"";if(selectedBrand)projects=projects.filter((p:any)=>p.brand_id===selectedBrand);
+ const brands:any[]=refs.brands as any[];const selectedBrand=brands.some((b:any)=>b.id===query.brand)?String(query.brand):"";if(selectedBrand)projects=projects.filter((p:any)=>p.brand_id===selectedBrand);
  let selectedId=query.project||projects[0]?.id||"";
  const totalTasks=projects.reduce((n:number,p:any)=>n+Number(p.task_count||0),0);
  const doneTasks=projects.reduce((n:number,p:any)=>n+Number(p.done_count||0),0);
@@ -18,10 +19,10 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
  const overdueTasks=projects.reduce((n:number,p:any)=>n+Number(p.overdue_count||0),0);
  const portfolioProgress=totalTasks?Math.round(doneTasks/totalTasks*100):0;
  const deliveryDecisions=projects.filter((p:any)=>Number(p.blocked_count||0)>0||Number(p.overdue_count||0)>0).sort((a:any,b:any)=>(Number(b.blocked_count||0)+Number(b.overdue_count||0))-(Number(a.blocked_count||0)+Number(a.overdue_count||0)));
- let board:any=selectedId?await getOperationsBoard(String(selectedId)):null;
+ let board:any=selectedId?await getOperationsBoard(String(selectedId),access.identity.auth_user_id,access.isGlobal):null;
  if(!board&&projects.length&&selectedId!==projects[0].id){
   selectedId=projects[0].id;
-  board=await getOperationsBoard(String(selectedId));
+  board=await getOperationsBoard(String(selectedId),access.identity.auth_user_id,access.isGlobal);
  }
 
  return <main className="admin">
