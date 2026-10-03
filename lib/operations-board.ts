@@ -33,9 +33,17 @@ export async function listOperationsProjects(authUserId?:string|null,isGlobal=fa
  :sql`SELECT p.id,p.brand_id,b.name AS brand_name,p.title,p.status,p.start_at,p.end_at,p.owner_subject,u.display_name AS owner_name,u.email AS owner_email,org.name AS organization_name,count(t.id)::int AS task_count,count(t.id) FILTER (WHERE t.status='DONE')::int AS done_count,count(t.id) FILTER (WHERE t.status='BLOCKED')::int AS blocked_count,count(t.id) FILTER (WHERE t.due_at<now() AND t.status NOT IN ('DONE','CANCELLED'))::int AS overdue_count FROM wgos.projects p JOIN wgos.brands b ON b.id=p.brand_id LEFT JOIN wgos.organizations org ON org.id=p.organization_id LEFT JOIN wgos.app_users u ON u.auth_user_id=p.owner_subject LEFT JOIN wgos.tasks t ON t.project_id=p.id GROUP BY p.id,b.name,u.display_name,u.email,org.name ORDER BY CASE p.status WHEN 'ACTIVE' THEN 0 WHEN 'PLANNING' THEN 1 WHEN 'BLOCKED' THEN 2 WHEN 'COMPLETE' THEN 3 ELSE 4 END,COALESCE(p.end_at,'9999-12-31'::timestamptz),p.created_at DESC`;
 }
 
-export async function getOperationsBoard(projectId:string,authUserId?:string|null,isGlobal=true){
+export async function getOperationsBoard(projectId:string,authUserId?:string|null,isGlobal=false){
  const sql=db();
- const projectRows=await sql`SELECT p.*,b.name AS brand_name,org.name AS organization_name,
+ const projectRows=authUserId&&!isGlobal?await sql`SELECT p.*,b.name AS brand_name,org.name AS organization_name,
+  u.display_name AS owner_name,u.email AS owner_email
+ FROM wgos.projects p
+ JOIN wgos.brand_memberships bm ON bm.brand_id=p.brand_id AND bm.auth_user_id=${authUserId} AND bm.active=true
+ JOIN wgos.brands b ON b.id=p.brand_id
+ LEFT JOIN wgos.organizations org ON org.id=p.organization_id
+ LEFT JOIN wgos.app_users u ON u.auth_user_id=p.owner_subject
+ WHERE p.id=${projectId}::uuid LIMIT 1`:
+  await sql`SELECT p.*,b.name AS brand_name,org.name AS organization_name,
   u.display_name AS owner_name,u.email AS owner_email
  FROM wgos.projects p
  JOIN wgos.brands b ON b.id=p.brand_id
@@ -44,7 +52,6 @@ export async function getOperationsBoard(projectId:string,authUserId?:string|nul
  WHERE p.id=${projectId}::uuid LIMIT 1`;
  const project:any=projectRows[0];
  if(!project)return null;
- if(authUserId&&!isGlobal){const access=await sql`SELECT 1 FROM wgos.brand_memberships WHERE auth_user_id=${authUserId} AND brand_id=${String(project.brand_id)} AND active=true LIMIT 1`;if(!access[0])return null;}
 
  const [tasks,dependencies,users,brands,comments,recurringRules]=await Promise.all([
   sql`SELECT t.*,u.display_name AS assignee_name,u.email AS assignee_email,
@@ -76,11 +83,11 @@ export async function getOperationsBoard(projectId:string,authUserId?:string|nul
  return {project,tasks,dependencies,users,brands,comments,recurringRules};
 }
 
-export async function getOperationsReferenceData(){
+export async function getOperationsReferenceData(authUserId?:string|null,isGlobal=false){
  const sql=db();
  const [users,brands]=await Promise.all([
-  sql`SELECT auth_user_id,email,display_name,role FROM wgos.app_users WHERE active=true ORDER BY COALESCE(display_name,email),email`,
-  sql`SELECT b.id,b.name,bg.relationship_type FROM wgos.brands b LEFT JOIN wgos.brand_governance bg ON bg.brand_id=b.id ORDER BY b.name`
+  authUserId&&!isGlobal?sql`SELECT DISTINCT u.auth_user_id,u.email,u.display_name,u.role FROM wgos.app_users u JOIN wgos.brand_memberships mine ON mine.brand_id IN (SELECT brand_id FROM wgos.brand_memberships WHERE auth_user_id=${authUserId} AND active=true) AND mine.auth_user_id=u.auth_user_id AND mine.active=true WHERE u.active=true ORDER BY COALESCE(u.display_name,u.email),u.email`:sql`SELECT auth_user_id,email,display_name,role FROM wgos.app_users WHERE active=true ORDER BY COALESCE(display_name,email),email`,
+  authUserId&&!isGlobal?sql`SELECT b.id,b.name,bg.relationship_type FROM wgos.brands b LEFT JOIN wgos.brand_governance bg ON bg.brand_id=b.id JOIN wgos.brand_memberships mine ON mine.brand_id=b.id AND mine.auth_user_id=${authUserId} AND mine.active=true ORDER BY b.name`:sql`SELECT b.id,b.name,bg.relationship_type FROM wgos.brands b LEFT JOIN wgos.brand_governance bg ON bg.brand_id=b.id ORDER BY b.name`
  ]);
  return {users,brands};
 }
