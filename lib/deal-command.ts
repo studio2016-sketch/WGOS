@@ -30,7 +30,7 @@ export async function listDealCommandProfiles(){
 }
 export async function upsertDealCommand(input:any){
  const sql=db();const opportunityId=String(input.opportunityId||"");
- const opp=await sql`SELECT id,brand_id FROM wgos.opportunities WHERE id=${opportunityId}::uuid LIMIT 1`;if(!opp[0])throw new Error("Opportunity not found.");
+ const opp=await sql`SELECT id,brand_id,estimated_value,stage FROM wgos.opportunities WHERE id=${opportunityId}::uuid LIMIT 1`;if(!opp[0])throw new Error("Opportunity not found.");
  const clamp=(v:any)=>Math.max(0,Math.min(20,Math.round(Number(v)||0)));const prob=Math.max(0,Math.min(100,Math.round(Number(input.probability)||0)));
  const expansion=Math.max(0,Number(input.expansionValue)||0);
  const rows=await sql`INSERT INTO wgos.deal_command_profiles(
@@ -45,7 +45,7 @@ export async function upsertDealCommand(input:any){
   next_commitment=excluded.next_commitment,next_commitment_due=excluded.next_commitment_due,expansion_value=excluded.expansion_value,probability=excluded.probability,
   fit_score=excluded.fit_score,intent_score=excluded.intent_score,authority_score=excluded.authority_score,urgency_score=excluded.urgency_score,value_score=excluded.value_score,
   notes=excluded.notes,updated_at=now() RETURNING *`;
- const row:any=rows[0];const readiness=methodologyReadiness({estimated_value:0,stage:"DISCOVERY"},row);
+ const row:any=rows[0];const readiness=methodologyReadiness({estimated_value:(opp[0] as any).estimated_value,stage:(opp[0] as any).stage},row);
  const updated=await sql`UPDATE wgos.deal_command_profiles SET methodology_readiness=${readiness},updated_at=now() WHERE id=${String(row.id)}::uuid RETURNING *`;
  return updated[0];
 }
