@@ -11,6 +11,17 @@ export async function requireAdmin(){const identity=await currentIdentity();if(!
 export async function requireApiAdmin(){const identity=await currentIdentity();if(!identity)return {ok:false as const,status:401,error:"AUTHENTICATION_REQUIRED"};if(!["OWNER","ADMIN"].includes(String(identity.role)))return {ok:false as const,status:403,error:"ADMIN_REQUIRED"};return {ok:true as const,identity}}
 export async function requireUser(){const identity=await currentIdentity();if(!identity)redirect("/login");return identity}
 export async function requireApiUser(){const identity=await currentIdentity();if(!identity)return {ok:false as const,status:401,error:"AUTHENTICATION_REQUIRED"};return {ok:true as const,identity}}
+export async function commandAccess(){
+ const identity=await currentIdentity();
+ if(!identity)redirect("/login");
+ const isGlobal=["OWNER","ADMIN"].includes(String(identity.role));
+ if(isGlobal)return {identity,isGlobal:true,brandIds:null as string[]|null};
+ const sql=db();
+ const rows=await sql`SELECT brand_id FROM wgos.brand_memberships WHERE auth_user_id=${String(identity.auth_user_id)} AND active=true ORDER BY brand_id`;
+ const brandIds=rows.map((row:any)=>String(row.brand_id));
+ if(!brandIds.length)redirect("/work");
+ return {identity,isGlobal:false,brandIds};
+}
 
 export async function canAccessBrand(identity:any,brandId:string){
  if(["OWNER","ADMIN"].includes(String(identity?.role)))return true;
