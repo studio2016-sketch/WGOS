@@ -79,6 +79,6 @@ export default function Login(){
   </form>}
   {message&&<p className="muted">{message}</p>}
   {error&&<p className="muted">{error}</p>}
-  <p className="privateNote">Creating an Auth account alone does not grant WGOS access. OWNER/ADMIN permissions control executive and administrative areas; active TEAM users are limited to the Work workspace and permitted task actions.</p>
+  <p className="privateNote">Creating an Auth account alone does not grant WGOS access. Your assigned WGOS role and brand memberships determine exactly which command areas and businesses you can access. Master-only financial, legal, and system controls remain protected.</p>
  </section></main>
 }
