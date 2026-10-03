@@ -28,9 +28,14 @@ export default function DealCommandCenter({opportunities,profiles}:{opportunitie
     <input name="expansionValue" type="number" min="0" step="100" defaultValue={p?.expansion_value||0} placeholder="Expansion value"/>
     <label>Next commitment due<input name="nextCommitmentDue" type="date" defaultValue={p?.next_commitment_due?String(p.next_commitment_due).slice(0,10):""}/></label>
    </div>
+   <textarea name="desiredOutcome" defaultValue={p?.desired_outcome||""} placeholder="Desired client outcome — what business, experience or operational result are they buying?"/>
+   <textarea name="valueCase" defaultValue={p?.value_case||""} placeholder="Executive value case — why this investment is worth making now"/>
+   <textarea name="successMetrics" defaultValue={p?.success_metrics||""} placeholder="Success metrics — how the client will know this worked"/>
+   <textarea name="primaryObjection" defaultValue={p?.primary_objection||""} placeholder="Primary objection or risk preventing the close"/>
    <textarea name="decisionCriteria" defaultValue={p?.decision_criteria||""} placeholder="Decision criteria — what must be true for us to win?"/>
    <textarea name="decisionProcess" defaultValue={p?.decision_process||""} placeholder="Decision process — who approves what, in what order?"/>
    <textarea name="urgencyNotes" defaultValue={p?.urgency_notes||""} placeholder="Urgency, deadline, event date, consequences of delay"/>
+   <textarea name="closePlan" defaultValue={p?.close_plan||""} placeholder="Mutual close plan — discovery → review → approval → agreement → deposit, with owners and dates"/>
    <textarea name="nextCommitment" defaultValue={p?.next_commitment||""} placeholder="Specific next client commitment"/>
    <div style={{display:"grid",gridTemplateColumns:"repeat(5,minmax(90px,1fr))",gap:8}}>{scoreFields.map(([name,label])=><label key={name}><small>{label} /20</small><input name={name} type="number" min="0" max="20" defaultValue={(p as any)?.[name.replace(/[A-Z]/g,m=>"_"+m.toLowerCase())]??(name==="fitScore"?10:5)}/></label>)}</div>
    <textarea name="notes" defaultValue={p?.notes||""} placeholder="Deal notes, objections, risks, leverage, value-case ideas"/>
