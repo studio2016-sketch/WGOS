@@ -1,6 +1,7 @@
 "use client";
 import {useMemo,useState} from "react";
 import {useRouter} from "next/navigation";
+import MethodologyCoach from "./MethodologyCoach";
 const scoreFields=[["fitScore","FIT"],["intentScore","INTENT"],["authorityScore","AUTHORITY"],["urgencyScore","URGENCY"],["valueScore","VALUE"]] as const;
 function score(p:any){return Number(p?.fit_score||0)+Number(p?.intent_score||0)+Number(p?.authority_score||0)+Number(p?.urgency_score||0)+Number(p?.value_score||0)}
 function tier(s:number,v:number){return s>=80||v>=50000?"STRATEGIC PURSUIT":s>=65||v>=25000?"PRIORITY OPPORTUNITY":s>=45?"STANDARD OPPORTUNITY":"NURTURE"}
@@ -18,6 +19,7 @@ export default function DealCommandCenter({opportunities,profiles}:{opportunitie
   {current&&<form onSubmit={save} style={{display:"grid",gap:14}}>
    <div style={{display:"flex",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}><div><small>{current.brand_name} · {current.stage}</small><h3 style={{margin:"4px 0"}}>{current.title}</h3><p className="muted">{current.organization_name||"Direct client"} · {"$"+Number(current.estimated_value||0).toLocaleString()}</p></div><div><small>CLOSE SCORE</small><strong style={{display:"block",fontSize:"2rem"}}>{current._score}/100</strong><span>{current._tier}</span></div></div>
    <div style={{padding:12,border:"1px solid rgba(255,255,255,.1)",borderRadius:12}}><small>NEXT BEST ACTION</small><strong style={{display:"block",marginTop:4}}>{current._action}</strong></div>
+   <MethodologyCoach opportunity={current} profile={p}/>
    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:10}}>
     <input name="economicBuyer" defaultValue={p?.economic_buyer||""} placeholder="Economic buyer"/>
     <input name="champion" defaultValue={p?.champion||""} placeholder="Internal champion"/>
@@ -32,10 +34,21 @@ export default function DealCommandCenter({opportunities,profiles}:{opportunitie
    <textarea name="valueCase" defaultValue={p?.value_case||""} placeholder="Executive value case — why this investment is worth making now"/>
    <textarea name="successMetrics" defaultValue={p?.success_metrics||""} placeholder="Success metrics — how the client will know this worked"/>
    <textarea name="primaryObjection" defaultValue={p?.primary_objection||""} placeholder="Primary objection or risk preventing the close"/>
+   <textarea name="painIdentified" defaultValue={p?.pain_identified||""} placeholder="Pain — what business, operational, emotional or reputational problem exists today?"/>
+   <textarea name="metricsQuantified" defaultValue={p?.metrics_quantified||""} placeholder="Metrics — quantify cost, risk, revenue, efficiency, audience impact or improvement"/>
+   <textarea name="challengerInsight" defaultValue={p?.challenger_insight||""} placeholder="Challenger insight — what can we teach the buyer that changes how they see the problem?"/>
+   <textarea name="reframeMessage" defaultValue={p?.reframe_message||""} placeholder="Reframe — shift the conversation from price/features to outcomes, risk and total value"/>
+   <textarea name="discoveryQuestions" defaultValue={p?.discovery_questions||""} placeholder="Discovery plan — pain, impact, budget, decision, consequence and desired future state questions"/>
+   <textarea name="budgetConversation" defaultValue={p?.budget_conversation||""} placeholder="Budget conversation — investment comfort, funding source and tradeoffs"/>
+   <textarea name="decisionTension" defaultValue={p?.decision_tension||""} placeholder="Consequence of inaction — what happens if they delay, do nothing or choose poorly?"/>
    <textarea name="decisionCriteria" defaultValue={p?.decision_criteria||""} placeholder="Decision criteria — what must be true for us to win?"/>
    <textarea name="decisionProcess" defaultValue={p?.decision_process||""} placeholder="Decision process — who approves what, in what order?"/>
    <textarea name="urgencyNotes" defaultValue={p?.urgency_notes||""} placeholder="Urgency, deadline, event date, consequences of delay"/>
+   <textarea name="paperProcess" defaultValue={p?.paper_process||""} placeholder="Paper process — contract, procurement, vendor setup, insurance, legal, PO and payment requirements"/>
    <textarea name="closePlan" defaultValue={p?.close_plan||""} placeholder="Mutual close plan — discovery → review → approval → agreement → deposit, with owners and dates"/>
+   <textarea name="relationshipPlan" defaultValue={p?.relationship_plan||""} placeholder="Relationship plan — useful, personal follow-up that keeps us memorable without pestering"/>
+   <textarea name="referralPath" defaultValue={p?.referral_path||""} placeholder="Referral path — who should we ask to introduce us to after value is delivered?"/>
+   <textarea name="postSaleTouchPlan" defaultValue={p?.post_sale_touch_plan||""} placeholder="Post-sale touch plan — follow-up, appreciation, check-in, referral and repeat-business cadence"/>
    <textarea name="nextCommitment" defaultValue={p?.next_commitment||""} placeholder="Specific next client commitment"/>
    <div style={{display:"grid",gridTemplateColumns:"repeat(5,minmax(90px,1fr))",gap:8}}>{scoreFields.map(([name,label])=><label key={name}><small>{label} /20</small><input name={name} type="number" min="0" max="20" defaultValue={(p as any)?.[name.replace(/[A-Z]/g,m=>"_"+m.toLowerCase())]??(name==="fitScore"?10:5)}/></label>)}</div>
    <textarea name="notes" defaultValue={p?.notes||""} placeholder="Deal notes, objections, risks, leverage, value-case ideas"/>
