@@ -1,4 +1,3 @@
-import "server-only";
 export type Gap={key:string;label:string;framework:string;action:string;weight:number};
 export function methodologyGaps(o:any,p:any):Gap[]{
  const value=Number(o?.estimated_value||0);const gaps:Gap[]=[];
