@@ -1,5 +1,6 @@
 import "server-only";
 import {db} from "./db";
+import {methodologyReadiness} from "./sales-methodology";
 
 export function dealScore(p:any){return ["fit_score","intent_score","authority_score","urgency_score","value_score"].reduce((n,k)=>n+Number(p?.[k]||0),0);}
 export function pursuitTier(score:number,value:number){
@@ -43,5 +44,8 @@ export async function upsertDealCommand(input:any){
   decision_process=excluded.decision_process,budget_range=excluded.budget_range,competitors=excluded.competitors,urgency_notes=excluded.urgency_notes,desired_outcome=excluded.desired_outcome,value_case=excluded.value_case,success_metrics=excluded.success_metrics,close_plan=excluded.close_plan,primary_objection=excluded.primary_objection,pain_identified=excluded.pain_identified,metrics_quantified=excluded.metrics_quantified,paper_process=excluded.paper_process,challenger_insight=excluded.challenger_insight,reframe_message=excluded.reframe_message,discovery_questions=excluded.discovery_questions,budget_conversation=excluded.budget_conversation,decision_tension=excluded.decision_tension,relationship_plan=excluded.relationship_plan,referral_path=excluded.referral_path,post_sale_touch_plan=excluded.post_sale_touch_plan,methodology_readiness=excluded.methodology_readiness,
   next_commitment=excluded.next_commitment,next_commitment_due=excluded.next_commitment_due,expansion_value=excluded.expansion_value,probability=excluded.probability,
   fit_score=excluded.fit_score,intent_score=excluded.intent_score,authority_score=excluded.authority_score,urgency_score=excluded.urgency_score,value_score=excluded.value_score,
-  notes=excluded.notes,updated_at=now() RETURNING *`;return rows[0];
+  notes=excluded.notes,updated_at=now() RETURNING *`;
+ const row:any=rows[0];const readiness=methodologyReadiness({estimated_value:0,stage:"DISCOVERY"},row);
+ const updated=await sql`UPDATE wgos.deal_command_profiles SET methodology_readiness=${readiness},updated_at=now() WHERE id=${String(row.id)}::uuid RETURNING *`;
+ return updated[0];
 }
