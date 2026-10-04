@@ -703,3 +703,85 @@ linear-gradient(145deg,rgba(16,20,29,.98),rgba(9,13,17,.98))!important}
  .readinessHead{display:none!important}
  .readinessRow{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important}
 }
+
+
+/* Final owner GUI migration pass */
+.cinematicWorkspace{position:relative}
+.cinematicWorkspace .workspaceTitle,.growthCampaignWorkspace>div:first-child,.growthMetricsWorkspace>div:first-child,.growthSourcesWorkspace>div:first-child{
+  position:relative;padding:16px 18px;border:1px solid rgba(219,193,143,.13);border-radius:12px;
+  background:linear-gradient(135deg,rgba(14,22,27,.96),rgba(9,14,18,.98));overflow:hidden}
+.cinematicWorkspace .workspaceTitle:after,.growthCampaignWorkspace>div:first-child:after,.growthMetricsWorkspace>div:first-child:after,.growthSourcesWorkspace>div:first-child:after{
+  content:"";position:absolute;right:-6%;top:-45%;width:34%;height:185%;background:radial-gradient(circle,rgba(215,182,111,.075),transparent 50%);pointer-events:none}
+.cinematicWorkspace .workspaceTitle>*,
+.growthCampaignWorkspace>div:first-child>*,
+.growthMetricsWorkspace>div:first-child>*,
+.growthSourcesWorkspace>div:first-child>*{position:relative;z-index:1}
+.cinematicWorkspace .workspaceTitle h2,.growthCampaignWorkspace h2,.growthMetricsWorkspace h2,.growthSourcesWorkspace h2{
+  font:24px/1.08 Georgia,serif!important;color:#ede6da!important;margin:4px 0!important}
+
+.equipmentWorkspace .resourceSignals,.equipmentWorkspace .equipmentPulse{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;margin:10px 0!important}
+.equipmentWorkspace .resourceSignals span,.equipmentWorkspace .equipmentPulse button{
+  border:1px solid rgba(219,193,143,.11)!important;border-radius:10px!important;background:rgba(255,255,255,.018)!important;padding:12px!important}
+.equipmentWorkspace .resourceSignals b,.equipmentWorkspace .equipmentPulse strong{display:block!important;font:21px Georgia,serif!important;color:#eee7db!important}
+.equipmentWorkspace .resourceSignals span{font-size:8px!important;letter-spacing:.1em!important;color:#879296!important}
+.equipmentWorkspace .equipmentPulse button.active{border-color:rgba(215,182,111,.3)!important;background:rgba(215,182,111,.055)!important}
+.equipmentWorkspace .equipmentLayout{gap:10px!important}
+.equipmentWorkspace .equipmentList,.equipmentWorkspace .assetForm{border-radius:13px!important}
+.equipmentWorkspace .equipmentRow{border:1px solid rgba(255,255,255,.055)!important;border-radius:10px!important;background:rgba(255,255,255,.014)!important;margin-top:6px!important;padding:11px!important}
+.equipmentWorkspace .equipmentRow:hover{border-color:rgba(215,182,111,.16)!important;background:rgba(215,182,111,.025)!important}
+.equipmentWorkspace .equipmentStatus{border-radius:999px!important}
+.equipmentWorkspace .assetForm label{font-size:8px!important;letter-spacing:.09em!important;color:#899498!important}
+
+.calendarWorkspace{align-items:start}
+.calendarWorkspace>.adminPanel{border-radius:13px!important}
+.calendarWorkspace .todayList>div{border:1px solid rgba(255,255,255,.055)!important;border-radius:10px!important;background:rgba(255,255,255,.014)!important;padding:11px 12px!important;margin-top:7px!important}
+.calendarWorkspace .todayList time{color:#d3b16d!important;font-size:8px!important;letter-spacing:.08em!important}
+.calendarWorkspace .todayList strong{font:15px Georgia,serif!important;color:#e9e2d7!important}
+.calendarWorkspace .todayList small{color:#849095!important}
+.calendarWorkspace .todayList button{border-radius:999px!important;padding:6px 8px!important}
+.calendarWorkspace form{padding-top:8px}
+.calendarWorkspace label{font-size:8px!important;color:#8b969a!important;letter-spacing:.09em!important}
+
+.purposeWorkspace>.adminPanel{border-radius:13px!important}
+.purposeWorkspace>.adminPanel:first-child{background:
+radial-gradient(circle at 88% 15%,rgba(215,182,111,.08),transparent 24%),
+linear-gradient(145deg,rgba(15,22,25,.98),rgba(8,13,16,.98))!important}
+.purposeWorkspace .attentionIntro{padding:2px 2px 10px!important}
+.purposeWorkspace .attentionIntro h2{font:27px Georgia,serif!important;color:#eee7db!important}
+.purposeWorkspace button{border-color:rgba(219,193,143,.12)!important;background:rgba(255,255,255,.018)!important;color:#aaa398!important}
+.purposeWorkspace button.newAction{background:rgba(215,182,111,.07)!important;color:#dfc17c!important;border-color:rgba(215,182,111,.23)!important}
+.purposeWorkspace article{border-color:rgba(219,193,143,.1)!important;background:rgba(255,255,255,.014)!important;border-radius:10px!important}
+.purposeWorkspace article strong{font-family:Georgia,serif!important;color:#ece5da!important}
+.purposeWorkspace form{border:1px solid rgba(219,193,143,.075);border-radius:10px;padding:13px;background:rgba(255,255,255,.01)}
+.purposeWorkspace h2{font-family:Georgia,serif!important}
+.purposeWorkspace input[type="range"]{accent-color:#c8a360}
+
+.marketingWorkspace>.adminPanel,.growthCampaignWorkspace,.growthMetricsWorkspace,.growthSourcesWorkspace{border-radius:13px!important}
+.marketingWorkspace table,.growthMetricsWorkspace table{background:rgba(8,13,16,.58)!important}
+.marketingWorkspace thead,.growthMetricsWorkspace thead{background:rgba(255,255,255,.023)!important;color:#838e92!important}
+.marketingWorkspace th,.growthMetricsWorkspace th{font-size:7px!important;letter-spacing:.11em!important;font-weight:700!important}
+.marketingWorkspace td,.growthMetricsWorkspace td{border-top:1px solid rgba(255,255,255,.05)!important;color:#aab2b5!important}
+.marketingWorkspace td strong,.growthMetricsWorkspace td strong{color:#e7e0d5!important}
+.marketingWorkspace tr:hover td,.growthMetricsWorkspace tr:hover td{background:rgba(215,182,111,.018)!important}
+.growthCampaignWorkspace article,.growthSourcesWorkspace article{border-color:rgba(219,193,143,.1)!important;background:linear-gradient(145deg,rgba(13,20,24,.8),rgba(8,13,16,.8))!important;border-radius:11px!important}
+.growthCampaignWorkspace article h3,.growthSourcesWorkspace article h3{font-family:Georgia,serif!important;color:#ebe4d8!important}
+.growthCampaignWorkspace article a{color:#c8a968!important}
+.growthSourcesWorkspace article>div:first-child span{border:1px solid rgba(83,173,139,.16);background:rgba(83,173,139,.05);color:#8bc9b0;border-radius:999px;padding:4px 7px;font-size:7px}
+.growthSourcesWorkspace article small{color:#7f8a8e!important}
+
+.adminPanel table{width:100%;border-collapse:collapse}
+.adminPanel th,.adminPanel td{padding:10px 11px;text-align:left}
+.adminPanel th{color:#7d898e}
+.adminPanel td{border-top:1px solid rgba(255,255,255,.045)}
+.adminPanel tbody tr{transition:.14s ease}
+.adminPanel tbody tr:hover{background:rgba(215,182,111,.016)}
+
+.admin button,.admin a.newAction,.admin .primary{transition:.16s ease}
+.admin button:hover,.admin a.newAction:hover,.admin .primary:hover{transform:translateY(-1px);filter:brightness(1.05)}
+.admin button:disabled{opacity:.5;transform:none!important}
+
+@media(max-width:900px){
+ .equipmentWorkspace .resourceSignals,.equipmentWorkspace .equipmentPulse{grid-template-columns:1fr 1fr!important}
+ .equipmentWorkspace .equipmentLayout{grid-template-columns:1fr!important}
+ .calendarWorkspace{grid-template-columns:1fr!important}
+}
