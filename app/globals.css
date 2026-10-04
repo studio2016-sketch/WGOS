@@ -488,3 +488,57 @@ linear-gradient(140deg,#243b4e 0%,#4f6671 28%,#bc8055 54%,#364b4c 70%,#111b1d 10
  .ownerHeroCopy{padding:26px 22px}
  .ownerPanel{padding:15px}
 }
+
+
+/* Owner render fidelity pass */
+body:has(.ownerExperience){background:
+radial-gradient(circle at 4% 14%,rgba(173,112,65,.18),transparent 24%),
+radial-gradient(circle at 92% 5%,rgba(84,118,137,.14),transparent 28%),
+linear-gradient(135deg,#090b0d 0%,#11100f 42%,#080a0c 100%);}
+.ownerRail{width:92px!important;padding:20px 10px 18px!important;background:linear-gradient(180deg,rgba(8,12,15,.98),rgba(8,12,15,.94))!important;border-right:1px solid rgba(215,182,111,.15)!important;box-shadow:22px 0 70px rgba(0,0,0,.18)}
+.ownerRailMark{height:auto!important;min-height:54px!important;width:100%!important;border:0!important;border-bottom:1px solid rgba(215,182,111,.16)!important;border-radius:0!important;display:flex!important;gap:6px!important;align-items:center!important;justify-content:center!important;padding:0 0 14px!important;color:#e0bd75!important;text-decoration:none!important}
+.ownerRailMark span{font:18px Georgia,serif;letter-spacing:.03em}.ownerRailMark i{font-style:normal;font-size:18px;color:#b89252}
+.ownerRailNav{display:grid!important;gap:5px!important;margin-top:12px!important}
+.ownerRailNav a{min-height:50px!important;border:1px solid transparent!important;border-radius:12px!important;padding:7px 4px!important;display:grid!important;place-items:center!important;gap:3px!important;color:#8e999d!important;text-decoration:none!important;transition:.18s ease}
+.ownerRailNav a b{font-size:17px!important;font-weight:500!important;line-height:1!important;color:#caa45f!important}
+.ownerRailNav a span{font-size:8px!important;line-height:1.1!important;letter-spacing:.01em!important;text-align:center!important}
+.ownerRailNav a.active{color:#f5eee0!important;border-color:rgba(218,181,108,.55)!important;background:linear-gradient(180deg,rgba(98,74,39,.22),rgba(39,30,20,.16))!important;box-shadow:inset 0 0 0 1px rgba(255,222,151,.06),0 8px 30px rgba(0,0,0,.16)}
+.ownerRailNav a:hover{color:#efe8db!important;border-color:rgba(215,182,111,.27)!important;background:rgba(215,182,111,.045)!important}
+.ownerRailSearch{margin-top:9px;padding-top:10px;border-top:1px solid rgba(255,255,255,.055)}
+.ownerRailSearch .globalSearchTrigger{min-width:0!important;width:100%!important;justify-content:center!important;padding:8px 0!important}
+.ownerRailSearch .globalSearchTrigger span,.ownerRailSearch .globalSearchTrigger kbd{display:none!important}
+.ownerRailMotto{position:absolute!important;left:12px!important;right:8px!important;bottom:18px!important;color:#75675d!important;font-size:6px!important;letter-spacing:.16em!important;line-height:1.7!important}
+.ownerTopNav{left:92px!important;min-height:66px!important;padding:0 24px!important;background:linear-gradient(180deg,rgba(8,12,15,.96),rgba(8,12,15,.82))!important;border-bottom:1px solid rgba(215,182,111,.13)!important;backdrop-filter:blur(22px)}
+.ownerTopNav .wordmark{display:flex!important;align-items:center!important;gap:12px!important}
+.ownerTopNav .wordmark b{font:23px Georgia,serif!important;color:#e2bd74!important}.ownerTopNav .wordmark small{font-size:7px!important;letter-spacing:.19em!important;color:#8b969a!important}
+.ownerTopNav .workspaceSwitch{opacity:.9}.ownerTopNav .workspaceSwitch a{border-radius:999px!important;padding:6px 9px!important}.ownerTopNav .workspaceSwitch a.active{background:rgba(215,182,111,.08)!important;border-color:rgba(215,182,111,.18)!important}
+.ownerTopNav .newAction{border-color:rgba(215,182,111,.24)!important;background:rgba(215,182,111,.06)!important;color:#dfc27f!important}
+.ownerExperience{margin:22px 24px 40px 114px!important;padding:0!important;max-width:none!important;border:1px solid rgba(219,187,122,.22);border-radius:22px;background:
+linear-gradient(180deg,rgba(8,13,17,.96),rgba(8,12,15,.94)),
+radial-gradient(circle at 70% 0%,rgba(130,91,54,.07),transparent 34%);
+box-shadow:0 35px 90px rgba(0,0,0,.36),inset 0 0 0 1px rgba(255,255,255,.018);overflow:hidden}
+.ownerExperience:before{display:none!important}
+.ownerExperience>*:not(.ownerHero){margin-left:16px;margin-right:16px}
+.ownerHero{margin:16px!important;border-radius:16px!important;min-height:292px!important;border-color:rgba(222,194,140,.22)!important}
+.ownerHeroCopy{padding:32px 32px 26px!important}
+.ownerHero h1{font-size:43px!important}
+.ownerHeroScene{min-height:292px!important}
+.ownerDomainGrid{gap:10px!important;margin-top:10px!important}
+.ownerDomainCard{border-radius:12px!important;border-color:rgba(219,195,149,.16)!important;background:linear-gradient(180deg,rgba(14,22,27,.96),rgba(8,13,17,.98))!important;box-shadow:none!important}
+.ownerDomainCard:hover{border-color:rgba(220,187,121,.45)!important;box-shadow:0 14px 34px rgba(0,0,0,.16)!important}
+.ownerVisual{height:100px!important}
+.ownerDomainBody{padding:11px 12px 13px!important}.ownerDomainBody h2{font-size:18px!important}.ownerDomainBody strong{font-size:11px!important}.ownerDomainBody span{font-size:9px!important}
+.ownerMidGrid,.ownerLowerGrid,.ownerBottomGrid{gap:10px!important;margin-top:10px!important}
+.ownerPanel{border-radius:13px!important;border-color:rgba(219,195,149,.15)!important;background:linear-gradient(145deg,rgba(13,20,24,.98),rgba(8,13,16,.96))!important;box-shadow:none!important;padding:16px!important}
+.ownerSystems{background:radial-gradient(circle at 95% 5%,rgba(77,161,132,.17),transparent 29%),linear-gradient(145deg,rgba(11,41,37,.92),rgba(7,20,22,.98))!important;border-color:rgba(90,183,150,.22)!important}
+.ownerAttentionItem{min-height:64px!important}
+.ownerBars{height:104px!important}
+.ownerBottomGrid{padding-bottom:2px}
+.ownerDeepLink{padding:18px 16px 22px!important;border-top:1px solid rgba(255,255,255,.04);margin-top:12px!important}
+#owner-detail-workspaces{scroll-margin-top:76px}
+
+@media(max-width:900px){
+ .ownerTopNav{left:0!important}
+ .ownerExperience{margin:12px 12px 94px!important;border-radius:16px}
+ .ownerRail{width:auto!important}
+}
