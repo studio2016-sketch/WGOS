@@ -1,6 +1,6 @@
 import "server-only";
 import {db} from "./db";
-import {createAgreementFromAcceptedProposal} from "./commercial-lifecycle";
+import {activateProjectFromAgreement,createAgreementFromAcceptedProposal} from "./commercial-lifecycle";
 
 export async function processClientDecisionEvents(input:{limit?:number}={}){
  const sql=db(),limit=Math.max(1,Math.min(Number(input.limit||100),250));
@@ -29,9 +29,17 @@ export async function processClientDecisionEvents(input:{limit?:number}={}){
      FROM wgos.agreements a JOIN wgos.proposals p ON p.id=a.proposal_id WHERE a.id=${agreementId}::uuid LIMIT 1`;
     const a=rows[0];if(a){
      const deposit=Number(a.deposit_amount||0),paid=Number(a.paid||0);
-     await sql`INSERT INTO wgos.notification_events(brand_id,recipient_subject,channel,event_type,status,payload)
-      VALUES(${event.brand_id},'OWNER','IN_APP',${deposit>paid?'PAYMENT_REQUIRED':'DELIVERY_READY_FOR_ACTIVATION'},'PENDING',
-       jsonb_build_object('agreement_id',${agreementId},'proposal_id',${String(a.proposal_id)},'deposit_required',${deposit},'paid',${paid}))`;
+     if(deposit<=paid){
+      const project:any=await activateProjectFromAgreement({agreementId,actor:"system:workflow"});
+      await sql`INSERT INTO wgos.notification_events(brand_id,recipient_subject,channel,event_type,status,payload)
+       VALUES(${event.brand_id},'OWNER','IN_APP','PROJECT_ACTIVATED','PENDING',
+        jsonb_build_object('agreement_id',${agreementId},'proposal_id',${String(a.proposal_id)},'project_id',${String(project.id)},'reason','SIGNED_NO_OUTSTANDING_DEPOSIT'))`;
+      advanced++;
+     }else{
+      await sql`INSERT INTO wgos.notification_events(brand_id,recipient_subject,channel,event_type,status,payload)
+       VALUES(${event.brand_id},'OWNER','IN_APP','PAYMENT_REQUIRED','PENDING',
+        jsonb_build_object('agreement_id',${agreementId},'proposal_id',${String(a.proposal_id)},'deposit_required',${deposit},'paid',${paid}))`;
+     }
     }
    }
    if(event.topic==="PAYMENT_CONFIRMED"){
@@ -41,9 +49,11 @@ export async function processClientDecisionEvents(input:{limit?:number}={}){
      FROM wgos.proposals p LEFT JOIN LATERAL(SELECT id,status FROM wgos.agreements aa WHERE aa.proposal_id=p.id ORDER BY aa.created_at DESC LIMIT 1)a ON true
      WHERE p.id=${proposalId}::uuid LIMIT 1`;
     const p=rows[0];if(p&&p.agreement_status==="SIGNED"&&Number(p.paid||0)>=Number(p.deposit_amount||0)){
+     const project:any=await activateProjectFromAgreement({agreementId:String(p.agreement_id),actor:"system:workflow"});
      await sql`INSERT INTO wgos.notification_events(brand_id,recipient_subject,channel,event_type,status,payload)
-      VALUES(${event.brand_id},'OWNER','IN_APP','DELIVERY_READY_FOR_ACTIVATION','PENDING',
-       jsonb_build_object('proposal_id',${proposalId},'agreement_id',${String(p.agreement_id)},'paid',${Number(p.paid||0)}))`;
+      VALUES(${event.brand_id},'OWNER','IN_APP','PROJECT_ACTIVATED','PENDING',
+       jsonb_build_object('proposal_id',${proposalId},'agreement_id',${String(p.agreement_id)},'project_id',${String(project.id)},'paid',${Number(p.paid||0)}))`;
+     advanced++;
     }
    }
    if(event.topic==="CLIENT_DECISION"&&entityType==="task"&&decision==="APPROVED"){
