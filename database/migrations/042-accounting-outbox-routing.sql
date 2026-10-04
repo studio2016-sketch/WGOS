@@ -35,22 +35,22 @@ DROP TRIGGER IF EXISTS accounting_queue_invoice ON wgos.invoices;
 CREATE TRIGGER accounting_queue_invoice AFTER INSERT OR UPDATE OF status,total_cents,due_cents,due_at ON wgos.invoices
 FOR EACH ROW EXECUTE FUNCTION wgos.trg_queue_invoice();
 
-CREATE OR REPLACE FUNCTION wgos.trg_queue_payment_event() RETURNS trigger LANGUAGE plpgsql AS $$
+CREATE OR REPLACE FUNCTION wgos.trg_queue_payment() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE v_brand text;v_control uuid;
 BEGIN
- SELECT i.brand_id,cc.id INTO v_brand,v_control
- FROM wgos.invoices i LEFT JOIN wgos.contract_controls cc ON cc.agreement_id=i.agreement_id
- WHERE i.id=NEW.invoice_id LIMIT 1;
+ SELECT p.brand_id,cc.id INTO v_brand,v_control
+ FROM wgos.proposals p LEFT JOIN wgos.contract_controls cc ON cc.proposal_id=p.id
+ WHERE p.id=NEW.proposal_id LIMIT 1;
  IF v_brand IS NOT NULL THEN
   PERFORM wgos.enqueue_accounting_object(v_brand,v_control,'PAYMENT',NEW.id::text,
-   jsonb_build_object('provider',NEW.provider,'status',NEW.status,'amountCents',NEW.amount_cents,'occurredAt',NEW.occurred_at));
+   jsonb_build_object('provider',NEW.provider,'status',NEW.status,'amount',NEW.amount,'kind',NEW.kind,'paidAt',NEW.paid_at));
  END IF;
  RETURN NEW;
 END $$;
 
-DROP TRIGGER IF EXISTS accounting_queue_payment_event ON wgos.payment_events;
-CREATE TRIGGER accounting_queue_payment_event AFTER INSERT OR UPDATE OF status,amount_cents ON wgos.payment_events
-FOR EACH ROW EXECUTE FUNCTION wgos.trg_queue_payment_event();
+DROP TRIGGER IF EXISTS accounting_queue_payment ON wgos.payments;
+CREATE TRIGGER accounting_queue_payment AFTER INSERT OR UPDATE OF status,amount,paid_at ON wgos.payments
+FOR EACH ROW EXECUTE FUNCTION wgos.trg_queue_payment();
 
 CREATE OR REPLACE FUNCTION wgos.trg_queue_contract_cost() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
