@@ -4,6 +4,7 @@ import {runDueRecurringTasks} from "../../../../lib/operations-board";
 import {processClientDecisionEvents} from "../../../../lib/workflow-engine";
 import {syncGmailReplies} from "../../../../lib/communications";
 import {recordSystemHealth} from "../../../../lib/system-health";
+import {processDiscoveryAutomation} from "../../../../lib/discovery";
 
 export async function GET(req:Request){
  const secret=process.env.CRON_SECRET;
@@ -14,6 +15,7 @@ export async function GET(req:Request){
  const jobs=[
   ["recurring",()=>runDueRecurringTasks({actor:null,limit:200})],
   ["decisions",()=>processClientDecisionEvents({limit:100})],
+  ["discovery",()=>processDiscoveryAutomation({limit:60})],
   ["gmail",()=>syncGmailReplies({limit:50})]
  ] as const;
  const settled=await Promise.allSettled(jobs.map(([,fn])=>fn()));
