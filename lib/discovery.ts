@@ -100,7 +100,7 @@ export async function processDiscoveryAutomation(input:{limit?:number}={}){
  WHERE o.source='PUBLIC_WEB_INQUIRY' AND o.stage IN ('NEW','QUALIFYING','DISCOVERY') AND o.contact_email IS NOT NULL
  AND EXISTS(SELECT 1 FROM wgos.audit_events ae WHERE ae.entity_type='opportunity' AND ae.entity_id=o.id::text AND ae.action='PUBLIC_WEB_INQUIRY_RECEIVED')
  ORDER BY o.created_at ASC LIMIT ${limit}`;
- let sent=0,reminded=0,skipped=0,failed=0;
+ let sent=0,reminded=0,skipped=0,failed=0;const errors:string[]=[];
  for(const o of rows){try{
   const d=o.discovery||{},meta=d._discovery||{},assessment=assessDiscovery(d);const created=new Date(o.created_at).getTime(),now=Date.now();
   const sentAt=meta.email_sent_at?new Date(meta.email_sent_at).getTime():0;const followups=Number(meta.followup_count||0);
@@ -129,6 +129,6 @@ export async function processDiscoveryAutomation(input:{limit?:number}={}){
   await sql`UPDATE wgos.opportunities SET discovery=${JSON.stringify(nextDiscovery)}::jsonb,stage=CASE WHEN stage='NEW' THEN 'QUALIFYING' ELSE stage END,updated_at=now() WHERE id=${String(o.id)}::uuid`;
   await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata) VALUES('system:discovery',${kind==="initial"?"DISCOVERY_EMAIL_SENT":"DISCOVERY_REMINDER_SENT"},'opportunity',${String(o.id)},${JSON.stringify({deliveryId:delivery.id||null,readiness:assessment.readiness})}::jsonb)`;
   if(kind==="initial")sent++;else reminded++;
- }catch{failed++;}}
- return {seen:rows.length,sent,reminded,skipped,failed};
+ }catch(e){failed++;errors.push(e instanceof Error?e.message:"Discovery automation failed");}}
+ return {seen:rows.length,sent,reminded,skipped,failed,errors};
 }
