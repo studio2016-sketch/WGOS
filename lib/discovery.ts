@@ -148,6 +148,9 @@ export async function processDiscoveryAutomation(input:{limit?:number}={}){
   await sql`UPDATE wgos.opportunities SET discovery=${JSON.stringify(nextDiscovery)}::jsonb,stage=CASE WHEN stage='NEW' THEN 'QUALIFYING' ELSE stage END,updated_at=now() WHERE id=${String(o.id)}::uuid`;
   await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata) VALUES('system:discovery',${kind==="initial"?"DISCOVERY_EMAIL_SENT":"DISCOVERY_REMINDER_SENT"},'opportunity',${String(o.id)},${JSON.stringify({deliveryId:delivery.id||null,readiness:assessment.readiness})}::jsonb)`;
   if(kind==="initial")sent++;else reminded++;
- }catch(e){failed++;const message=e instanceof Error?e.message:"Discovery automation failed";errors.push(message);try{await sql`INSERT INTO wgos.notification_events(brand_id,recipient_subject,channel,event_type,status,payload) VALUES(${o.brand_id},'OWNER','IN_APP','DISCOVERY_AUTOMATION_FAILED','PENDING',${JSON.stringify({opportunity_id:String(o.id),error:message})}::jsonb)`}catch{}}}
+ }catch(e){failed++;const message=e instanceof Error?e.message:"Discovery automation failed";errors.push(message);try{
+  const existing:any[]=await sql`SELECT id FROM wgos.notification_events WHERE brand_id=${o.brand_id} AND event_type='DISCOVERY_AUTOMATION_FAILED' AND payload->>'opportunity_id'=${String(o.id)} AND created_at>now()-interval '6 hours' LIMIT 1`;
+  if(!existing[0])await sql`INSERT INTO wgos.notification_events(brand_id,recipient_subject,channel,event_type,status,payload) VALUES(${o.brand_id},'OWNER','IN_APP','DISCOVERY_AUTOMATION_FAILED','PENDING',${JSON.stringify({opportunity_id:String(o.id),error:message})}::jsonb)`;
+ }catch{}}}
  return {seen:rows.length,sent,reminded,skipped,failed,errors};
 }
