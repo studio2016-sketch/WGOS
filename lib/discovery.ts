@@ -112,11 +112,11 @@ export async function processDiscoveryAutomation(input:{limit?:number}={}){
   const d=o.discovery||{},meta=d._discovery||{},assessment=assessDiscovery(d);const created=new Date(o.created_at).getTime(),now=Date.now();
   const sentAt=meta.email_sent_at?new Date(meta.email_sent_at).getTime():0;const followups=Number(meta.followup_count||0);
   let kind:"initial"|"reminder"|null=null;
-  if(!businessWindowOpen(new Date(now))){skipped++;continue;}
+  if(!businessWindowOpen(new Date(now))){console.log("DISCOVERY_SKIP",JSON.stringify({id:String(o.id),reason:"outside_business_window",ageMinutes:Math.round((now-created)/60000),sentAt:meta.email_sent_at||null}));skipped++;continue;}
   if(!sentAt&&now-created>=5*60*1000)kind="initial";
   else if(sentAt&&assessment.status!=="READY_FOR_PROPOSAL"&&followups<1&&now-sentAt>=24*60*60*1000)kind="reminder";
   else if(sentAt&&assessment.status!=="READY_FOR_PROPOSAL"&&followups<2&&now-sentAt>=72*60*60*1000)kind="reminder";
-  if(!kind){skipped++;continue;}
+  if(!kind){console.log("DISCOVERY_SKIP",JSON.stringify({id:String(o.id),reason:"not_due",ageMinutes:Math.round((now-created)/60000),sentAt:meta.email_sent_at||null,followups,status:assessment.status,readiness:assessment.readiness}));skipped++;continue;}
   const prepared=await prepareDiscoveryEmail(String(o.id));if(!prepared){skipped++;continue;}
   const first=String(o.contact_name||"").trim().split(/\s+/)[0]||"there";
   const subject=kind==="initial"?"A few details will help us design the right Studio2016 approach":"A quick follow-up on your Studio2016 project";
