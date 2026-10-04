@@ -1,0 +1,24 @@
+"use client";
+import {useState} from "react";import {useRouter} from "next/navigation";
+const usd=(c:any)=>"$"+(Number(c||0)/100).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+export default function FinanceExceptionCenter({data}:{data:any}){
+ const router=useRouter(),[brand,setBrand]=useState(data.brands?.[0]?.id||""),[error,setError]=useState("");
+ const alerts=data.alerts.filter((x:any)=>x.brand_id===brand),txs=data.transactions.filter((x:any)=>x.brand_id===brand),sugs=data.suggestions.filter((x:any)=>x.brand_id===brand);
+ async function send(body:any){setError("");const r=await fetch("/api/admin/finance-intelligence",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});const j=await r.json();if(!j.ok){setError(j.error||"Unable to update");return;}router.refresh();}
+ const sugByTx=(id:string)=>sugs.filter((s:any)=>s.bank_transaction_id===id).slice(0,3);
+ if(!data.brands.length)return null;
+ return <section className="adminPanel" style={{padding:18}}>
+  <div className="attentionIntro"><p className="eyebrow">FINANCE EXCEPTION ENGINE</p><h2>Automate the routine. Surface the exceptions.</h2><p>WGOS ranks likely bank matches, watches budgets and deadlines, and raises only the financial items that need a human decision.</p></div>
+  <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",margin:"12px 0"}}><select value={brand} onChange={e=>setBrand(e.target.value)}>{data.brands.map((b:any)=><option key={b.id} value={b.id}>{b.name}</option>)}</select><button onClick={()=>send({action:"refresh",brandId:brand})}>Refresh intelligence</button></div>
+  {error&&<p>{error}</p>}
+  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:10,marginBottom:16}}>
+   <article><small>OPEN EXCEPTIONS</small><strong style={{display:"block",fontSize:"1.4rem"}}>{alerts.length}</strong></article>
+   <article><small>CRITICAL/HIGH</small><strong style={{display:"block",fontSize:"1.4rem"}}>{alerts.filter((x:any)=>["CRITICAL","HIGH"].includes(x.severity)).length}</strong></article>
+   <article><small>UNMATCHED BANK</small><strong style={{display:"block",fontSize:"1.4rem"}}>{txs.length}</strong></article>
+   <article><small>MATCH SUGGESTIONS</small><strong style={{display:"block",fontSize:"1.4rem"}}>{sugs.length}</strong></article>
+  </div>
+  {alerts.length>0&&<div style={{display:"grid",gap:8,marginBottom:18}}><h3>Exceptions</h3>{alerts.map((a:any)=><div key={a.id} style={{display:"grid",gridTemplateColumns:"1fr auto",gap:10,padding:11,border:"1px solid rgba(255,255,255,.07)",borderRadius:10}}><div><small>{a.severity} · {a.alert_type}</small><strong style={{display:"block"}}>{a.title}</strong><span className="muted">{a.detail||""}{a.amount_cents!=null?" · "+usd(a.amount_cents):""}</span></div><div style={{display:"flex",gap:6,alignItems:"center"}}><button onClick={()=>send({action:"alert",brandId:brand,alertId:a.id,status:"ACKNOWLEDGED"})}>Acknowledge</button><button onClick={()=>send({action:"alert",brandId:brand,alertId:a.id,status:"RESOLVED"})}>Resolve</button><button onClick={()=>send({action:"alert",brandId:brand,alertId:a.id,status:"DISMISSED"})}>Dismiss</button></div></div>)}</div>}
+  {txs.length>0&&<div style={{display:"grid",gap:10}}><h3>Bank match inbox</h3>{txs.map((t:any)=><div key={t.id} style={{padding:12,border:"1px solid rgba(255,255,255,.07)",borderRadius:12}}><div style={{display:"flex",justifyContent:"space-between",gap:8,flexWrap:"wrap"}}><div><strong>{t.description}</strong><small style={{display:"block"}}>{t.posted_date} · {usd(t.amount_cents)} · {t.direction}</small></div><span>{t.status}</span></div><div style={{display:"grid",gap:7,marginTop:8}}>{sugByTx(t.id).map((s:any)=><div key={s.id} style={{display:"grid",gridTemplateColumns:"1fr auto",gap:8,padding:9,border:"1px solid rgba(255,255,255,.05)",borderRadius:9}}><div><strong>{s.candidate_label}</strong><small style={{display:"block"}}>{s.candidate_type} · {usd(s.candidate_amount_cents)} · {s.score}% confidence</small><span className="muted">Amount {s.amount_score}% · date {s.date_score}% · description {s.text_score}%</span></div><div style={{display:"flex",gap:6,alignItems:"center"}}><button className="newAction" onClick={()=>send({action:"accept-match",brandId:brand,suggestionId:s.id})}>Accept</button><button onClick={()=>send({action:"reject-match",brandId:brand,suggestionId:s.id})}>Reject</button></div></div>)}</div></div>)}</div>}
+  {!alerts.length&&!txs.length&&<p className="muted">No finance exceptions currently need attention.</p>}
+ </section>;
+}
