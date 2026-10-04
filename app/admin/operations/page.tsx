@@ -13,10 +13,12 @@ import {listAccountingEntityProfiles} from "../../../lib/accounting-routing";
 import AccountingActivationCenter from "./AccountingActivationCenter";
 import {listExpenseIntelligence} from "../../../lib/expense-intelligence";
 import ExpenseIntelligenceCenter from "./ExpenseIntelligenceCenter";
+import {listFinanceExceptions} from "../../../lib/finance-intelligence";
+import FinanceExceptionCenter from "./FinanceExceptionCenter";
 
 export default async function OperationsPage({searchParams}:{searchParams:Promise<{project?:string;brand?:string;task?:string}>}){
  const query=await searchParams;const access=await commandAccess();
- const [projectRows,refs,contractExecutionRaw,contractFinanceRaw,accountingProfilesRaw,expenseIntelligenceRaw]=await Promise.all([listOperationsProjects(access.identity.auth_user_id,access.isGlobal),getOperationsReferenceData(access.identity.auth_user_id,access.isGlobal),listContractExecution(access.identity.auth_user_id,access.isGlobal),listContractFinance(access.identity.auth_user_id,access.isGlobal),listAccountingEntityProfiles(access.identity.auth_user_id,access.isGlobal),listExpenseIntelligence(access.identity.auth_user_id,access.isGlobal)]);
+ const [projectRows,refs,contractExecutionRaw,contractFinanceRaw,accountingProfilesRaw,expenseIntelligenceRaw,financeExceptionsRaw]=await Promise.all([listOperationsProjects(access.identity.auth_user_id,access.isGlobal),getOperationsReferenceData(access.identity.auth_user_id,access.isGlobal),listContractExecution(access.identity.auth_user_id,access.isGlobal),listContractFinance(access.identity.auth_user_id,access.isGlobal),listAccountingEntityProfiles(access.identity.auth_user_id,access.isGlobal),listExpenseIntelligence(access.identity.auth_user_id,access.isGlobal),listFinanceExceptions(access.identity.auth_user_id,access.isGlobal)]);
  let projects:any[]=projectRows as any[];
  const users:any[]=refs.users as any[];
  const brands:any[]=refs.brands as any[];const selectedBrand=brands.some((b:any)=>b.id===query.brand)?String(query.brand):"";if(selectedBrand)projects=projects.filter((p:any)=>p.brand_id===selectedBrand);
@@ -24,6 +26,7 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
  const contractFinance:any=selectedBrand?{...contractFinanceRaw,controls:contractFinanceRaw.controls.filter((x:any)=>x.brand_id===selectedBrand),vendors:contractFinanceRaw.vendors.filter((x:any)=>x.brand_id===selectedBrand),purchaseOrders:contractFinanceRaw.purchaseOrders.filter((x:any)=>x.brand_id===selectedBrand),financial:contractFinanceRaw.financial.filter((x:any)=>x.brand_id===selectedBrand),syncQueue:contractFinanceRaw.syncQueue.filter((x:any)=>x.brand_id===selectedBrand)}:contractFinanceRaw;
  const accountingProfiles:any[]=selectedBrand?(accountingProfilesRaw as any[]).filter((x:any)=>x.brand_id===selectedBrand):(accountingProfilesRaw as any[]);
  const expenseIntelligence:any=selectedBrand?{...expenseIntelligenceRaw,brands:expenseIntelligenceRaw.brands.filter((x:any)=>x.id===selectedBrand),claims:expenseIntelligenceRaw.claims.filter((x:any)=>x.brand_id===selectedBrand),mileage:expenseIntelligenceRaw.mileage.filter((x:any)=>x.brand_id===selectedBrand),budgets:expenseIntelligenceRaw.budgets.filter((x:any)=>x.brand_id===selectedBrand),rules:expenseIntelligenceRaw.rules.filter((x:any)=>x.brand_id===selectedBrand),forecast:expenseIntelligenceRaw.forecast.filter((x:any)=>x.brand_id===selectedBrand),bankInbox:expenseIntelligenceRaw.bankInbox.filter((x:any)=>x.brand_id===selectedBrand),contracts:expenseIntelligenceRaw.contracts.filter((x:any)=>x.brand_id===selectedBrand),projects:expenseIntelligenceRaw.projects.filter((x:any)=>x.brand_id===selectedBrand)}:expenseIntelligenceRaw;
+ const financeExceptions:any=selectedBrand?{...financeExceptionsRaw,brands:financeExceptionsRaw.brands.filter((x:any)=>x.id===selectedBrand),alerts:financeExceptionsRaw.alerts.filter((x:any)=>x.brand_id===selectedBrand),transactions:financeExceptionsRaw.transactions.filter((x:any)=>x.brand_id===selectedBrand),suggestions:financeExceptionsRaw.suggestions.filter((x:any)=>x.brand_id===selectedBrand)}:financeExceptionsRaw;
  let selectedId=query.project||projects[0]?.id||"";
  const totalTasks=projects.reduce((n:number,p:any)=>n+Number(p.task_count||0),0);
  const doneTasks=projects.reduce((n:number,p:any)=>n+Number(p.done_count||0),0);
@@ -52,6 +55,7 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
   <ContractFinanceCenter data={contractFinance}/>
   <AccountingActivationCenter profiles={accountingProfiles}/>
   <ExpenseIntelligenceCenter data={expenseIntelligence}/>
+  <FinanceExceptionCenter data={financeExceptions}/>
 
   <section className="principle">
    <strong>Operating rule:</strong> routine work moves here. Executive attention is reserved for approvals, exceptions, blocked dependencies and consequential decisions.
