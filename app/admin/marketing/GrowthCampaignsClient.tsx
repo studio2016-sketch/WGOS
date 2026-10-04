@@ -4,7 +4,7 @@ import {useRouter} from "next/navigation";
 export default function GrowthCampaignsClient({campaigns,links,brands}:{campaigns:any[];links:any[];brands:any[]}){
  const router=useRouter();const [mode,setMode]=useState<"campaign"|"link"|null>(null);const [error,setError]=useState("");
  async function save(e:any){e.preventDefault();setError("");const o:any=Object.fromEntries(new FormData(e.currentTarget).entries());o.kind=mode;const r=await fetch("/api/admin/growth-campaigns",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(o)});const j=await r.json();if(!j.ok){setError(j.error||"Unable to save");return;}setMode(null);router.refresh();}
- return <section className="adminPanel" style={{padding:18}}>
+ return <section className="adminPanel growthCampaignWorkspace" style={{padding:18}}>
   <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"center",flexWrap:"wrap"}}><div><p className="eyebrow">ATTRIBUTION ENGINE</p><h2>Campaigns + Trackable Links</h2><p className="muted">Give every post, bio link, video CTA and newsletter a measurable path into the WGOS revenue loop.</p></div><div style={{display:"flex",gap:8}}><button className="newAction" onClick={()=>setMode("campaign")}>＋ Campaign</button><button className="newAction" onClick={()=>setMode("link")}>＋ Trackable link</button></div></div>
   {mode&&<form onSubmit={save} style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:10,marginTop:16}}>
    <select name="brandId" required defaultValue=""><option value="" disabled>Brand</option>{brands.map((b:any)=><option key={b.id} value={b.id}>{b.name}</option>)}</select>
