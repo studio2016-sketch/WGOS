@@ -8,7 +8,7 @@ export default function ContractFinanceCenter({data}:{data:any}){
  async function send(body:any){setError("");const r=await fetch("/api/admin/contract-finance",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});const j=await r.json();if(!j.ok){setError(j.error||"Unable to save");return false;}router.refresh();return true;}
  async function submit(e:any){e.preventDefault();const b:any=Object.fromEntries(new FormData(e.currentTarget).entries());b.action=mode;if(selected)b.controlId=selected;if(control)b.brandId=control.brand_id;if(await send(b))e.currentTarget.reset();}
  if(!data.controls.length)return null;
- return <section className="adminPanel" style={{padding:18}}>
+ return <section id="finance" className="adminPanel financeWorkspace contractFinanceWorkspace" style={{padding:18}}>
   <div className="attentionIntro"><p className="eyebrow">CONTRACT FINANCE & RESOURCES</p><h2>Procurement, profitability and conflict control</h2><p>See the financial truth of each contract and catch people/equipment conflicts before they become operational failures.</p></div>
   <select value={selected} onChange={e=>setSelected(e.target.value)} style={{margin:"12px 0"}}>{data.controls.map((c:any)=><option key={c.id} value={c.id}>{c.brand_name} · {c.opportunity_title||c.agreement_title}</option>)}</select>
   {fin&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:10}}>
