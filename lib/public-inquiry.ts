@@ -91,14 +91,14 @@ export async function submitPublicInquiry(input:{
  await sql`INSERT INTO wgos.communication_messages(
   thread_id,direction,sender_ref,recipient_refs,body_ref,occurred_at,metadata)
  VALUES(${threadId}::uuid,'INBOUND',${email},${JSON.stringify([brand.public_domain])}::jsonb,
-  ${message||title},now(),jsonb_build_object('source','PUBLIC_WEB_INQUIRY','opportunityId',${opportunityId}))`;
+  ${message||title},now(),jsonb_build_object('source','PUBLIC_WEB_INQUIRY','opportunityId',${opportunityId}::text))`;
 
  await sql`INSERT INTO wgos.notification_events(brand_id,recipient_subject,channel,event_type,status,payload)
  VALUES(${brandId},'OWNER','IN_APP','NEW_WEB_INQUIRY','PENDING',
-  jsonb_build_object('opportunity_id',${opportunityId},'contact_id',${contactId},'thread_id',${threadId},'name',${name},'email',${email}))`;
+  jsonb_build_object('opportunity_id',${opportunityId}::text,'contact_id',${contactId}::text,'thread_id',${threadId}::text,'name',${name}::text,'email',${email}::text))`;
  await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata)
  VALUES('public:brand-site','PUBLIC_WEB_INQUIRY_RECEIVED','opportunity',${opportunityId},
-  jsonb_build_object('brandId',${brandId},'contactId',${contactId},'threadId',${threadId},'domain',${String(brand.public_domain)}))`;
+  jsonb_build_object('brandId',${brandId}::text,'contactId',${contactId}::text,'threadId',${threadId}::text,'domain',${String(brand.public_domain)}::text))`;
  await sql`INSERT INTO wgos.idempotency_keys(scope,key,request_hash,response_code,response_body,expires_at)
  VALUES(${"public-inquiry:"+brandId},${fingerprint},${fingerprint},202,'{"received":true}'::jsonb,now()+interval '15 minutes')
  ON CONFLICT (scope,key) DO NOTHING`;
