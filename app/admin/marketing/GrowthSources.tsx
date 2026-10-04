@@ -1,5 +1,5 @@
 export default function GrowthSources({sources}:{sources:any[]}){
- return <section className="adminPanel" style={{padding:18}}>
+ return <section className="adminPanel growthSourcesWorkspace" style={{padding:18}}>
   <div><p className="eyebrow">DATA SOURCE HEALTH</p><h2>Connected Growth Sources</h2><p className="muted">WGOS separates missing coverage from true zero performance, so new connections never distort decision-making.</p></div>
   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:12,marginTop:16}}>
    {sources.map((s:any)=><article key={s.id} style={{padding:14,border:"1px solid rgba(255,255,255,.08)",borderRadius:14}}>
