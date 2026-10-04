@@ -86,7 +86,7 @@ export async function submitPublicInquiry(input:{
 
  const threads:any[]=await sql`INSERT INTO wgos.communication_threads(
   brand_id,organization_id,contact_id,channel,subject,status)
- VALUES(${brandId},${organizationId}::uuid,${contactId}::uuid,'OTHER',${title},'OPEN') RETURNING id`;
+ VALUES(${brandId},${organizationId}::uuid,${contactId}::uuid,'EMAIL',${title},'OPEN') RETURNING id`;
  const threadId=String(threads[0].id);
  await sql`INSERT INTO wgos.communication_messages(
   thread_id,direction,sender_ref,recipient_refs,body_ref,occurred_at,metadata)
