@@ -30,7 +30,7 @@ export default function OwnerDashboard({
   const waitingThreads=threads.filter((t:any)=>String(t.recent_direction)==="INBOUND");
   const pendingProposals=proposals.filter((p:any)=>["APPROVED","SENT"].includes(String(p.status)));
   const signedAgreements=agreements.filter((a:any)=>["SIGNED","ACTIVE","EXECUTED"].includes(String(a.status)));
-  const firstName=String(identity?.role)==="OWNER"&&!selectedBrand?"Jermaine":(String(identity?.display_name||identity?.email||"Owner").split(/[ @]/)[0]||"Owner");
+  const firstName=String(identity?.role)==="OWNER"&&!selectedBrand?"Mr Williams":(String(identity?.display_name||identity?.email||"Owner").split(/[ @]/)[0]||"Owner");
   const query=q(selectedBrand);
 
   const attention=[
