@@ -7,7 +7,7 @@ export default function FinanceExceptionCenter({data}:{data:any}){
  async function send(body:any){setError("");const r=await fetch("/api/admin/finance-intelligence",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});const j=await r.json();if(!j.ok){setError(j.error||"Unable to update");return;}router.refresh();}
  const sugByTx=(id:string)=>sugs.filter((s:any)=>s.bank_transaction_id===id).slice(0,3);
  if(!data.brands.length)return null;
- return <section className="adminPanel" style={{padding:18}}>
+ return <section className="adminPanel financeWorkspace financeExceptionWorkspace" style={{padding:18}}>
   <div className="attentionIntro"><p className="eyebrow">FINANCE EXCEPTION ENGINE</p><h2>Automate the routine. Surface the exceptions.</h2><p>WGOS ranks likely bank matches, watches budgets and deadlines, and raises only the financial items that need a human decision.</p></div>
   <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",margin:"12px 0"}}><select value={brand} onChange={e=>setBrand(e.target.value)}>{data.brands.map((b:any)=><option key={b.id} value={b.id}>{b.name}</option>)}</select><button onClick={()=>send({action:"refresh",brandId:brand})}>Refresh intelligence</button></div>
   {error&&<p>{error}</p>}
