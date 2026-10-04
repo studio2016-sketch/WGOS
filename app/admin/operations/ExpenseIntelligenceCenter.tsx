@@ -11,7 +11,7 @@ export default function ExpenseIntelligenceCenter({data}:{data:any}){
  async function send(body:any){setError("");const r=await fetch("/api/admin/expense-intelligence",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});const j=await r.json();if(!j.ok){setError(j.error||"Unable to save");return false;}router.refresh();return true;}
  async function submit(e:any){e.preventDefault();const b:any=Object.fromEntries(new FormData(e.currentTarget).entries());b.action=mode;b.brandId=brand;for(const k of ["reimbursable","billableToClient"])b[k]=Boolean(b[k]);if(await send(b))e.currentTarget.reset();}
  if(!data.brands.length)return null;
- return <section className="adminPanel" style={{padding:18}}>
+ return <section className="adminPanel financeWorkspace expenseWorkspace" style={{padding:18}}>
   <div className="attentionIntro"><p className="eyebrow">EXPENSE INTELLIGENCE</p><h2>Receipts, mileage, reimbursements, budgets and cash flow</h2><p>Capture operational spend once, approve it in WGOS, tie it to the right contract/project, and route the accounting result to the correct entity.</p></div>
   <select value={brand} onChange={e=>setBrand(e.target.value)} style={{margin:"12px 0"}}>{data.brands.map((b:any)=><option key={b.id} value={b.id}>{b.name}</option>)}</select>
   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:10,marginBottom:16}}>
