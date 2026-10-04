@@ -542,3 +542,77 @@ box-shadow:0 35px 90px rgba(0,0,0,.36),inset 0 0 0 1px rgba(255,255,255,.018);ov
  .ownerExperience{margin:12px 12px 94px!important;border-radius:16px}
  .ownerRail{width:auto!important}
 }
+
+
+/* Owner aesthetic migration across deep workspaces */
+.admin{position:relative;min-height:100vh;padding:82px 28px 90px 118px;background:
+radial-gradient(circle at 86% 2%,rgba(80,110,130,.08),transparent 24%),
+radial-gradient(circle at 16% 10%,rgba(151,100,56,.07),transparent 20%),
+linear-gradient(180deg,#090c0f,#080a0c 68%,#090b0d);}
+.admin>.adminHead,.admin>.commandHero{margin:14px 0 14px!important;padding:26px 28px!important;min-height:170px;border:1px solid rgba(219,193,143,.18)!important;border-radius:18px!important;background:
+linear-gradient(110deg,rgba(12,19,24,.98),rgba(11,17,21,.93) 58%,rgba(21,29,34,.92)),
+radial-gradient(circle at 88% 20%,rgba(215,173,100,.09),transparent 23%)!important;
+box-shadow:0 24px 60px rgba(0,0,0,.2)!important;overflow:hidden;position:relative}
+.admin>.adminHead:after,.admin>.commandHero:after{content:"";position:absolute;right:-2%;top:-10%;width:38%;height:120%;pointer-events:none;background:
+radial-gradient(circle at 62% 34%,rgba(234,185,100,.21),transparent 9%),
+linear-gradient(155deg,transparent 0 36%,rgba(59,81,91,.22) 37% 50%,transparent 51%),
+linear-gradient(165deg,transparent 0 52%,rgba(25,48,51,.7) 53% 68%,transparent 69%);opacity:.8}
+.admin>.adminHead>*,.admin>.commandHero>*{position:relative;z-index:1}
+.admin>.adminHead h1,.admin>.commandHero h1{font:39px/1.03 Georgia,serif!important;letter-spacing:-.025em!important;color:#f4efe5!important;margin:4px 0 8px!important}
+.admin>.adminHead p:not(.eyebrow),.admin>.commandHero p:not(.eyebrow){max-width:690px;color:#9ba5a8!important;line-height:1.55!important}
+.admin .eyebrow{color:#d4ad67!important;font-size:8px!important;letter-spacing:.18em!important;font-weight:800!important}
+.adminActions>a,.adminActions button,.adminActions .primary,.adminActions .command{border-radius:999px!important;border-color:rgba(219,188,126,.22)!important;background:rgba(219,188,126,.055)!important;color:#e0c27f!important;box-shadow:none!important}
+
+.admin .opsPulse,.admin .pulseGrid{gap:9px!important;margin:0 0 14px!important}
+.admin .opsPulse article,.admin .pulseGrid article{border:1px solid rgba(219,193,143,.14)!important;border-radius:13px!important;background:linear-gradient(145deg,rgba(13,20,24,.95),rgba(8,13,16,.98))!important;padding:16px 17px!important;min-height:103px;box-shadow:none!important}
+.admin .opsPulse small,.admin .pulseGrid small{color:#8b9699!important;font-size:7px!important;letter-spacing:.14em!important}
+.admin .opsPulse strong,.admin .pulseGrid strong{font:27px Georgia,serif!important;color:#f0e9dd!important;margin-top:9px!important}
+.admin .opsPulse span,.admin .pulseGrid span{color:#889397!important;font-size:9px!important}
+
+.admin .adminPanel,.admin .principle,.admin .projectShowcase,.admin .operationsCanvas>.adminPanel{border:1px solid rgba(219,193,143,.14)!important;border-radius:14px!important;background:linear-gradient(145deg,rgba(13,20,24,.97),rgba(8,13,16,.98))!important;box-shadow:none!important}
+.admin .principle{margin:12px 0!important;padding:13px 16px!important;color:#8d989c!important}
+.admin .principle strong{color:#d7ba7d!important}
+.admin .workspaceTitle h2,.admin .adminPanel h2,.admin .projectShowcase h2{font-family:Georgia,serif!important;color:#eee7dc!important;letter-spacing:-.015em}
+.admin .muted{color:#859095!important}
+.admin .heroSignals{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.admin .heroSignals span{border:1px solid rgba(219,193,143,.14);background:rgba(219,193,143,.045);border-radius:999px;padding:6px 9px;color:#b5a57f;font-size:7px;letter-spacing:.1em}
+
+.admin .decisionQueue,.admin .deliveryDecisionQueue,.admin .communicationQueue,.admin .salesAutopilot,.admin .closingAutopilot{border-radius:14px!important;border-color:rgba(219,193,143,.15)!important;background:
+linear-gradient(135deg,rgba(13,20,24,.97),rgba(10,15,19,.98))!important}
+.admin .decisionItem,.admin .deliveryDecisionItem,.admin .communicationDecisionItem,.admin .salesDecisionItem,.admin .closingDecisionItem{border-radius:10px!important;background:rgba(255,255,255,.025)!important;border-color:rgba(255,255,255,.075)!important}
+.admin .decisionItem:hover,.admin .deliveryDecisionItem:hover,.admin .communicationDecisionItem:hover,.admin .salesDecisionItem:hover,.admin .closingDecisionItem:hover{transform:translateY(-1px)!important;border-color:rgba(215,182,111,.3)!important;background:rgba(215,182,111,.045)!important}
+
+.admin .projectGallery{gap:9px!important}
+.admin .projectVisual{min-height:180px!important;border-radius:13px!important;border:1px solid rgba(219,193,143,.13)!important;background:
+radial-gradient(circle at 76% 22%,rgba(122,78,163,.12),transparent 25%),
+linear-gradient(145deg,#111922,#0a0f13)!important;box-shadow:none!important}
+.admin .projectVisual.active{border-color:rgba(215,182,111,.43)!important;box-shadow:inset 0 0 0 1px rgba(215,182,111,.08)!important}
+.admin .projectVisualTop span{color:#d6b570!important}
+.admin .projectProgress{background:rgba(255,255,255,.035)!important}
+.admin .projectProgress i{background:linear-gradient(90deg,#725c85,#d0a961)!important}
+
+.admin .operationsLayout{gap:12px!important}
+.admin .projectRail{padding:14px!important}
+.admin .projectSelect{border-radius:10px!important;border:1px solid transparent!important;background:rgba(255,255,255,.018)!important}
+.admin .projectSelect:hover{border-color:rgba(215,182,111,.18)!important;background:rgba(215,182,111,.035)!important}
+.admin .projectSelect.active{border-color:rgba(215,182,111,.28)!important;background:linear-gradient(90deg,rgba(215,182,111,.07),rgba(115,78,159,.035))!important}
+
+.admin table,.admin .table,.admin .equipmentRow,.admin .taskRow{border-color:rgba(255,255,255,.065)!important}
+.admin input,.admin select,.admin textarea{border-radius:10px!important;border-color:rgba(255,255,255,.1)!important;background:rgba(255,255,255,.028)!important;box-shadow:none!important}
+.admin input:focus,.admin select:focus,.admin textarea:focus{outline:none!important;border-color:rgba(215,182,111,.34)!important;box-shadow:0 0 0 2px rgba(215,182,111,.05)!important}
+
+.admin button:not(.recordFocus),.admin .todayAction,.admin .quickGrid a{border-radius:10px}
+.admin .todayPanel,.admin .intelligenceCard,.admin .quickCard,.admin .aiCard{border-radius:14px!important}
+.admin .aiCard{background:
+radial-gradient(circle at 78% 25%,rgba(93,60,160,.15),transparent 28%),
+linear-gradient(145deg,rgba(16,20,29,.98),rgba(9,13,17,.98))!important}
+.admin .aiOrb{color:#d4b36f!important}
+
+.admin .calendarLayout,.admin .communicationLayout,.admin .communicationsLayout{gap:12px!important}
+.admin a{transition:border-color .16s ease,background .16s ease,color .16s ease,transform .16s ease}
+
+@media(max-width:900px){
+ .admin{padding:72px 12px 102px!important}
+ .admin>.adminHead,.admin>.commandHero{padding:22px!important;border-radius:15px!important}
+ .admin>.adminHead h1,.admin>.commandHero h1{font-size:32px!important}
+}
