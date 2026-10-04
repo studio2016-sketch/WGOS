@@ -4,12 +4,18 @@ import {createBoardTask} from "./operations-board";
 
 export async function listContractExecution(authUserId?:string|null,isGlobal=false){
  const sql=db();
- const where=authUserId&&!isGlobal?sql`JOIN wgos.brand_memberships bm ON bm.brand_id=p.brand_id AND bm.auth_user_id=${authUserId} AND bm.active=true`:sql``;
- const agreements=await sql`SELECT a.id,a.title,a.status,a.signed_at,a.proposal_id,p.brand_id,p.opportunity_id,p.organization_id,p.one_time_total,p.deposit_amount,
+ const agreements=authUserId&&!isGlobal?await sql`SELECT a.id,a.title,a.status,a.signed_at,a.proposal_id,p.brand_id,p.opportunity_id,p.organization_id,p.one_time_total,p.deposit_amount,
+  b.name brand_name,o.title opportunity_title,pr.id project_id,pr.status project_status,cc.id control_id,cc.status control_status,cc.closeout_status,cc.target_complete_at
+  FROM wgos.agreements a JOIN wgos.proposals p ON p.id=a.proposal_id JOIN wgos.brands b ON b.id=p.brand_id
+  JOIN wgos.brand_memberships bm ON bm.brand_id=p.brand_id AND bm.auth_user_id=${authUserId} AND bm.active=true
+  LEFT JOIN wgos.opportunities o ON o.id=p.opportunity_id LEFT JOIN wgos.projects pr ON pr.proposal_id=p.id
+  LEFT JOIN wgos.contract_controls cc ON cc.agreement_id=a.id
+  WHERE a.status='SIGNED' ORDER BY COALESCE(a.signed_at,a.created_at) DESC`
+ :await sql`SELECT a.id,a.title,a.status,a.signed_at,a.proposal_id,p.brand_id,p.opportunity_id,p.organization_id,p.one_time_total,p.deposit_amount,
   b.name brand_name,o.title opportunity_title,pr.id project_id,pr.status project_status,cc.id control_id,cc.status control_status,cc.closeout_status,cc.target_complete_at
   FROM wgos.agreements a JOIN wgos.proposals p ON p.id=a.proposal_id JOIN wgos.brands b ON b.id=p.brand_id
   LEFT JOIN wgos.opportunities o ON o.id=p.opportunity_id LEFT JOIN wgos.projects pr ON pr.proposal_id=p.id
-  LEFT JOIN wgos.contract_controls cc ON cc.agreement_id=a.id ${where}
+  LEFT JOIN wgos.contract_controls cc ON cc.agreement_id=a.id
   WHERE a.status='SIGNED' ORDER BY COALESCE(a.signed_at,a.created_at) DESC`;
  const controlIds=agreements.map((a:any)=>a.control_id).filter(Boolean);
  if(!controlIds.length)return {agreements,controls:[],obligations:[],deliverables:[],crew:[],time:[],costs:[],changes:[],records:[],closeouts:[],crewOptions:[]};
