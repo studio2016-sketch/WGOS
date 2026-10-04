@@ -4,12 +4,12 @@ import {db} from "./db";
 export async function reconcileAccountingActivationStates(actor?:string|null){
  const sql=db();
  const funded:any[]=await sql`
-  SELECT DISTINCT ON (i.brand_id) i.brand_id,pe.id payment_event_id,(pe.amount_cents/100.0)::numeric amount,pe.occurred_at
-  FROM wgos.payment_events pe
-  JOIN wgos.invoices i ON i.id=pe.invoice_id
-  WHERE upper(pe.status) IN ('PAID','SUCCEEDED','COMPLETED','SETTLED')
-    AND pe.amount_cents>0
-  ORDER BY i.brand_id,pe.occurred_at ASC`;
+  SELECT DISTINCT ON (p.brand_id) p.brand_id,py.id payment_id,py.amount::numeric amount,COALESCE(py.paid_at,py.created_at) occurred_at
+  FROM wgos.payments py
+  JOIN wgos.proposals p ON p.id=py.proposal_id
+  WHERE upper(py.status) IN ('PAID','SUCCEEDED','COMPLETED','SETTLED')
+    AND py.amount>0
+  ORDER BY p.brand_id,COALESCE(py.paid_at,py.created_at) ASC`;
  for(const p of funded){
   const rows:any[]=await sql`SELECT * FROM wgos.accounting_entity_profiles WHERE brand_id=${String(p.brand_id)} LIMIT 1`;
   const current:any=rows[0];if(!current||current.activation_status!=="NOT_FUNDED")continue;
@@ -21,7 +21,7 @@ export async function reconcileAccountingActivationStates(actor?:string|null){
    WHERE brand_id=${String(p.brand_id)} AND activation_status='NOT_FUNDED'`;
   await sql`INSERT INTO wgos.accounting_routing_events(brand_id,event_type,provider,amount,metadata,created_by)
    VALUES(${String(p.brand_id)},'FIRST_DEPOSIT_DETECTED',${current.provider||"QUICKBOOKS"},${Number(p.amount||0)},
-   jsonb_build_object('paymentEventId',${String(p.payment_event_id)},'reserveAmount',${reserve}),${actor||null})`;
+   jsonb_build_object('paymentId',${String(p.payment_id)},'reserveAmount',${reserve}),${actor||null})`;
  }
  return funded.length;
 }
