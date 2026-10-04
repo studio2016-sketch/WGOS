@@ -5,7 +5,7 @@ const PLATFORMS=["INSTAGRAM","FACEBOOK","TIKTOK","YOUTUBE","WEBSITE","EMAIL_SMS"
 export default function GrowthMetricsClient({rows,brands}:{rows:any[];brands:any[]}){
  const router=useRouter(),[open,setOpen]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState("");
  async function save(e:any){e.preventDefault();setBusy(true);setError("");const f=new FormData(e.currentTarget);const o:any=Object.fromEntries(f.entries());o.revenueCents=Math.round((Number(o.revenueDollars)||0)*100);delete o.revenueDollars;const r=await fetch("/api/admin/growth-metrics",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(o)});const j=await r.json();setBusy(false);if(!j.ok){setError(j.error||"Unable to save");return;}setOpen(false);router.refresh();}
- return <section className="adminPanel" style={{padding:18}}>
+ return <section className="adminPanel growthMetricsWorkspace" style={{padding:18}}>
   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}}><div><p className="eyebrow">CLOSED-LOOP ANALYTICS</p><h2>Social → YouTube → Website → List → Sales</h2><p className="muted">Measure the whole growth loop, not vanity metrics in isolation.</p></div><button className="newAction" onClick={()=>setOpen(!open)}>＋ Add metrics</button></div>
   {open&&<form onSubmit={save} style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(155px,1fr))",gap:10,marginTop:16}}>
    <select name="brandId" required defaultValue=""><option value="" disabled>Brand</option>{brands.map((b:any)=><option key={b.id} value={b.id}>{b.name}</option>)}</select>
