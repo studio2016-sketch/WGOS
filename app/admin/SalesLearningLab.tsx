@@ -15,9 +15,9 @@ export default function SalesLearningLab({opportunities,learning}:{opportunities
   <form onSubmit={submit} style={{display:"grid",gap:10}}>
    <select name="opportunityId" required defaultValue=""><option value="" disabled>Select opportunity</option>{opportunities.map((o:any)=><option key={o.id} value={o.id}>{o.brand_name} · {o.title} · {o.stage}</option>)}</select>
    {mode==="event"?<>
-    <select name="eventType" defaultValue="NEXT_ACTION"><option>DISCOVERY</option><option>OBJECTION</option><option>INSIGHT</option><option>NEXT_ACTION</option><option>STAGE_CHANGE</option><option>PROPOSAL</option><option>NEGOTIATION</option><option>WIN</option><option>LOSS</option><option>REFERRAL</option><option>FOLLOW_UP</option><option>OTHER</option></select>
-    <input name="methodologyArea" placeholder="Framework area: MEDDPICC / Challenger / Sandler / Girard"/>
-    <input name="eventLabel" placeholder="Short label: CFO joined call / price objection / risk reframe"/>
+    <select name="eventType" defaultValue="NEXT_ACTION"><option value="DISCOVERY">Discovery</option><option value="OBJECTION">Objection</option><option value="INSIGHT">Insight</option><option value="NEXT_ACTION">Next action or follow-up</option><option value="STAGE_CHANGE">Stage change</option><option value="PROPOSAL">Proposal</option><option value="NEGOTIATION">Negotiation</option><option value="WIN">Win</option><option value="LOSS">Loss</option><option value="REFERRAL">Referral</option><option value="FOLLOW_UP">Follow-up</option><option value="OTHER">Other</option></select>
+    <input name="methodologyArea" placeholder="Sales approach used (optional)"/>
+    <input name="eventLabel" placeholder="Brief description of the moment"/>
     <textarea name="actionTaken" placeholder="What did we do or say?"/>
     <textarea name="outcome" placeholder="What happened immediately afterward?"/>
     <textarea name="lesson" placeholder="What should WGOS learn and reuse?"/>
