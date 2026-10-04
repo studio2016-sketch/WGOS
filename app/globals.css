@@ -616,3 +616,90 @@ linear-gradient(145deg,rgba(16,20,29,.98),rgba(9,13,17,.98))!important}
  .admin>.adminHead,.admin>.commandHero{padding:22px!important;border-radius:15px!important}
  .admin>.adminHead h1,.admin>.commandHero h1{font-size:32px!important}
 }
+
+
+/* Deep workspace render fidelity */
+.communicationsWorkspace,.relationshipWorkspace,.readinessWorkspace,.financeWorkspace{position:relative;margin-top:12px}
+.communicationsWorkspace>.workspaceTitle,.relationshipWorkspace>.workspaceTitle,.readinessWorkspace>.readinessHero,.financeWorkspace>.attentionIntro{
+  position:relative;padding:18px 20px;border:1px solid rgba(219,193,143,.14);border-radius:13px;
+  background:linear-gradient(135deg,rgba(15,23,28,.96),rgba(9,14,18,.98));overflow:hidden}
+.communicationsWorkspace>.workspaceTitle:after,.relationshipWorkspace>.workspaceTitle:after,.readinessWorkspace>.readinessHero:after,.financeWorkspace>.attentionIntro:after{
+  content:"";position:absolute;right:-5%;top:-35%;width:35%;height:170%;pointer-events:none;
+  background:radial-gradient(circle at 50% 50%,rgba(215,182,111,.08),transparent 34%)}
+.communicationsWorkspace>.workspaceTitle>*,.relationshipWorkspace>.workspaceTitle>*,.readinessWorkspace>.readinessHero>*,.financeWorkspace>.attentionIntro>*{position:relative;z-index:1}
+.communicationsWorkspace>.workspaceTitle h2,.relationshipWorkspace>.workspaceTitle h2,.readinessWorkspace>.readinessHero h2,.financeWorkspace>.attentionIntro h2{font:25px/1.08 Georgia,serif!important;color:#eee8dc!important;margin:4px 0 5px!important}
+
+.workspacePulse,.conversationSignals,.relationshipSignals,.readinessMetrics{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;margin:10px 0 12px!important}
+.workspacePulse article,.conversationSignals span,.relationshipSignals span,.readinessMetrics article{
+  border:1px solid rgba(219,193,143,.12)!important;border-radius:10px!important;
+  background:linear-gradient(145deg,rgba(13,20,24,.94),rgba(8,13,16,.98))!important;
+  padding:12px 13px!important;color:#909b9f!important}
+.conversationSignals span,.relationshipSignals span{display:block!important;font-size:8px!important;letter-spacing:.11em!important}
+.conversationSignals b,.relationshipSignals b,.readinessMetrics strong{display:block!important;color:#ede6da!important;font:21px Georgia,serif!important;margin-bottom:3px!important}
+.readinessMetrics span{color:#d3b574!important;font-size:8px!important;letter-spacing:.1em!important}
+.readinessMetrics small{display:block!important;color:#7f8a8f!important;font-size:8px!important;margin-top:4px!important}
+
+.communicationsLayout{grid-template-columns:minmax(260px,.72fr) minmax(0,1.55fr)!important;gap:10px!important}
+.communicationRail,.conversationPanel{min-height:560px;border-radius:13px!important}
+.communicationRail{background:linear-gradient(180deg,rgba(12,18,22,.98),rgba(8,12,15,.99))!important}
+.communicationRail label{font-size:8px!important;letter-spacing:.1em!important;color:#8d989c!important}
+.threadList{margin-top:14px!important;padding-top:12px!important;border-top:1px solid rgba(255,255,255,.055)!important}
+.threadSelect{border:1px solid transparent!important;border-radius:10px!important;padding:11px!important;background:transparent!important}
+.threadSelect:hover{background:rgba(215,182,111,.03)!important;border-color:rgba(215,182,111,.13)!important}
+.threadSelect.active{background:linear-gradient(90deg,rgba(215,182,111,.07),rgba(87,71,114,.035))!important;border-color:rgba(215,182,111,.23)!important}
+.threadSelect strong{font-family:Georgia,serif!important;color:#e7e1d7!important}
+.threadSelect span,.threadSelect small{color:#7f8a8e!important}
+.conversationHead{padding-bottom:14px!important;border-bottom:1px solid rgba(255,255,255,.06)!important}
+.conversationHead h2{font:26px Georgia,serif!important}
+.messageTimeline{padding:14px 0!important}
+.messageCard{max-width:76%;border:1px solid rgba(255,255,255,.07)!important;border-radius:12px!important;background:rgba(255,255,255,.025)!important;padding:11px 13px!important}
+.messageCard.outbound{margin-left:auto!important;border-color:rgba(215,182,111,.16)!important;background:rgba(215,182,111,.035)!important}
+.messageCard small{color:#7f8a8e!important;font-size:7px!important;letter-spacing:.09em!important}
+.messageCard p{line-height:1.5!important;color:#d9ddde!important}
+.messageComposer{margin-top:12px!important;padding-top:14px!important;border-top:1px solid rgba(255,255,255,.06)!important}
+
+.relationshipGrid{gap:10px!important}
+.relationshipGrid>div{border:1px solid rgba(219,193,143,.1)!important;border-radius:12px!important;background:rgba(8,13,16,.55)!important;padding:10px!important}
+.relationshipGrid .subhead{padding:3px 3px 9px!important;border-bottom:1px solid rgba(255,255,255,.05)!important}
+.recordCard{border:1px solid rgba(255,255,255,.06)!important;border-radius:11px!important;background:rgba(255,255,255,.018)!important;margin-top:7px!important}
+.recordCard:hover{border-color:rgba(215,182,111,.16)!important;background:rgba(215,182,111,.025)!important}
+.recordAvatar{background:linear-gradient(145deg,#303a40,#151b1e)!important;border:1px solid rgba(215,182,111,.18)!important;color:#d6b878!important}
+.brandChips span{border-color:rgba(215,182,111,.13)!important;background:rgba(215,182,111,.035)!important;color:#aa9b79!important}
+.relationshipBrief{border-color:rgba(151,113,210,.14)!important;background:linear-gradient(145deg,rgba(17,20,28,.76),rgba(8,12,15,.4))!important}
+.relationshipHealth,.relationshipValue>div,.relationshipSummary>div,.clientTimeline,.recordContext>div{border-radius:9px!important}
+.relationshipGraph a{border-color:rgba(219,193,143,.11)!important}
+.relationshipGraph a.hasRecords:hover{border-color:rgba(215,182,111,.22)!important;background:rgba(215,182,111,.035)!important}
+
+.readinessTable{margin-top:10px;border:1px solid rgba(219,193,143,.11)!important;border-radius:12px!important;overflow:hidden;background:rgba(8,13,16,.58)!important}
+.readinessHead,.readinessRow{grid-template-columns:1.3fr 1fr 1fr 1fr 1.2fr auto!important}
+.readinessHead{background:rgba(255,255,255,.022)!important;color:#7f898d!important;font-size:7px!important;letter-spacing:.12em!important}
+.readinessRow{border-top:1px solid rgba(255,255,255,.05)!important;background:transparent!important}
+.readinessRow.attention{background:linear-gradient(90deg,rgba(180,124,56,.035),transparent 35%)!important}
+.readinessRow.complete{background:linear-gradient(90deg,rgba(64,160,123,.035),transparent 35%)!important}
+.brandIdentity i{border-color:rgba(215,182,111,.22)!important;background:rgba(215,182,111,.045)!important;color:#d4b675!important}
+.statePill{border-radius:999px!important;padding:5px 8px!important;font-size:7px!important}
+.goldAction{border-radius:999px!important;background:rgba(215,182,111,.08)!important;border:1px solid rgba(215,182,111,.18)!important;color:#e0c37f!important}
+
+.financeWorkspace{margin-top:10px!important}
+.financeWorkspace>.attentionIntro{margin:-2px -2px 12px!important}
+.financeWorkspace>select,.financeWorkspace>div>select{max-width:420px!important}
+.financeWorkspace article{border:1px solid rgba(219,193,143,.11)!important;border-radius:10px!important;background:rgba(255,255,255,.018)!important;padding:12px!important}
+.financeWorkspace article small{color:#7f8a8e!important;font-size:7px!important;letter-spacing:.1em!important}
+.financeWorkspace article strong{color:#ece5da!important;font-family:Georgia,serif!important}
+.financeWorkspace h3{font:18px Georgia,serif!important;color:#e8e1d6!important;margin:12px 0 8px!important}
+.financeWorkspace form{margin-top:10px!important;padding:14px!important;border:1px solid rgba(219,193,143,.09)!important;border-radius:11px!important;background:rgba(255,255,255,.014)!important}
+.financeWorkspace button{border-color:rgba(219,193,143,.14)!important;background:rgba(255,255,255,.02)!important;color:#bbb5aa!important}
+.financeWorkspace button.newAction,.financeWorkspace .newAction{background:rgba(215,182,111,.07)!important;border-color:rgba(215,182,111,.22)!important;color:#ddc17e!important}
+.financeExceptionWorkspace{border-color:rgba(219,168,91,.15)!important}
+.financeExceptionWorkspace .attentionIntro{background:radial-gradient(circle at 86% 14%,rgba(212,157,76,.09),transparent 25%),linear-gradient(135deg,rgba(19,22,24,.98),rgba(9,14,18,.98))!important}
+.expenseWorkspace .attentionIntro{background:radial-gradient(circle at 86% 14%,rgba(81,158,127,.08),transparent 25%),linear-gradient(135deg,rgba(13,23,22,.98),rgba(9,14,18,.98))!important}
+.contractFinanceWorkspace .attentionIntro{background:radial-gradient(circle at 86% 14%,rgba(108,87,159,.09),transparent 25%),linear-gradient(135deg,rgba(16,19,27,.98),rgba(9,14,18,.98))!important}
+
+@media(max-width:900px){
+ .workspacePulse,.conversationSignals,.relationshipSignals,.readinessMetrics{grid-template-columns:1fr 1fr!important}
+ .communicationsLayout{grid-template-columns:1fr!important}
+ .communicationRail,.conversationPanel{min-height:auto!important}
+ .messageCard{max-width:92%!important}
+ .readinessHead{display:none!important}
+ .readinessRow{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important}
+}
