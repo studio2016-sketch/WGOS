@@ -1,0 +1,31 @@
+-- WGOS proposal countermeasure gate
+create table if not exists wgos.proposal_countermeasure_reviews(
+ id uuid primary key default gen_random_uuid(),
+ proposal_id uuid not null unique references wgos.proposals(id) on delete cascade,
+ opportunity_id uuid not null references wgos.opportunities(id) on delete cascade,
+ brand_id text not null references wgos.brands(id) on delete cascade,
+ buyer_case text,
+ finance_case text,
+ technical_case text,
+ procurement_case text,
+ competitive_case text,
+ implementation_case text,
+ inaction_case text,
+ scope_risks text,
+ pricing_risks text,
+ legal_risks text,
+ assumptions text,
+ missing_information text,
+ mitigation_plan text,
+ recommendation text,
+ readiness_score integer not null default 0,
+ status text not null default 'INCOMPLETE',
+ override_reason text,
+ reviewed_by text,
+ reviewed_at timestamptz,
+ created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now(),
+ constraint proposal_countermeasure_readiness_chk check(readiness_score between 0 and 100),
+ constraint proposal_countermeasure_status_chk check(status in('INCOMPLETE','READY','OVERRIDDEN'))
+);
+create index if not exists proposal_countermeasure_brand_idx on wgos.proposal_countermeasure_reviews(brand_id,status,updated_at desc);
