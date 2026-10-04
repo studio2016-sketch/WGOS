@@ -1,11 +1,13 @@
 import "server-only";
 import {createHash,randomBytes} from "crypto";
 import {db} from "./db";
+import {assertProposalCountermeasureReady} from "./proposal-countermeasure";
 
 function tokenHash(token:string){return createHash("sha256").update(token).digest("hex");}
 function isExpired(content:any){const raw=content?.expiresAt;if(!raw)return false;const when=new Date(raw).getTime();return Number.isFinite(when)&&when<=Date.now();}
 
 export async function issueProposalAccess(input:{proposalId:string;actor:string}){
+ await assertProposalCountermeasureReady(input.proposalId);
  const sql=db();
  const rows=await sql`SELECT p.id,p.version,p.status,p.brand_id,p.content,x.public_domain,x.proposal_path_prefix
  FROM wgos.proposals p LEFT JOIN wgos.brand_experience_profiles x ON x.brand_id=p.brand_id
