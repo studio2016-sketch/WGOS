@@ -98,6 +98,7 @@ export async function processDiscoveryAutomation(input:{limit?:number}={}){
  const sql=db();const limit=Math.max(1,Math.min(Number(input.limit||40),100));
  const rows:any[]=await sql`SELECT id,brand_id,title,stage,discovery,contact_name,contact_email,created_at FROM wgos.opportunities
  WHERE source='PUBLIC_WEB_INQUIRY' AND stage IN ('NEW','QUALIFYING','DISCOVERY') AND contact_email IS NOT NULL
+ AND EXISTS(SELECT 1 FROM wgos.audit_events ae WHERE ae.entity_type='opportunity' AND ae.entity_id=o.id::text AND ae.action='PUBLIC_WEB_INQUIRY_RECEIVED')
  ORDER BY created_at ASC LIMIT ${limit}`;
  let sent=0,reminded=0,skipped=0,failed=0;
  for(const o of rows){try{
