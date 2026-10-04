@@ -18,9 +18,28 @@ import FinanceExceptionCenter from "./FinanceExceptionCenter";
 import {listCashEnvelopes} from "../../../lib/cash-envelopes";
 import CashEnvelopeCenter from "./CashEnvelopeCenter";
 
+async function safeLoad<T>(operation: Promise<T>, fallback: T): Promise<T>{
+ try{return await operation;}catch{return fallback;}
+}
+
+const emptyContractExecution={agreements:[],controls:[],obligations:[],deliverables:[],crew:[],time:[],costs:[],changes:[],records:[],crewOptions:[],closeouts:[]};
+const emptyContractFinance={controls:[],vendors:[],purchaseOrders:[],financial:[],crewConflicts:[],equipmentConflicts:[],syncQueue:[]};
+const emptyExpenseIntelligence={brands:[],claims:[],mileage:[],budgets:[],rules:[],forecast:[],bankInbox:[],contracts:[],projects:[],users:[]};
+const emptyFinanceExceptions={brands:[],alerts:[],transactions:[],suggestions:[]};
+const emptyCashEnvelopes={brands:[],policies:[],summary:[],allocations:[]};
+
 export default async function OperationsPage({searchParams}:{searchParams:Promise<{project?:string;brand?:string;task?:string}>}){
  const query=await searchParams;const access=await commandAccess();
- const [projectRows,refs,contractExecutionRaw,contractFinanceRaw,accountingProfilesRaw,expenseIntelligenceRaw,financeExceptionsRaw,cashEnvelopesRaw]=await Promise.all([listOperationsProjects(access.identity.auth_user_id,access.isGlobal),getOperationsReferenceData(access.identity.auth_user_id,access.isGlobal),listContractExecution(access.identity.auth_user_id,access.isGlobal),listContractFinance(access.identity.auth_user_id,access.isGlobal),listAccountingEntityProfiles(access.identity.auth_user_id,access.isGlobal),listExpenseIntelligence(access.identity.auth_user_id,access.isGlobal),listFinanceExceptions(access.identity.auth_user_id,access.isGlobal),listCashEnvelopes(access.identity.auth_user_id,access.isGlobal)]);
+ const [projectRows,refs,contractExecutionRaw,contractFinanceRaw,accountingProfilesRaw,expenseIntelligenceRaw,financeExceptionsRaw,cashEnvelopesRaw]=await Promise.all([
+  safeLoad(listOperationsProjects(access.identity.auth_user_id,access.isGlobal),[] as any[]),
+  safeLoad(getOperationsReferenceData(access.identity.auth_user_id,access.isGlobal),{users:[],brands:[]} as any),
+  safeLoad(listContractExecution(access.identity.auth_user_id,access.isGlobal),emptyContractExecution),
+  safeLoad(listContractFinance(access.identity.auth_user_id,access.isGlobal),emptyContractFinance),
+  safeLoad(listAccountingEntityProfiles(access.identity.auth_user_id,access.isGlobal),[] as any[]),
+  safeLoad(listExpenseIntelligence(access.identity.auth_user_id,access.isGlobal),emptyExpenseIntelligence),
+  safeLoad(listFinanceExceptions(access.identity.auth_user_id,access.isGlobal),emptyFinanceExceptions),
+  safeLoad(listCashEnvelopes(access.identity.auth_user_id,access.isGlobal),emptyCashEnvelopes)
+ ]);
  let projects:any[]=projectRows as any[];
  const users:any[]=refs.users as any[];
  const brands:any[]=refs.brands as any[];const selectedBrand=brands.some((b:any)=>b.id===query.brand)?String(query.brand):"";if(selectedBrand)projects=projects.filter((p:any)=>p.brand_id===selectedBrand);
@@ -37,10 +56,10 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
  const overdueTasks=projects.reduce((n:number,p:any)=>n+Number(p.overdue_count||0),0);
  const portfolioProgress=totalTasks?Math.round(doneTasks/totalTasks*100):0;
  const deliveryDecisions=projects.filter((p:any)=>Number(p.blocked_count||0)>0||Number(p.overdue_count||0)>0).sort((a:any,b:any)=>(Number(b.blocked_count||0)+Number(b.overdue_count||0))-(Number(a.blocked_count||0)+Number(a.overdue_count||0)));
- let board:any=selectedId?await getOperationsBoard(String(selectedId),access.identity.auth_user_id,access.isGlobal):null;
+ let board:any=selectedId?await safeLoad(getOperationsBoard(String(selectedId),access.identity.auth_user_id,access.isGlobal),null):null;
  if(!board&&projects.length&&selectedId!==projects[0].id){
   selectedId=projects[0].id;
-  board=await getOperationsBoard(String(selectedId),access.identity.auth_user_id,access.isGlobal);
+  board=await safeLoad(getOperationsBoard(String(selectedId),access.identity.auth_user_id,access.isGlobal),null);
  }
 
  return <main className="admin">
