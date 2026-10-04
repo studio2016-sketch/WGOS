@@ -1,0 +1,37 @@
+"use client";
+import {useMemo,useState} from "react";import {useRouter} from "next/navigation";
+const money=(n:any)=>"$"+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:0});
+export default function ContractFinanceCenter({data}:{data:any}){
+ const router=useRouter(),[selected,setSelected]=useState(data.controls?.[0]?.id||""),[mode,setMode]=useState("purchase-order"),[error,setError]=useState("");
+ const control=data.controls.find((x:any)=>x.id===selected),fin=data.financial.find((x:any)=>x.contract_control_id===selected),pos=data.purchaseOrders.filter((x:any)=>x.contract_control_id===selected);
+ const brandVendors=control?data.vendors.filter((x:any)=>x.brand_id===control.brand_id):[];
+ async function send(body:any){setError("");const r=await fetch("/api/admin/contract-finance",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});const j=await r.json();if(!j.ok){setError(j.error||"Unable to save");return false;}router.refresh();return true;}
+ async function submit(e:any){e.preventDefault();const b:any=Object.fromEntries(new FormData(e.currentTarget).entries());b.action=mode;if(selected)b.controlId=selected;if(control)b.brandId=control.brand_id;if(await send(b))e.currentTarget.reset();}
+ if(!data.controls.length)return null;
+ return <section className="adminPanel" style={{padding:18}}>
+  <div className="attentionIntro"><p className="eyebrow">CONTRACT FINANCE & RESOURCES</p><h2>Procurement, profitability and conflict control</h2><p>See the financial truth of each contract and catch people/equipment conflicts before they become operational failures.</p></div>
+  <select value={selected} onChange={e=>setSelected(e.target.value)} style={{margin:"12px 0"}}>{data.controls.map((c:any)=><option key={c.id} value={c.id}>{c.brand_name} · {c.opportunity_title||c.agreement_title}</option>)}</select>
+  {fin&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:10}}>
+   <article><small>CONTRACT</small><strong style={{display:"block",fontSize:"1.4rem"}}>{money(fin.contract_value)}</strong></article>
+   <article><small>COLLECTED</small><strong style={{display:"block",fontSize:"1.4rem"}}>{money(fin.collected)}</strong></article>
+   <article><small>A/R</small><strong style={{display:"block",fontSize:"1.4rem"}}>{money(fin.accounts_receivable)}</strong></article>
+   <article><small>A/P</small><strong style={{display:"block",fontSize:"1.4rem"}}>{money(fin.accounts_payable)}</strong></article>
+   <article><small>PERSONNEL</small><strong style={{display:"block",fontSize:"1.4rem"}}>{money(fin.personnel_commitments)}</strong></article>
+   <article><small>PURCHASES</small><strong style={{display:"block",fontSize:"1.4rem"}}>{money(fin.open_purchase_commitments)}</strong></article>
+   <article><small>PROJECTED GROSS</small><strong style={{display:"block",fontSize:"1.4rem"}}>{money(fin.projected_gross_profit)}</strong><span>{fin.projected_margin_pct}% margin</span></article>
+  </div>}
+  {(data.crewConflicts.length>0||data.equipmentConflicts.length>0)&&<div style={{marginTop:16,padding:12,border:"1px solid rgba(255,255,255,.12)",borderRadius:12}}><small>RESOURCE CONFLICTS</small>
+   {data.crewConflicts.map((x:any,i:number)=><p key={"c"+i}><strong>Personnel:</strong> {x.first_name} {x.last_name} overlaps between two bookings.</p>)}
+   {data.equipmentConflicts.map((x:any,i:number)=><p key={"e"+i}><strong>Equipment:</strong> {x.asset_tag||[x.manufacturer,x.model].filter(Boolean).join(" ")} overlaps between {x.project_a_title} and {x.project_b_title}.</p>)}
+  </div>}
+  {pos.length>0&&<div style={{display:"grid",gap:8,marginTop:16}}><h3>Purchase Orders</h3>{pos.map((p:any)=><div key={p.id} style={{display:"grid",gridTemplateColumns:"1fr auto auto",gap:8,padding:"8px 0",borderBottom:"1px solid rgba(255,255,255,.06)"}}><span>{p.po_number||"PO"} · {p.title} · {p.vendor_name||"Vendor"} · {money(Number(p.total_cents||0)/100)}</span><select value={p.status} onChange={e=>send({action:"purchase-order-status",controlId:selected,brandId:control.brand_id,id:p.id,status:e.target.value,paymentStatus:p.payment_status})}><option>DRAFT</option><option>REQUESTED</option><option>APPROVED</option><option>ISSUED</option><option>PARTIALLY_RECEIVED</option><option>RECEIVED</option><option>CANCELLED</option><option>CLOSED</option></select><select value={p.payment_status} onChange={e=>send({action:"purchase-order-status",controlId:selected,brandId:control.brand_id,id:p.id,status:p.status,paymentStatus:e.target.value})}><option>UNPAID</option><option>PARTIALLY_PAID</option><option>PAID</option><option>DISPUTED</option><option>VOID</option></select></div>)}</div>}
+  <div style={{display:"flex",gap:6,flexWrap:"wrap",margin:"16px 0 10px"}}>{["purchase-order","vendor","ledger","queue-sync"].map(x=><button key={x} className={mode===x?"newAction":""} onClick={()=>setMode(x)}>{x.replace("-"," ")}</button>)}</div>
+  <form onSubmit={submit} style={{display:"grid",gap:9}}>
+   {mode==="purchase-order"&&<><input name="poNumber" placeholder="PO number"/><input name="title" required placeholder="Purchase / rental / vendor commitment"/><select name="vendorProfileId" defaultValue=""><option value="">Select vendor</option>{brandVendors.map((v:any)=><option key={v.id} value={v.id}>{v.vendor_name}</option>)}</select><input name="subtotal" inputMode="decimal" placeholder="Subtotal $"/><input name="tax" inputMode="decimal" placeholder="Tax $"/><input name="shipping" inputMode="decimal" placeholder="Shipping/freight $"/><input name="deposit" inputMode="decimal" placeholder="Deposit $"/><input name="expectedAt" type="datetime-local"/><textarea name="notes" placeholder="PO notes"/></>}
+   {mode==="vendor"&&<><input name="vendorName" required placeholder="Vendor name"/><input name="category" placeholder="Category / specialty"/><input name="paymentTerms" placeholder="Payment terms"/><select name="taxDocumentStatus"><option>UNKNOWN</option><option>REQUESTED</option><option>RECEIVED</option><option>APPROVED</option></select><select name="insuranceStatus"><option>NOT_REQUIRED</option><option>REQUESTED</option><option>RECEIVED</option><option>APPROVED</option><option>EXPIRED</option></select><textarea name="notes" placeholder="Vendor notes"/></>}
+   {mode==="ledger"&&<><select name="entryType"><option>ADJUSTMENT</option><option>REVENUE</option><option>RECEIVABLE</option><option>CASH_RECEIPT</option><option>COST_COMMITMENT</option><option>EXPENSE</option><option>PAYABLE</option><option>CASH_DISBURSEMENT</option><option>REFUND</option></select><input name="category" placeholder="Accounting category" defaultValue="GENERAL"/><input name="description" required placeholder="Ledger description"/><input name="amount" inputMode="decimal" placeholder="Amount $"/><input name="entryDate" type="date"/><textarea name="notes" placeholder="Accounting notes"/></>}
+   {mode==="queue-sync"&&<><input name="provider" placeholder="Accounting provider (e.g. QuickBooks/Xero)"/><select name="objectType"><option>CONTRACT</option><option>INVOICE</option><option>PAYMENT</option><option>EXPENSE</option><option>VENDOR</option><option>PURCHASE_ORDER</option></select><input name="internalId" placeholder="Internal record ID (optional)"/><p className="muted">Queues this record for a future accounting connector. WGOS keeps the contract subledger authoritative until a provider sync is commissioned.</p></>}
+   {error&&<p>{error}</p>}<button className="newAction" type="submit">Save</button>
+  </form>
+ </section>;
+}
