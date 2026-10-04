@@ -118,9 +118,9 @@ SELECT x.brand_id,x.forecast_date,
  SUM(x.outflow_cents)::bigint outflow_cents,
  (SUM(x.inflow_cents)-SUM(x.outflow_cents))::bigint net_cents
 FROM (
- SELECT p.brand_id,COALESCE(i.due_at::date,current_date) forecast_date,
+ SELECT i.brand_id,COALESCE(i.due_at::date,current_date) forecast_date,
   GREATEST(i.due_cents,0)::bigint inflow_cents,0::bigint outflow_cents
- FROM wgos.invoices i JOIN wgos.proposals p ON p.id=i.proposal_id
+ FROM wgos.invoices i
  WHERE i.status IN ('OPEN','PARTIALLY_PAID')
  UNION ALL
  SELECT c.brand_id,COALESCE(c.due_at::date,current_date),0::bigint,GREATEST(c.amount_cents,0)::bigint
