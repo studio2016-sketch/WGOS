@@ -18,7 +18,7 @@ export default function AdminNav({active,brands=[],brand}:{active:"commercial"|"
  ];
  return <><aside className="commandRail ownerRail" aria-label="WGOS primary navigation">
   <Link href={"/admin"+q} className="railMark ownerRailMark"><span>WGOS</span><i>⌁</i></Link>
-  <div className="railNav ownerRailNav">{nav.map((item:any,i:number)=><Link key={item.label} className={(i===0&&active==="commercial")||active===item.activeKey&&item.label!=="Home"?"active":""} href={item.href}><b>{item.icon}</b><span>{item.label}</span></Link>)}</div>
+  <div className="railNav ownerRailNav">{nav.map((item:any,i:number)=><Link key={item.label} className={(item.label==="Home"&&active==="commercial")||(item.label==="Operations"&&active==="operations")||(item.label==="Comms"&&active==="communications")||(item.label==="Schedule"&&active==="calendar")||(item.label==="Resources"&&active==="equipment")?"active":""} href={item.href}><b>{item.icon}</b><span>{item.label}</span></Link>)}</div>
   <div className="ownerRailSearch"><GlobalSearch brand={brand}/></div>
   <div className="railMotto ownerRailMotto"><span>PEOPLE<br/>MUSIC<br/>OPPORTUNITY<br/>A BRIGHTER<br/>TOMORROW</span></div>
   <div className="mobileNav">{nav.slice(0,5).map((item:any,i:number)=><Link key={item.label} className={(i===0&&active==="commercial")||active===item.activeKey&&item.label!=="Home"?"active":""} href={item.href}><b>{item.icon}</b><span>{item.label}</span></Link>)}</div>
