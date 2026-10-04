@@ -82,3 +82,6 @@ On 2026-10-02, production snapshot restore was tested without modifying business
 - Validated the intended management matrix across all eight brands: Charmin scope = Charmin Greene, CG Success, Dionne's Boutique, Charmin & Jermaine and Sound Legacy Institute; Jermaine scope = Jermaine Williams, Studio2016, Charmin & Jermaine and Sound Legacy Institute; Dr. Duane Greene scope = Bass One Basses only.
 - Every expected allow and every expected deny passed for both active membership access and BRAND_ADMIN/MANAGER management eligibility.
 - This proves the membership data model and authorization predicates. Final live acceptance still requires real non-owner Auth identities; the master OWNER login must not be repurposed as a restricted Jermaine identity.
+
+
+Production e-sign mode owner-approved: LIVE as of 2026-10-04.
