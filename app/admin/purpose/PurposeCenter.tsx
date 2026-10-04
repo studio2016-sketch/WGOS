@@ -39,7 +39,7 @@ export default function PurposeCenter({ data, initialBrand = "" }: { data: any; 
   const conditionalCount = evaluations.filter((x: any) => x.status === "CONDITIONAL").length;
   const misalignedCount = evaluations.filter((x: any) => ["MISALIGNED", "OVERRIDDEN"].includes(x.status)).length;
 
-  return <div style={{ display: "grid", gap: 18 }}>
+  return <div className="purposeWorkspace cinematicWorkspace" style={{ display: "grid", gap: 18 }}>
     <section className="adminPanel" style={{ padding: 18 }}>
       <div className="attentionIntro">
         <p className="eyebrow">PURPOSE ENGINE</p>
