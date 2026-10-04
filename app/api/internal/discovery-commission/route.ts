@@ -1,5 +1,6 @@
 import {NextResponse} from "next/server";
 import {processDiscoveryAutomation} from "../../../../lib/discovery";
+// Temporary production commissioning endpoint. Remove after discovery delivery is proven.
 export async function GET(req:Request){
  const key=new URL(req.url).searchParams.get("key")||"";
  if(!process.env.DISCOVERY_COMMISSION_SECRET||key!==process.env.DISCOVERY_COMMISSION_SECRET)return NextResponse.json({ok:false},{status:401});
