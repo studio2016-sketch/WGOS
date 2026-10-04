@@ -27,5 +27,7 @@ export async function GET(req:Request){
   else{failed++;result[name]={ok:false,error:x.reason instanceof Error?x.reason.message:"JOB_FAILED"};}
  }
  try{await recordSystemHealth({component:"operations_cron",status:failed?"DEGRADED":"OK",correlationId,details:{failed,total:jobs.length,jobs:Object.fromEntries(jobs.map(([name],i)=>[name,settled[i].status]))}});}catch{}
+ if(failed)console.error("WGOS_OPERATIONS_CRON_DEGRADED",JSON.stringify(result));
+ else console.log("WGOS_OPERATIONS_CRON_OK",JSON.stringify(result));
  return NextResponse.json(result,{status:failed?500:200,headers:{"Cache-Control":"no-store, private"}});
 }
