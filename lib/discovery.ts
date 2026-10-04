@@ -6,6 +6,11 @@ type DiscoveryState={status:string;readiness:number;missing:string[];questions:A
 
 const clean=(v:any)=>String(v??"").trim();
 const has=(v:any)=>{const s=clean(v).toLowerCase();return Boolean(s)&&!["not provided","not specified","not sure yet","prefer to discuss privately"].includes(s)};
+function businessWindowOpen(now=new Date()){
+ const parts=new Intl.DateTimeFormat("en-US",{timeZone:"America/Chicago",weekday:"short",hour:"2-digit",hour12:false}).formatToParts(now);
+ const day=parts.find(x=>x.type==="weekday")?.value||"";const hour=Number(parts.find(x=>x.type==="hour")?.value||0);
+ return !["Sat","Sun"].includes(day)&&hour>=8&&hour<18;
+}
 
 function secret(){const v=process.env.DISCOVERY_TOKEN_SECRET;if(!v)throw new Error("DISCOVERY_TOKEN_SECRET is not configured");return v;}
 function sign(payload:string){return createHmac("sha256",secret()).update(payload).digest("base64url");}
@@ -71,6 +76,8 @@ export async function savePublicDiscovery(input:{opportunityId:string;token:stri
  await sql`UPDATE wgos.opportunities SET discovery=${JSON.stringify(merged)}::jsonb,stage=${nextStage},updated_at=now() WHERE id=${input.opportunityId}::uuid`;
  await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata) VALUES('client:discovery','DISCOVERY_RESPONSE_RECEIVED','opportunity',${input.opportunityId},${JSON.stringify({readiness:assessment.readiness,status:assessment.status})}::jsonb)`;
  await sql`INSERT INTO wgos.notification_events(brand_id,recipient_subject,channel,event_type,status,payload) VALUES(${o.brand_id},'OWNER','IN_APP','DISCOVERY_RESPONSE_RECEIVED','PENDING',${JSON.stringify({opportunity_id:input.opportunityId,readiness:assessment.readiness,status:assessment.status})}::jsonb)`;
+ const threads:any[]=await sql`SELECT t.id FROM wgos.communication_threads t JOIN wgos.communication_messages m ON m.thread_id=t.id WHERE m.metadata->>'opportunityId'=${input.opportunityId} ORDER BY t.created_at DESC LIMIT 1`;
+ if(threads[0])await sql`INSERT INTO wgos.communication_messages(thread_id,direction,sender_ref,body_ref,metadata) VALUES(${String(threads[0].id)}::uuid,'INBOUND','client:discovery',${"Discovery workspace submitted · "+assessment.readiness+"% readiness"},${JSON.stringify({provider:"STUDIO2016_DISCOVERY",opportunityId:input.opportunityId,answers:safe,status:assessment.status})}::jsonb)`;
  return assessment;
 }
 
@@ -105,6 +112,7 @@ export async function processDiscoveryAutomation(input:{limit?:number}={}){
   const d=o.discovery||{},meta=d._discovery||{},assessment=assessDiscovery(d);const created=new Date(o.created_at).getTime(),now=Date.now();
   const sentAt=meta.email_sent_at?new Date(meta.email_sent_at).getTime():0;const followups=Number(meta.followup_count||0);
   let kind:"initial"|"reminder"|null=null;
+  if(!businessWindowOpen(new Date(now))){skipped++;continue;}
   if(!sentAt&&now-created>=5*60*1000)kind="initial";
   else if(sentAt&&assessment.status!=="READY_FOR_PROPOSAL"&&followups<1&&now-sentAt>=24*60*60*1000)kind="reminder";
   else if(sentAt&&assessment.status!=="READY_FOR_PROPOSAL"&&followups<2&&now-sentAt>=72*60*60*1000)kind="reminder";
@@ -129,6 +137,6 @@ export async function processDiscoveryAutomation(input:{limit?:number}={}){
   await sql`UPDATE wgos.opportunities SET discovery=${JSON.stringify(nextDiscovery)}::jsonb,stage=CASE WHEN stage='NEW' THEN 'QUALIFYING' ELSE stage END,updated_at=now() WHERE id=${String(o.id)}::uuid`;
   await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata) VALUES('system:discovery',${kind==="initial"?"DISCOVERY_EMAIL_SENT":"DISCOVERY_REMINDER_SENT"},'opportunity',${String(o.id)},${JSON.stringify({deliveryId:delivery.id||null,readiness:assessment.readiness})}::jsonb)`;
   if(kind==="initial")sent++;else reminded++;
- }catch(e){failed++;errors.push(e instanceof Error?e.message:"Discovery automation failed");}}
+ }catch(e){failed++;const message=e instanceof Error?e.message:"Discovery automation failed";errors.push(message);try{await sql`INSERT INTO wgos.notification_events(brand_id,recipient_subject,channel,event_type,status,payload) VALUES(${o.brand_id},'OWNER','IN_APP','DISCOVERY_AUTOMATION_FAILED','PENDING',${JSON.stringify({opportunity_id:String(o.id),error:message})}::jsonb)`}catch{}}}
  return {seen:rows.length,sent,reminded,skipped,failed,errors};
 }
