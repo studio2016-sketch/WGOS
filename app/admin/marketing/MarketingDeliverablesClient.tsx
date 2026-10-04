@@ -8,7 +8,7 @@ export default function MarketingDeliverablesClient({rows,brands}:{rows:any[];br
  const router=useRouter(); const [open,setOpen]=useState(false); const [busy,setBusy]=useState(false); const [error,setError]=useState("");
  async function create(e:any){e.preventDefault();setBusy(true);setError("");const f=new FormData(e.currentTarget);const body=Object.fromEntries(f.entries());const r=await fetch("/api/admin/marketing-deliverables",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});const j=await r.json();setBusy(false);if(!j.ok){setError(j.error||"Unable to save");return;}setOpen(false);router.refresh();}
  async function setStatus(id:string,status:string){await fetch("/api/admin/marketing-deliverables",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({id,status})});router.refresh();}
- return <div style={{display:"grid",gap:18}}>
+ return <div className="marketingWorkspace cinematicWorkspace" style={{display:"grid",gap:18}}>
   <div className="adminPanel" style={{padding:18}}>
    <div style={{display:"flex",justifyContent:"space-between",gap:16,alignItems:"center",flexWrap:"wrap"}}><div><p className="eyebrow">CONTENT INPUT QUEUE</p><h2>Marketing Deliverables</h2><p className="muted">Everything WGOS still needs from owners, artists, partners or staff to create and publish marketing.</p></div><button className="newAction" onClick={()=>setOpen(!open)}>＋ Add deliverable</button></div>
    {open&&<form onSubmit={create} style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:10,marginTop:18}}>
