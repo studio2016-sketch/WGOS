@@ -24,7 +24,8 @@ async function publicFetch(start:URL){
 
 export async function auditPublicSite(input:string):Promise<SiteAuditResult>{
  const raw=String(input||"").trim();if(!raw)throw new Error("Site URL is required.");
- const url=new URL(raw.startsWith("http")?raw:"https://"+raw);\n if(!["http:","https:"].includes(url.protocol))throw new Error("Only public HTTP(S) sites may be audited.");assertPublicUrl(url);
+ const url=new URL(raw.startsWith("http")?raw:"https://"+raw);
+ if(!["http:","https:"].includes(url.protocol))throw new Error("Only public HTTP(S) sites may be audited.");assertPublicUrl(url);
  const started=Date.now();let response:Response;
  try{response=await publicFetch(url)}
  catch(e){return {url:url.toString(),checkedAt:new Date().toISOString(),httpStatus:null,latencyMs:Date.now()-started,title:null,description:null,canonical:null,lang:null,findings:[{check:"Reachability",status:"FAIL",detail:e instanceof Error?e.message:"Site request failed."}]}}
