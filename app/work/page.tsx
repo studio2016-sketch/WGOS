@@ -1,5 +1,5 @@
 import Link from "next/link";
-import {currentIdentity} from "../../lib/authz";
+import {currentIdentity,hasOwnerWorkspaceAccess} from "../../lib/authz";
 import {getOperationsBoard,listOperationsProjects} from "../../lib/operations-board";
 import OperationsBoardClient from "../admin/operations/OperationsBoardClient";
 
@@ -7,6 +7,7 @@ export default async function WorkPage({searchParams}:{searchParams:Promise<{pro
  const identity:any=await currentIdentity();
  const query=await searchParams;
  const isGlobal=Boolean(identity&&["OWNER","ADMIN"].includes(String(identity.role)));
+ const ownerWorkspace=await hasOwnerWorkspaceAccess(identity);
  const rows:any[]=await listOperationsProjects(identity?.auth_user_id||null,isGlobal) as any[];
  const allowed=new Set(rows.map((p:any)=>String(p.id)));
  let selectedId=query.project&&allowed.has(String(query.project))?String(query.project):rows[0]?.id||"";
@@ -20,7 +21,7 @@ export default async function WorkPage({searchParams}:{searchParams:Promise<{pro
   <header className="adminHead">
    <div><p className="eyebrow">WGOS · WORKSPACE</p><h1>Work Board</h1><p>Execute assigned work, update status, manage dependencies and leave project context for the team.</p></div>
    <div className="adminActions">
-    {identity&&["OWNER","ADMIN"].includes(String(identity.role))&&<Link href="/admin">Owner Command →</Link>}
+    {ownerWorkspace&&<Link href="/admin">Owner Command →</Link>}
    </div>
   </header>
 
