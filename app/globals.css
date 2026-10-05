@@ -785,3 +785,80 @@ linear-gradient(145deg,rgba(15,22,25,.98),rgba(8,13,16,.98))!important}
  .equipmentWorkspace .equipmentLayout{grid-template-columns:1fr!important}
  .calendarWorkspace{grid-template-columns:1fr!important}
 }
+
+
+/* Mobile owner + communications stabilization */
+@media(max-width:1100px){
+  .ownerRail>.ownerRailMark,
+  .ownerRail>.ownerRailNav,
+  .ownerRail>.ownerRailSearch,
+  .ownerRail>.ownerRailMotto{display:none!important}
+  .ownerRail>.mobileNav{display:grid!important}
+  .commandRail{overflow:hidden}
+  .mobileNav{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+  .mobileNav a{min-width:0!important;padding:4px 2px!important}
+  .mobileNav a span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+}
+@media(max-width:820px){
+  .communicationRail{min-width:0!important;overflow:hidden}
+  .threadList{
+    display:flex!important;
+    gap:8px!important;
+    max-height:none!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    padding:12px 2px 4px!important;
+    scroll-snap-type:x proximity;
+    -webkit-overflow-scrolling:touch;
+  }
+  .threadSelect{
+    flex:0 0 min(78vw,330px)!important;
+    min-width:0!important;
+    min-height:86px!important;
+    align-content:start!important;
+    scroll-snap-align:start;
+    overflow:hidden!important;
+  }
+  .threadSelect span{
+    display:block!important;
+    font:700 8px/1.2 Arial,sans-serif!important;
+    letter-spacing:.12em!important;
+    text-transform:uppercase;
+  }
+  .threadSelect strong{
+    display:block!important;
+    min-width:0!important;
+    max-width:100%!important;
+    font:600 15px/1.25 Georgia,serif!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    margin:2px 0!important;
+  }
+  .threadSelect small{
+    display:block!important;
+    min-width:0!important;
+    max-width:100%!important;
+    font:9px/1.25 Arial,sans-serif!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    letter-spacing:0!important;
+  }
+  .conversationPanel{overflow:hidden}
+  .conversationHead h2{
+    font-size:clamp(25px,7.4vw,36px)!important;
+    line-height:1.05!important;
+    overflow-wrap:anywhere;
+  }
+}
+@media(max-width:500px){
+  .admin{padding-left:12px!important;padding-right:12px!important;padding-bottom:92px!important}
+  .communicationRail,.conversationPanel{padding:14px!important}
+  .communicationRail>div:first-child{gap:11px!important}
+  .communicationRail button.primary{min-height:52px;font-size:16px!important}
+  .messageCard p{font-size:15px!important;line-height:1.5!important}
+  .messageCard small{font-size:9px!important}
+  .messageComposer>div{display:grid!important;grid-template-columns:1fr 1fr!important}
+  .messageComposer>div .primary{grid-column:1/-1}
+}
