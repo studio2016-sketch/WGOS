@@ -125,3 +125,17 @@ export async function requireApiEquipment(identity:any,assetId:string){
  const sql=db();const rows=await sql`SELECT brand_id FROM wgos.equipment_assets WHERE id=${assetId}::uuid LIMIT 1`;
  return rows[0]&&await canManageBrand(identity,String(rows[0].brand_id))?{ok:true as const}:{ok:false as const,status:403,error:"EQUIPMENT_ACCESS_REQUIRED"};
 }
+
+
+export async function hasOwnerWorkspaceAccess(identity:any){
+ if(!identity)return false;
+ if(["OWNER","ADMIN"].includes(String(identity.role)))return true;
+ const sql=db();
+ const rows=await sql`
+  SELECT 1 FROM wgos.brand_memberships
+  WHERE auth_user_id=${String(identity.auth_user_id||"")}
+    AND active=true
+    AND membership_role IN ('BRAND_ADMIN','MANAGER')
+  LIMIT 1`;
+ return Boolean(rows[0]);
+}
