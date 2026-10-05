@@ -11,11 +11,16 @@ function textMatch(html:string,re:RegExp){const m=html.match(re);return m?.[1]?.
 function attr(tag:string,name:string){const m=tag.match(new RegExp("\\b"+name+"=[\\\"']([^\\\"']+)[\\\"']","i"));return m?.[1]?.trim()||null}
 
 function assertPublicUrl(url:URL){
- const h=url.hostname.toLowerCase().replace(/^\\[|\\]$/g,"");
- if(h==="localhost"||h.endsWith(".localhost")||h.endsWith(".local")||h==="::1"||h==="0.0.0.0")throw new Error("Private/internal hosts are not auditable.");
- const v4=h.match(/^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})$/);
- if(v4){const [a,b,c,d]=v4.slice(1).map(Number);if([a,b,c,d].some(n=>n>255))throw new Error("Invalid IPv4 host.");if(a===10||a===127||a===0||(a===169&&b===254)||(a===172&&b>=16&&b<=31)||(a===192&&b===168))throw new Error("Private/internal hosts are not auditable.");}
- if(h.startsWith("fc")||h.startsWith("fd")||h.startsWith("fe80:"))throw new Error("Private/internal hosts are not auditable.");
+ const h=url.hostname.toLowerCase();
+ if(h==="localhost"||h.endsWith(".localhost")||h.endsWith(".local")||h==="::1"||h==="[::1]"||h==="0.0.0.0")throw new Error("Private/internal hosts are not auditable.");
+ const parts=h.split(".");
+ if(parts.length===4&&parts.every(p=>/^\d{1,3}$/.test(p))){
+  const nums=parts.map(Number);const [a,b]=nums;
+  if(nums.some(n=>n>255))throw new Error("Invalid IPv4 host.");
+  if(a===10||a===127||a===0||(a===169&&b===254)||(a===172&&b>=16&&b<=31)||(a===192&&b===168))throw new Error("Private/internal hosts are not auditable.");
+ }
+ const v6=h.replace("[","").replace("]","");
+ if(v6.startsWith("fc")||v6.startsWith("fd")||v6.startsWith("fe80:"))throw new Error("Private/internal hosts are not auditable.");
 }
 async function publicFetch(start:URL){
  let current=new URL(start);for(let i=0;i<6;i++){assertPublicUrl(current);const r=await fetch(current,{redirect:"manual",cache:"no-store",headers:{"user-agent":"WGOS-ReadOnly-Audit/1.0"},signal:AbortSignal.timeout(12000)});if(![301,302,303,307,308].includes(r.status))return r;const location=r.headers.get("location");if(!location)return r;current=new URL(location,current);}
