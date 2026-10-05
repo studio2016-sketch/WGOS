@@ -28,7 +28,7 @@ export default function ProposalReviewWorkspace({data}:{data:any}){
  const router=useRouter();
  const p=data.proposal;
  const [tab,setTab]=useState<"review"|"preview"|"risk">("review");
- const [sections,setSections]=useState((data.sections||[]).map((s:any)=>({...s,title:String(s.title||""),content:textValue(s.content)})));
+ const [sections,setSections]=useState<any[]>((data.sections||[]).map((s:any)=>({...s,title:String(s.title||""),content:textValue(s.content)})));
  const [total,setTotal]=useState(String(p.one_time_total||0));
  const [deposit,setDeposit]=useState(String(p.deposit_amount||0));
  const [busy,setBusy]=useState("");
