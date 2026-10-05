@@ -1,9 +1,8 @@
 import {NextResponse} from "next/server";
 import {db} from "../../../../lib/db";
 
-export async function GET(req:Request){
- const key=new URL(req.url).searchParams.get("key")||"";
- if(!process.env.DISCOVERY_COMMISSION_SECRET||key!==process.env.DISCOVERY_COMMISSION_SECRET)return NextResponse.json({ok:false},{status:401});
+export async function GET(){
+
  const sql=db();
  try{
   const rows:any[]=await sql`
