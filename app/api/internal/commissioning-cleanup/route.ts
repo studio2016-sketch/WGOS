@@ -20,10 +20,19 @@ export async function GET(){
   const old=rows.filter((p:any)=>String(p.id)!==String(current.id));
   for(const p of old){
     await sql`UPDATE wgos.proposals SET content=COALESCE(content,'{}'::jsonb)||jsonb_build_object('archivedCommissioning',true),updated_at=now() WHERE id=${String(p.id)}::uuid`;
-    await sql`UPDATE wgos.opportunities SET source='COMMISSIONING_ARCHIVED',stage='LOST',updated_at=now() WHERE id=${String(p.opportunity_id)}::uuid`;
-    await sql`UPDATE wgos.notification_events SET status='READ' WHERE status='PENDING' AND (
-      payload->>'proposal_id'=${String(p.id)} OR payload->>'opportunity_id'=${String(p.opportunity_id)}
-    )`;
+    await sql`UPDATE wgos.notification_events SET status='READ' WHERE status='PENDING' AND payload->>'proposal_id'=${String(p.id)}`;
+  }
+  await sql`UPDATE wgos.opportunities SET source='PUBLIC_WEB_INQUIRY',stage='PROPOSAL',proposal_id=${String(current.id)}::uuid,updated_at=now() WHERE id=${String(current.opportunity_id)}::uuid`;
+  const obsoleteOpps:any[]=await sql`
+    SELECT o.id FROM wgos.opportunities o
+    JOIN wgos.brands b ON b.id=o.brand_id
+    LEFT JOIN wgos.organizations org ON org.id=o.organization_id
+    WHERE b.name='Studio2016'
+      AND org.name='Studio2016 Internal Commissioning'
+      AND o.id<>${String(current.opportunity_id)}::uuid`;
+  for(const o of obsoleteOpps){
+    await sql`UPDATE wgos.opportunities SET source='COMMISSIONING_ARCHIVED',stage='LOST',updated_at=now() WHERE id=${String(o.id)}::uuid`;
+    await sql`UPDATE wgos.notification_events SET status='READ' WHERE status='PENDING' AND payload->>'opportunity_id'=${String(o.id)}`;
   }
   await sql`UPDATE wgos.notification_events n SET status='READ'
     FROM wgos.brands b
@@ -38,6 +47,6 @@ export async function GET(){
   await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata)
     VALUES('system:commissioning-cleanup','COMMISSIONING_ARTIFACTS_ARCHIVED','proposal',${String(current.id)},
       ${JSON.stringify({keptProposalId:String(current.id),archivedProposalIds:old.map((x:any)=>String(x.id)),keptOpportunityId:String(current.opportunity_id)})}::jsonb)`;
-  return NextResponse.json({ok:true,kept:{proposalId:String(current.id),opportunityId:String(current.opportunity_id),version:Number(current.version)},archived:old.map((x:any)=>({proposalId:String(x.id),opportunityId:String(x.opportunity_id),version:Number(x.version)}))});
+  return NextResponse.json({ok:true,kept:{proposalId:String(current.id),opportunityId:String(current.opportunity_id),version:Number(current.version)},archivedProposals:old.map((x:any)=>({proposalId:String(x.id),version:Number(x.version)})),archivedOpportunities:obsoleteOpps.map((x:any)=>String(x.id))});
  }catch(e){return NextResponse.json({ok:false,error:e instanceof Error?e.message:"cleanup_failed"},{status:500});}
 }
