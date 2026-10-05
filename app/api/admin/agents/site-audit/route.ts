@@ -1,7 +1,7 @@
 import {NextResponse} from "next/server";
-import {requireApiUser,canAccessBrand} from "../../../../lib/authz";
-import {db} from "../../../../lib/db";
-import {auditPublicSite} from "../../../../lib/agent-audits";
+import {requireApiUser,canAccessBrand} from "../../../../../lib/authz";
+import {db} from "../../../../../lib/db";
+import {auditPublicSite} from "../../../../../lib/agent-audits";
 
 export async function GET(req:Request){
  const auth=await requireApiUser();if(!auth.ok)return NextResponse.json({ok:false,error:auth.error},{status:auth.status});
