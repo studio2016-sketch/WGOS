@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS wgos.agent_definitions(
 CREATE TABLE IF NOT EXISTS wgos.agent_runs(
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
  agent_id text NOT NULL REFERENCES wgos.agent_definitions(id),
- brand_id uuid REFERENCES wgos.brands(id),
+ brand_id text REFERENCES wgos.brands(id),
  parent_run_id uuid REFERENCES wgos.agent_runs(id),
  requested_by text,
  status text NOT NULL CHECK(status IN ('QUEUED','RUNNING','WAITING_APPROVAL','WAITING_INPUT','SUCCEEDED','FAILED','CANCELLED')),
@@ -46,7 +46,7 @@ CREATE INDEX IF NOT EXISTS agent_events_run_idx ON wgos.agent_events(run_id,id);
 CREATE TABLE IF NOT EXISTS wgos.agent_decisions(
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
  run_id uuid NOT NULL REFERENCES wgos.agent_runs(id) ON DELETE CASCADE,
- brand_id uuid REFERENCES wgos.brands(id),
+ brand_id text REFERENCES wgos.brands(id),
  decision text NOT NULL CHECK(decision IN ('APPROVE','MODIFY','REJECT','ASK_WHY')),
  decided_by text NOT NULL,
  rationale text,
