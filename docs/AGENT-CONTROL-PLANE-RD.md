@@ -263,3 +263,70 @@ For every external platform capability:
 5. Does it strengthen or weaken the owner experience?
 
 Build what differentiates WGOS. Integrate commodity infrastructure. Preserve portability.
+
+
+## R&D conclusion: buy durability, own governance
+
+Do not implement a bespoke durable agent runtime in Phase 1.
+
+Preferred first implementation path:
+- Vercel WorkflowAgent / Workflow SDK for durable execution, retries, suspension and human approval
+- Vercel Sandbox for isolated code execution
+- GitHub for code branches, PRs and canonical diffs
+- Neon/WGOS for business-semantic run records, decisions, policies, brand scope and outcome metrics
+- portable repository skills/instructions for agent specialization
+- provider/model routing behind an abstraction layer
+
+Evaluate eve as a higher-level filesystem-first agent framework before writing equivalent orchestration ourselves.
+
+The WGOS event model should describe business-relevant events and approvals even if low-level execution events live in Vercel telemetry/workflow history. Avoid duplicating infrastructure observability unless WGOS needs the event for audit, authorization, owner UX or cross-provider portability.
+
+## Additional competitive lessons
+
+### Cursor
+Public engineering writeups reinforce:
+- the development environment is part of the product
+- long-running agents require durable execution rather than a fragile always-on loop
+- agents should have browser/computer verification capability
+- credentials, network access and secrets require explicit policy
+- the execution machine should be disposable; durable state belongs outside it
+- use short composable workflows rather than one eternal process where possible
+- agents should return proof artifacts (screenshots, video, logs, tests), not merely claim completion
+
+WGOS adaptation:
+- standardize a reproducible agent environment
+- make proof-of-work artifacts part of completion criteria
+- make retries/idempotency explicit
+- separate agent identity/history from any particular sandbox instance
+- add environment-health diagnostics so agents can distinguish code failure from missing secrets/network/tooling
+
+### GitHub
+Use open Agent Skills / repository-defined custom instructions where possible. This reduces lock-in and allows WGOS knowledge to be consumed by multiple compatible coding-agent hosts.
+
+### Replit
+Adopt the product principle that an implementation agent should repeatedly test the application it is building and repair failures before handing work back. Browser verification is a required stage, not an optional final check.
+
+## Build-vs-buy boundary
+
+Own in WGOS:
+- brand and tenant context
+- authorization and approval policy
+- business rules
+- owner inbox and review UX
+- agent catalog and autonomy levels
+- cross-business orchestration
+- audit semantics
+- outcome metrics and learning
+- provider routing policy
+- portable skill definitions where differentiated
+
+Prefer external/commodity infrastructure:
+- model inference
+- isolated microVM/container execution
+- durable workflow primitives
+- source-control branching
+- preview hosting/CDN
+- low-level logs/traces
+- standard OAuth/connectors when available
+
+Re-evaluate each boundary quarterly as agent infrastructure commoditizes.
