@@ -56,7 +56,13 @@ export async function auditPublicSite(input:string):Promise<SiteAuditResult>{
   {check:"Viewport",status:viewport?"PASS":"FAIL",detail:viewport?"Viewport declared":"Viewport metadata missing"},
   {check:"Primary heading",status:h1Count===1?"PASS":h1Count===0?"FAIL":"WARN",detail:h1Count+" H1 element(s)"},
   {check:"Indexability",status:robotsNoIndex?"FAIL":"PASS",detail:robotsNoIndex?"noindex directive detected":"No page-level noindex detected"},
-  {check:"Structured data",status:jsonLd>0?"PASS":"WARN",detail:jsonLd+" JSON-LD block(s)"}
+  {check:"Structured data",status:jsonLd>0?"PASS":"WARN",detail:jsonLd+" JSON-LD block(s)"},
+  {check:"Image alternatives",status:missingAlt===0?"PASS":missingAlt<=2?"WARN":"FAIL",detail:images.length+" image(s); "+missingAlt+" missing alt attributes"},
+  {check:"Semantic landmarks",status:landmarks>=2?"PASS":landmarks>0?"WARN":"FAIL",detail:landmarks+" structural landmark(s)"},
+  {check:"HTML payload",status:htmlKb<250?"PASS":htmlKb<500?"WARN":"FAIL",detail:htmlKb+" KB HTML response"},
+  {check:"Script footprint",status:scripts<20?"PASS":scripts<40?"WARN":"FAIL",detail:scripts+" script element(s)"},
+  {check:"Open Graph",status:openGraph?"PASS":"WARN",detail:openGraph?"Open Graph metadata detected":"No Open Graph metadata detected"},
+  {check:"Transport security",status:url.protocol==="https:"&&hsts?"PASS":url.protocol==="https:"?"WARN":"FAIL",detail:hsts?"HSTS header detected":"HSTS header not detected"}
  ];
  return {url:response.url||url.toString(),checkedAt:new Date().toISOString(),httpStatus:response.status,latencyMs,title,description,canonical,lang,findings};
 }
