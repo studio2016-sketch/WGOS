@@ -1,6 +1,6 @@
 import {NextResponse} from "next/server";
 
-const allowed=new Set(["sign-in/email","sign-out","get-session","request-password-reset","reset-password","send-verification-email","verify-email","email-otp/send-verification-otp","email-otp/verify-email"]);
+const allowed=new Set(["sign-up/email","sign-in/email","sign-out","get-session","request-password-reset","reset-password","send-verification-email","verify-email","email-otp/send-verification-otp","email-otp/verify-email"]);
 const internalAuthOrigin=()=>String(process.env.NEON_AUTH_TRUSTED_ORIGIN||"https://wgos.vercel.app").replace(/\/$/,"");
 
 function cleanSetCookie(value:string){
