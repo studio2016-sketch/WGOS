@@ -1,4 +1,5 @@
 import Link from "next/link";
+import TimeAwareOwnerGreeting from "./TimeAwareOwnerGreeting";
 
 type OwnerDashboardProps = {
   identity:any;
@@ -99,8 +100,7 @@ export default function OwnerDashboard({
     <div className="ownerHero">
       <div className="ownerHeroCopy">
         <p className="ownerKicker">WGOS · {selectedBrand?"BRAND COMMAND":"OWNER COMMAND"}</p>
-        <h1>Good morning,<br/>{firstName}.</h1>
-        <p className="ownerLead">{selectedBrand?"This brand is in motion.":"Your world is in motion."}<br/>Purpose, people, opportunities and delivery in one calm command surface.</p>
+        <TimeAwareOwnerGreeting name={firstName} selectedBrand={Boolean(selectedBrand)}/>
         <blockquote>“A bigger tomorrow<br/>for more people through music.”</blockquote>
       </div>
       <div className="ownerHeroScene" aria-hidden="true">
