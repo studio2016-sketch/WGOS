@@ -46,6 +46,11 @@ export async function auditPublicSite(input:string):Promise<SiteAuditResult>{
  const viewport=/<meta[^>]+name=["']viewport["']/i.test(html);
  const robotsNoIndex=/<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(html)||/<meta[^>]+content=["'][^"']*noindex[^"']*["'][^>]+name=["']robots["']/i.test(html);
  const jsonLd=(html.match(/type=["']application\/ld\+json["']/gi)||[]).length;
+ const images=html.match(/<img\b[^>]*>/gi)||[];const missingAlt=images.filter(tag=>!(/\balt\s*=/i.test(tag))).length;
+ const landmarks=(html.match(/<(main|nav|header|footer)\b/gi)||[]).length;
+ const scripts=(html.match(/<script\b/gi)||[]).length;const htmlKb=Math.round(Buffer.byteLength(html,"utf8")/1024);
+ const openGraph=/<meta[^>]+property=["']og:(title|description|image)["']/i.test(html);
+ const hsts=Boolean(response.headers.get("strict-transport-security"));
  const findings:SiteAuditFinding[]=[
   {check:"HTTP",status:response.ok?"PASS":"FAIL",detail:"HTTP "+response.status},
   {check:"Latency",status:latencyMs<1500?"PASS":latencyMs<3000?"WARN":"FAIL",detail:latencyMs+" ms server response"},
