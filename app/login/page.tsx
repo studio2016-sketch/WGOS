@@ -20,7 +20,8 @@ export default function Login(){
    const me=await fetch("/api/me",{cache:"no-store"});
    let who:any={};try{who=await me.json()}catch{}
    const role=String(who?.user?.role||"");
-   router.replace(["OWNER","ADMIN"].includes(role)?"/admin":"/work");
+   const ownerWorkspace=Boolean(who?.user?.ownerWorkspace);
+   router.replace(["OWNER","ADMIN"].includes(role)||ownerWorkspace?"/admin":"/work");
    router.refresh();
   }else{
    const msg=String(d?.message||d?.error||"Unable to sign in.");
