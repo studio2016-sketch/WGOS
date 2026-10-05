@@ -2,7 +2,11 @@ import "server-only";
 import {db} from "./db";
 import {agentDefinitions} from "./agent-registry";
 
-export async function agentSchemaReady(){const sql=db();const rows:any[]=await sql\`SELECT to_regclass('wgos.agent_runs')::text AS runs,to_regclass('wgos.agent_events')::text AS events\`;return Boolean(rows[0]?.runs&&rows[0]?.events)}
+export async function agentSchemaReady(){
+ const sql=db();
+ const rows:any[]=await sql`SELECT to_regclass('wgos.agent_runs')::text AS runs, to_regclass('wgos.agent_events')::text AS events`;
+ return Boolean(rows[0]?.runs&&rows[0]?.events);
+}
 
 function def(id:string){const d=agentDefinitions.find(x=>x.id===id);if(!d)throw new Error("UNKNOWN_AGENT");return d}
 
