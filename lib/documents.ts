@@ -109,3 +109,41 @@ export async function ensureReadyDiscoveryProposalDrafts(input:{limit?:number}={
  }catch(e){failed++;errors.push(e instanceof Error?e.message:"Unable to prepare proposal draft");}}
  return {seen:rows.length,created,skipped,failed,errors};
 }
+
+
+export async function getProposalReviewData(proposalId:string){
+ const sql=db();
+ const rows:any[]=await sql`
+  SELECT p.*,o.title opportunity_title,o.discovery,o.stage opportunity_stage,
+         b.name brand_name,org.name organization_name,
+         c.first_name,c.last_name,c.email contact_email
+  FROM wgos.proposals p
+  JOIN wgos.brands b ON b.id=p.brand_id
+  LEFT JOIN wgos.opportunities o ON o.id=p.opportunity_id
+  LEFT JOIN wgos.organizations org ON org.id=p.organization_id
+  LEFT JOIN wgos.contacts c ON c.id=o.primary_contact_id
+  WHERE p.id=${proposalId}::uuid LIMIT 1`;
+ const proposal:any=rows[0];if(!proposal)return null;
+ const [sections,items,countermeasure]=await Promise.all([
+  sql`SELECT id,position,section_type,title,content FROM wgos.proposal_sections WHERE proposal_id=${proposalId}::uuid ORDER BY position,id`,
+  sql`SELECT id,position,name,description,quantity,unit_amount_cents,tax_cents,optional,selected,metadata FROM wgos.proposal_line_items WHERE proposal_id=${proposalId}::uuid ORDER BY position,id`,
+  sql`SELECT * FROM wgos.proposal_countermeasure_reviews WHERE proposal_id=${proposalId}::uuid LIMIT 1`
+ ]);
+ return {proposal,sections,items,countermeasure:countermeasure[0]||null};
+}
+
+export async function updateProposalReview(input:{proposalId:string;sections:Array<{id:string;title:string;content:string}>;oneTimeTotal:number;depositAmount:number;actor:string}){
+ const sql=db();
+ const existing:any[]=await sql`SELECT id,status FROM wgos.proposals WHERE id=${input.proposalId}::uuid LIMIT 1`;
+ if(!existing[0])throw new Error("Proposal not found.");
+ if(String(existing[0].status)!=="DRAFT")throw new Error("Only draft proposals can be edited.");
+ for(const section of input.sections||[]){
+  await sql`UPDATE wgos.proposal_sections SET title=${String(section.title||"").trim()},content=${JSON.stringify(String(section.content||"").trim())}::jsonb
+    WHERE id=${String(section.id)}::uuid AND proposal_id=${input.proposalId}::uuid`;
+ }
+ await updateProposalFinancials({proposalId:input.proposalId,oneTimeTotal:input.oneTimeTotal,depositAmount:input.depositAmount,actor:input.actor});
+ await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata)
+  VALUES(${input.actor},'PROPOSAL_OWNER_REVIEW_UPDATED','proposal',${input.proposalId},
+    jsonb_build_object('sectionCount',${Number((input.sections||[]).length)},'oneTimeTotal',${Math.max(0,input.oneTimeTotal)},'depositAmount',${Math.max(0,input.depositAmount)}))`;
+ return getProposalReviewData(input.proposalId);
+}
