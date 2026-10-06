@@ -1020,3 +1020,25 @@ linear-gradient(145deg,rgba(15,22,25,.98),rgba(8,13,16,.98))!important}
       linear-gradient(90deg,rgba(5,9,12,.08),transparent 55%,rgba(5,9,12,.04));
   }
 }
+
+
+/* Relationship selected-card containment fix */
+.recordCard>.relationshipBrief,
+.recordCard>.relationshipValue,
+.recordCard>.relationshipHealth,
+.recordCard>.relationshipSummary,
+.recordCard>.nextBest,
+.recordCard>.relationshipGraph,
+.recordCard>.clientTimeline,
+.recordCard>.recordContext{grid-column:1/-1;min-width:0}
+.recordCard>div:nth-child(2){min-width:0}
+.recordCard>div:nth-child(2)>strong,
+.recordContext strong{overflow-wrap:anywhere;word-break:break-word}
+@media(max-width:800px){
+  .recordCard{align-items:start}
+  .recordCard>.recordContext{grid-template-columns:1fr 1fr}
+}
+@media(max-width:520px){
+  .recordCard>.recordContext{grid-template-columns:1fr}
+  .recordContext>a{white-space:normal;text-align:center}
+}
