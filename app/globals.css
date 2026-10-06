@@ -997,3 +997,26 @@ linear-gradient(145deg,rgba(15,22,25,.98),rgba(8,13,16,.98))!important}
   }
   .ownerVisual > img{image-rendering:auto}
 }
+
+
+/* Preserve native photo sharpness on iOS/Safari. The overlay handles tone; avoid GPU-filter softness. */
+@media(max-width:760px){
+  .ownerVisual > img{
+    filter:none!important;
+    -webkit-filter:none!important;
+    image-rendering:auto;
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
+  }
+  .ownerVisual:not(.instrument) > img{
+    transform:none!important;
+  }
+  .ownerDomainCard:hover .ownerVisual:not(.instrument) > img{
+    transform:none!important;
+  }
+  .ownerVisualShade{
+    background:
+      linear-gradient(180deg,rgba(4,8,11,.03),rgba(4,8,11,.07) 52%,rgba(4,8,11,.25) 100%),
+      linear-gradient(90deg,rgba(5,9,12,.08),transparent 55%,rgba(5,9,12,.04));
+  }
+}
