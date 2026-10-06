@@ -976,3 +976,24 @@ linear-gradient(145deg,rgba(15,22,25,.98),rgba(8,13,16,.98))!important}
   .ownerVisual{height:128px}
   .ownerVisual>img{filter:saturate(.86) contrast(1.04) brightness(.8)}
 }
+
+
+/* Premium Instruments uses a portrait source; present it horizontally in the landscape owner card. */
+.ownerVisual.instrument > img{
+  object-fit:cover;
+  object-position:center 58%!important;
+  transform:rotate(90deg) scale(1.82);
+}
+.ownerDomainCard:hover .ownerVisual.instrument > img{
+  transform:rotate(90deg) scale(1.88);
+}
+@media(max-width:760px){
+  .ownerVisual.instrument > img{
+    object-position:center center!important;
+    transform:rotate(90deg) scale(1.82);
+  }
+  .ownerDomainCard:hover .ownerVisual.instrument > img{
+    transform:rotate(90deg) scale(1.82);
+  }
+  .ownerVisual > img{image-rendering:auto}
+}
