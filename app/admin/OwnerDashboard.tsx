@@ -69,14 +69,14 @@ export default function OwnerDashboard({
   }
 
   const domains=[
-    {label:"Artists",meta:(openOpportunities.length||0)+" active",sub:"releases · bookings · audience",href:"/admin/marketing"+query,visual:"artist"},
-    {label:"Live Productions",meta:activeProjects.length+" active",sub:blockedProjects.length?blockedProjects.length+" need attention":"delivery on track",href:"/admin/operations"+query,visual:"live"},
-    {label:"Music School",meta:"Education",sub:"programs · enrollment · curriculum",href:"/admin/purpose"+query,visual:"school"},
-    {label:"Premium Instruments",meta:"Bass One",sub:"products · clients · production",href:"/admin/equipment"+query,visual:"instrument"},
-    {label:"Finance",meta:money(pipelineValue),sub:"visible opportunity value",href:"/admin/operations"+query+"#finance",visual:"finance"},
-    {label:"Contracts",meta:signedAgreements.length+" active",sub:pendingProposals.length+" awaiting movement",href:"/admin"+query+"#contracting",visual:"contracts"},
-    {label:"Clients",meta:waitingThreads.length+" waiting",sub:waitingThreads.length?"responses need attention":"relationships moving",href:"/admin"+query+"#relationships",visual:"clients"},
-    {label:"Projects",meta:activeProjects.length+" active",sub:blockedProjects.length?blockedProjects.length+" blocked":"portfolio healthy",href:"/admin/operations"+query,visual:"projects"}
+    {label:"Artists",meta:(openOpportunities.length||0)+" active",sub:"releases · bookings · audience",href:"/admin/marketing"+query,visual:"artist",image:"/owner-domains/artists.webp",position:"center 38%"},
+    {label:"Live Productions",meta:activeProjects.length+" active",sub:blockedProjects.length?blockedProjects.length+" need attention":"delivery on track",href:"/admin/operations"+query,visual:"live",image:"/owner-domains/live-production.webp",position:"center 48%"},
+    {label:"Music School",meta:"Education",sub:"programs · enrollment · curriculum",href:"/admin/purpose"+query,visual:"school",image:"/owner-domains/music-school.webp",position:"center 48%"},
+    {label:"Premium Instruments",meta:"Bass One",sub:"products · clients · production",href:"/admin/equipment"+query,visual:"instrument",image:"/owner-domains/premium-instruments.webp",position:"center 66%"},
+    {label:"Finance",meta:money(pipelineValue),sub:"visible opportunity value",href:"/admin/operations"+query+"#finance",visual:"finance",image:"/owner-domains/finance.webp",position:"center center"},
+    {label:"Contracts",meta:signedAgreements.length+" active",sub:pendingProposals.length+" awaiting movement",href:"/admin"+query+"#contracting",visual:"contracts",image:"/owner-domains/contracts.webp",position:"58% center"},
+    {label:"Clients",meta:waitingThreads.length+" waiting",sub:waitingThreads.length?"responses need attention":"relationships moving",href:"/admin"+query+"#relationships",visual:"clients",image:"/owner-domains/clients.webp",position:"center center"},
+    {label:"Projects",meta:activeProjects.length+" active",sub:blockedProjects.length?blockedProjects.length+" blocked":"portfolio healthy",href:"/admin/operations"+query,visual:"projects",image:"/owner-domains/projects.webp",position:"58% 48%"}
   ];
 
   const systems=[
@@ -103,7 +103,10 @@ export default function OwnerDashboard({
 
     <div className="ownerDomainGrid">
       {domains.map((d:any)=><Link key={d.label} href={d.href} className="ownerDomainCard">
-        <div className={"ownerVisual "+d.visual}><i/><b/><em/></div>
+        <div className={"ownerVisual "+d.visual}>
+          <img src={d.image} alt="" style={{objectPosition:d.position}} loading="lazy"/>
+          <span className="ownerVisualShade" aria-hidden="true"/>
+        </div>
         <div className="ownerDomainBody"><h2>{d.label}</h2><strong>{d.meta}</strong><span>{d.sub}</span></div>
       </Link>)}
     </div>
