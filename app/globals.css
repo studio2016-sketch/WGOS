@@ -885,3 +885,49 @@ linear-gradient(145deg,rgba(15,22,25,.98),rgba(8,13,16,.98))!important}
 .compactCountermeasure{margin-top:18px}.compactCounterHead{display:flex;justify-content:space-between;gap:14px;align-items:start}.compactCounterHead h2{margin:3px 0}.compactCountermeasure>select{margin:13px 0 0}.compactCounterBody{display:grid;grid-template-columns:1.2fr .55fr 1.5fr auto;gap:10px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--hair)}.compactCounterBody>div{min-width:0}.compactCounterBody small,.compactCounterBody strong,.compactCounterBody span{display:block}.compactCounterBody small{font-size:7px;letter-spacing:.1em;color:#778287}.compactCounterBody strong{font-size:11px;margin:5px 0}.compactCounterBody span{font-size:8px;color:#7d878c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.compactCounterBody button{white-space:nowrap}
 @media(max-width:900px){.proposalEditorGrid{grid-template-columns:1fr}.proposalDecisionPanel{position:relative;top:auto}.compactCounterBody{grid-template-columns:1fr 1fr}.compactCounterBody button{grid-column:1/-1}.proposalReviewSummary{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.proposalReviewPage{padding-left:12px!important;padding-right:12px!important}.proposalReviewTop{grid-template-columns:1fr auto}.proposalReviewTop>button{grid-column:1/-1;width:max-content}.proposalReviewSummary{grid-template-columns:1fr 1fr}.proposalReviewSummary article{min-height:95px;padding:12px}.proposalReviewSummary strong{font-size:18px;margin-top:12px}.proposalReviewGuide{justify-content:flex-start;overflow-x:auto}.proposalReviewGuide small{display:none}.proposalReviewTabs{position:sticky;top:0;z-index:20}.proposalReviewTabs button{font-size:9px;padding:10px 6px}.proposalEditSection{grid-template-columns:28px 1fr;padding:11px}.proposalSectionIndex{font-size:12px;padding-top:17px}.proposalRiskGrid>div{grid-template-columns:1fr}.proposalReviewDock{display:grid;grid-template-columns:1fr 1fr}.proposalReviewDock>div{grid-column:1/-1;width:100%}.proposalReviewDock button{width:100%;font-size:9px}.compactCounterHead{flex-direction:column}.compactCounterBody{grid-template-columns:1fr}.compactCounterBody button{grid-column:auto}}
+
+
+/* Time-aware owner hero wallpaper */
+.ownerHeroScene.ownerHeroWallpaper{
+  position:relative;
+  overflow:hidden;
+  min-height:300px;
+  background:#091014!important;
+  isolation:isolate;
+}
+.ownerHeroScene.ownerHeroWallpaper:before{display:none!important}
+.ownerWallpaperImage{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center center;
+  animation:ownerWallpaperIn .65s ease both;
+}
+.ownerHeroWallpaper.morning .ownerWallpaperImage{object-position:center 48%}
+.ownerHeroWallpaper.afternoon .ownerWallpaperImage{object-position:center 50%}
+.ownerHeroWallpaper.evening .ownerWallpaperImage{object-position:center 52%}
+.ownerHeroWallpaper.late .ownerWallpaperImage{object-position:center 48%}
+.ownerWallpaperShade{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg,rgba(4,8,11,.22),rgba(4,8,11,.02) 52%,rgba(4,8,11,.08)),
+    linear-gradient(180deg,rgba(5,9,12,.04),rgba(5,9,12,.12) 58%,rgba(5,9,12,.34));
+}
+@keyframes ownerWallpaperIn{
+  from{opacity:.18;transform:scale(1.018)}
+  to{opacity:1;transform:scale(1)}
+}
+@media(prefers-reduced-motion:reduce){.ownerWallpaperImage{animation:none}}
+@media(max-width:760px){
+  .ownerHeroScene.ownerHeroWallpaper{min-height:300px!important}
+  .ownerHeroWallpaper.morning .ownerWallpaperImage{object-position:center center}
+  .ownerHeroWallpaper.afternoon .ownerWallpaperImage{object-position:center center}
+  .ownerHeroWallpaper.evening .ownerWallpaperImage{object-position:center center}
+  .ownerHeroWallpaper.late .ownerWallpaperImage{object-position:center center}
+  .ownerWallpaperShade{background:linear-gradient(180deg,rgba(5,9,12,.04),rgba(5,9,12,.12) 55%,rgba(5,9,12,.30))}
+}
