@@ -22,14 +22,15 @@ const imageFor:Record<DayState,string>={
 };
 
 export default function TimeAwareOwnerHero({name,selectedBrand}:{name:string;selectedBrand:boolean}){
- const [state,setState]=useState<DayState>("morning");
+ const [state,setState]=useState<DayState|null>(null);
  useEffect(()=>{
   const update=()=>setState(dayState(new Date().getHours()));
   update();
+   for(const src of Object.values(imageFor)){const img=new Image();img.src=src;}
   const timer=window.setInterval(update,60_000);
   return()=>window.clearInterval(timer);
  },[]);
- const copy=useMemo(()=>copyFor(state,selectedBrand),[state,selectedBrand]);
+ const copy=useMemo(()=>state?copyFor(state,selectedBrand):{greeting:"Welcome",lead:selectedBrand?"This brand is in motion.":"Your world is in motion."},[state,selectedBrand]);
  return <>
   <div className="ownerHeroCopy">
    <p className="ownerKicker">WGOS · {selectedBrand?"BRAND COMMAND":"OWNER COMMAND"}</p>
@@ -37,8 +38,8 @@ export default function TimeAwareOwnerHero({name,selectedBrand}:{name:string;sel
    <p className="ownerLead">{copy.lead}<br/>Purpose, people, opportunities and delivery in one calm command surface.</p>
    <blockquote>“A bigger tomorrow<br/>for more people through music.”</blockquote>
   </div>
-  <div className={"ownerHeroScene ownerHeroWallpaper "+state} aria-hidden="true">
-   <img key={state} src={imageFor[state]} alt="" className="ownerWallpaperImage"/>
+  <div className={"ownerHeroScene ownerHeroWallpaper "+(state||"loading")} aria-hidden="true">
+   {state?<img key={state} src={imageFor[state]} alt="" className="ownerWallpaperImage"/>:<div className="ownerWallpaperLoading"/>}
    <div className="ownerWallpaperShade"/>
   </div>
  </>;
