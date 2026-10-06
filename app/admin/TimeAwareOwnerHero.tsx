@@ -15,10 +15,10 @@ function copyFor(state:DayState,selectedBrand:boolean){
  return {greeting:"Welcome back",lead:selectedBrand?"A clear view of what matters for this brand right now.":"A clear view of what matters right now."};
 }
 const imageFor:Record<DayState,string>={
- morning:"/owner-wallpapers/morning.webp",
- afternoon:"/owner-wallpapers/afternoon.webp",
- evening:"/owner-wallpapers/evening.webp",
- late:"/owner-wallpapers/late.webp"
+ morning:"/owner-wallpapers/foundry-sunset.webp",
+ afternoon:"/owner-wallpapers/foundry-sunset.webp",
+ evening:"/owner-wallpapers/foundry-sunset.webp",
+ late:"/owner-wallpapers/foundry-sunset.webp"
 };
 
 export default function TimeAwareOwnerHero({name,selectedBrand}:{name:string;selectedBrand:boolean}){
