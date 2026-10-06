@@ -931,3 +931,11 @@ linear-gradient(145deg,rgba(15,22,25,.98),rgba(8,13,16,.98))!important}
   .ownerHeroWallpaper.late .ownerWallpaperImage{object-position:center center}
   .ownerWallpaperShade{background:linear-gradient(180deg,rgba(5,9,12,.04),rgba(5,9,12,.12) 55%,rgba(5,9,12,.30))}
 }
+
+
+.ownerWallpaperLoading{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(circle at 70% 30%,rgba(215,182,111,.08),transparent 24%),
+    linear-gradient(145deg,#0c1216,#081014 58%,#0a0d10);
+}
