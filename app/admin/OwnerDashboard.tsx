@@ -29,25 +29,34 @@ export default function OwnerDashboard({
   const activeProjects=projects.filter((p:any)=>["PLANNING","ACTIVE","BLOCKED"].includes(String(p.status)));
   const blockedProjects=activeProjects.filter((p:any)=>String(p.status)==="BLOCKED");
   const waitingThreads=threads.filter((t:any)=>String(t.recent_direction)==="INBOUND");
-  const pendingProposals=proposals.filter((p:any)=>["APPROVED","SENT"].includes(String(p.status)));
+  const ownerReviewProposals=proposals.filter((p:any)=>["DRAFT","OWNER_REVIEW","REVIEW_REQUIRED"].includes(String(p.status)));
+  const clientProposals=proposals.filter((p:any)=>["APPROVED","SENT"].includes(String(p.status)));
+  const pendingProposals=[...ownerReviewProposals,...clientProposals];
   const signedAgreements=agreements.filter((a:any)=>["SIGNED","ACTIVE","EXECUTED"].includes(String(a.status)));
   const firstName=String(identity?.role)==="OWNER"?"Mr Williams":(String(identity?.display_name||identity?.email||"Owner").split(/[ @]/)[0]||"Owner");
   const query=q(selectedBrand);
 
   const attention=[
-    ...blockedProjects.slice(0,2).map((p:any)=>({
+    ...ownerReviewProposals.slice(0,2).map((p:any)=>({
+      eyebrow:"APPROVAL",
+      title:"Review & approve proposal",
+      detail:(p.title||p.client_name||"Proposal")+" · "+money(Number(p.total_amount||p.total||p.amount||0)),
+      href:"/admin?proposal="+encodeURIComponent(p.id)+(selectedBrand?"&brand="+encodeURIComponent(selectedBrand):"")+"#commercial-forms",
+      tone:"gold"
+    })),
+    ...blockedProjects.slice(0,1).map((p:any)=>({
       eyebrow:"PROJECT",
       title:"Resolve blocked delivery",
       detail:p.title,
       href:"/admin/operations?project="+encodeURIComponent(p.id)+(selectedBrand?"&brand="+encodeURIComponent(selectedBrand):""),
-      tone:"gold"
-    })),
-    ...pendingProposals.slice(0,2).map((p:any)=>({
-      eyebrow:"CLIENT",
-      title:"Review proposal movement",
-      detail:p.title||p.client_name||"Proposal awaiting movement",
-      href:"/admin?proposal="+encodeURIComponent(p.id)+(selectedBrand?"&brand="+encodeURIComponent(selectedBrand):""),
       tone:"blue"
+    })),
+    ...waitingThreads.slice(0,1).map((t:any)=>({
+      eyebrow:"CLIENT",
+      title:"Respond to waiting client",
+      detail:t.subject||t.title||"Inbound conversation waiting",
+      href:"/admin/comms"+query,
+      tone:"violet"
     })),
     ...decisionSignals.slice(0,1).map((s:any)=>({
       eyebrow:"DECISION",
@@ -69,12 +78,12 @@ export default function OwnerDashboard({
   }
 
   const domains=[
-    {label:"Artists",meta:(openOpportunities.length||0)+" active",sub:"releases · bookings · audience",href:"/admin/marketing"+query,visual:"artist",image:"/owner-domains/artists.webp",position:"center 38%"},
-    {label:"Live Productions",meta:activeProjects.length+" active",sub:blockedProjects.length?blockedProjects.length+" need attention":"delivery on track",href:"/admin/operations"+query,visual:"live",image:"/owner-domains/live-production.webp",position:"center 48%"},
+    {label:"Artists",meta:(openOpportunities.length||0)+" opportunities",sub:"bookings · releases · audience",href:"/admin/marketing"+query,visual:"artist",image:"/owner-domains/artists.webp",position:"center 38%"},
+    {label:"Live Productions",meta:activeProjects.length+" active",sub:blockedProjects.length?blockedProjects.length+" delivery exception"+(blockedProjects.length===1?"":"s"):"all delivery on track",href:"/admin/operations"+query,visual:"live",image:"/owner-domains/live-production.webp",position:"center 48%"},
     {label:"Music School",meta:"Education",sub:"programs · enrollment · curriculum",href:"/admin/purpose"+query,visual:"school",image:"/owner-domains/music-school.webp",position:"center 48%"},
-    {label:"Premium Instruments",meta:"Bass One",sub:"products · clients · production",href:"/admin/equipment"+query,visual:"instrument",image:"/owner-domains/premium-instruments.jpg",position:"center 66%"},
-    {label:"Finance",meta:money(pipelineValue),sub:"visible opportunity value",href:"/admin/operations"+query+"#finance",visual:"finance",image:"/owner-domains/finance.webp",position:"center center"},
-    {label:"Contracts",meta:signedAgreements.length+" active",sub:pendingProposals.length+" awaiting movement",href:"/admin"+query+"#contracting",visual:"contracts",image:"/owner-domains/contracts.webp",position:"58% center"},
+    {label:"Premium Instruments",meta:"Bass One",sub:"commissions · clients · production",href:"/admin/equipment"+query,visual:"instrument",image:"/owner-domains/premium-instruments.jpg",position:"center 50%"},
+    {label:"Finance",meta:money(pipelineValue),sub:openOpportunities.length+" open revenue opportunit"+(openOpportunities.length===1?"y":"ies"),href:"/admin/operations"+query+"#finance",visual:"finance",image:"/owner-domains/finance.webp",position:"center center"},
+    {label:"Contracts",meta:signedAgreements.length+" active",sub:ownerReviewProposals.length?ownerReviewProposals.length+" proposal approval"+(ownerReviewProposals.length===1?"":"s")+" waiting":clientProposals.length+" client proposal"+(clientProposals.length===1?"":"s")+" moving",href:"/admin"+query+"#contracting",visual:"contracts",image:"/owner-domains/contracts.webp",position:"58% center"},
     {label:"Clients",meta:waitingThreads.length+" waiting",sub:waitingThreads.length?"responses need attention":"relationships moving",href:"/admin"+query+"#relationships",visual:"clients",image:"/owner-domains/clients.webp",position:"center center"},
     {label:"Projects",meta:activeProjects.length+" active",sub:blockedProjects.length?blockedProjects.length+" blocked":"portfolio healthy",href:"/admin/operations"+query,visual:"projects",image:"/owner-domains/projects.webp",position:"58% 48%"}
   ];
@@ -94,6 +103,15 @@ export default function OwnerDashboard({
     {label:"Signed work",value:String(signedAgreements.length),detail:"active / executed agreements"},
     {label:"Client motion",value:String(waitingThreads.length),detail:"inbound conversations waiting"},
     {label:"Signals",value:String(notifications.length),detail:"current system notices"}
+  ];
+
+  const funnelStages=[
+    {label:"Inquiry",count:openOpportunities.filter((o:any)=>["NEW","QUALIFYING"].includes(String(o.stage))).length,value:openOpportunities.filter((o:any)=>["NEW","QUALIFYING"].includes(String(o.stage))).reduce((n:number,o:any)=>n+Number(o.estimated_value||0),0)},
+    {label:"Discovery",count:openOpportunities.filter((o:any)=>String(o.stage)==="DISCOVERY").length,value:openOpportunities.filter((o:any)=>String(o.stage)==="DISCOVERY").reduce((n:number,o:any)=>n+Number(o.estimated_value||0),0)},
+    {label:"Proposal",count:openOpportunities.filter((o:any)=>String(o.stage)==="PROPOSAL").length,value:openOpportunities.filter((o:any)=>String(o.stage)==="PROPOSAL").reduce((n:number,o:any)=>n+Number(o.estimated_value||0),0)},
+    {label:"Terms",count:openOpportunities.filter((o:any)=>String(o.stage)==="NEGOTIATION").length,value:openOpportunities.filter((o:any)=>String(o.stage)==="NEGOTIATION").reduce((n:number,o:any)=>n+Number(o.estimated_value||0),0)},
+    {label:"Signed",count:signedAgreements.length,value:0},
+    {label:"Delivery",count:activeProjects.length,value:0}
   ];
 
   return <section className="ownerExperience" aria-label="WGOS owner command">
@@ -127,6 +145,13 @@ export default function OwnerDashboard({
         <div className="ownerSystemList">{systems.map((s:any)=><div key={s.label}><i>◉</i><span><strong>{s.label}</strong><small>{s.text}</small></span></div>)}</div>
       </article>
     </div>
+
+    <article className="ownerPanel ownerFunnel" aria-label="Commercial lifecycle">
+      <div className="ownerPanelHead"><div><p>COMMERCIAL LIFECYCLE</p><h2>From inquiry to delivery</h2></div><Link href={"/admin"+query+"#commercial-lifecycle"}>Open commercial →</Link></div>
+      <div className="ownerFunnelRail">{funnelStages.map((s:any,i:number)=><Link key={s.label} href={"/admin"+query+"#commercial-lifecycle"} className={"ownerFunnelStage stage"+i}>
+        <small>{s.label}</small><strong>{s.count}</strong>{i<4&&<span>{money(s.value)}</span>}<i aria-hidden="true">→</i>
+      </Link>)}</div>
+    </article>
 
     <div className="ownerLowerGrid">
       <article className="ownerPanel ownerOutlook">
