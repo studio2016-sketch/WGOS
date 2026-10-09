@@ -1042,3 +1042,55 @@ linear-gradient(145deg,rgba(15,22,25,.98),rgba(8,13,16,.98))!important}
   .recordCard>.recordContext{grid-template-columns:1fr}
   .recordContext>a{white-space:normal;text-align:center}
 }
+
+
+/* Owner command audit pass — iPad density, lifecycle visibility, safer dock spacing */
+.ownerFunnel{margin-top:10px!important}
+.ownerFunnelRail{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;margin-top:14px;border:1px solid rgba(255,255,255,.055);border-radius:11px;overflow:hidden;background:rgba(255,255,255,.04)}
+.ownerFunnelStage{position:relative;min-width:0;padding:13px 12px!important;background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.008));text-decoration:none!important}
+.ownerFunnelStage:hover{background:rgba(215,182,111,.045)!important}
+.ownerFunnelStage small{display:block;color:#8d989d;font-size:7px;letter-spacing:.12em;text-transform:uppercase}
+.ownerFunnelStage strong{display:block;font:26px Georgia,serif;color:#f1eadf;margin:7px 0 2px}
+.ownerFunnelStage span{display:block;color:#b79b62;font-size:8px}
+.ownerFunnelStage i{position:absolute;right:7px;top:50%;transform:translateY(-50%);font-style:normal;color:#4f585b;font-size:13px}
+.ownerFunnelStage:last-child i{display:none}
+.ownerFunnelStage.stage0{box-shadow:inset 0 2px #5e9cf5}.ownerFunnelStage.stage1{box-shadow:inset 0 2px #8c6ee8}.ownerFunnelStage.stage2{box-shadow:inset 0 2px #d5a94f}.ownerFunnelStage.stage3{box-shadow:inset 0 2px #d98961}.ownerFunnelStage.stage4{box-shadow:inset 0 2px #4dd4a0}.ownerFunnelStage.stage5{box-shadow:inset 0 2px #55c7dd}
+
+/* New Bass One artwork is already landscape; never rotate the replacement. */
+.ownerVisual.instrument>img,.ownerDomainCard:hover .ownerVisual.instrument>img{transform:none!important;object-position:center center!important}
+
+/* Tablet should feel like the 2060 command render: compact visual grid, persistent rail, more information above the fold. */
+@media(min-width:901px) and (max-width:1180px){
+  .ownerExperience{margin:14px 16px 34px 98px!important}
+  .ownerHero{min-height:236px!important}
+  .ownerHeroScene{min-height:236px!important}
+  .ownerHeroCopy{padding:25px 27px 22px!important}
+  .ownerHero h1{font-size:38px!important}
+  .ownerDomainGrid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  .ownerVisual{height:88px!important}
+  .ownerDomainBody{padding:9px 10px 11px!important}
+  .ownerDomainBody h2{font-size:16px!important;line-height:1.05}
+  .ownerDomainBody strong{font-size:10px!important}
+  .ownerDomainBody span{font-size:8px!important}
+  .ownerMidGrid,.ownerLowerGrid,.ownerBottomGrid{grid-template-columns:1fr 1fr!important}
+  .ownerFunnelRail{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .ownerFunnelStage{padding:11px 9px!important}
+  .ownerFunnelStage strong{font-size:22px}
+  .ownerFunnelStage span{font-size:7px}
+  .ownerRail{display:flex!important;position:fixed!important;z-index:100;left:0!important;right:auto!important;top:0!important;bottom:0!important;width:82px!important;height:auto!important;border-radius:0!important;border:0!important;border-right:1px solid rgba(118,139,153,.18)!important;padding:12px 7px!important;background:linear-gradient(180deg,#080b0e,#0a0e12 72%,#101015)!important}
+  .ownerRail>.ownerRailMark,.ownerRail>.ownerRailNav,.ownerRail>.ownerRailSearch,.ownerRail>.ownerRailMotto{display:flex!important}
+  .ownerRail>.mobileNav{display:none!important}
+}
+@media(min-width:761px) and (max-width:900px){
+  .ownerExperience{margin:10px 10px 82px!important}
+  .ownerDomainGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .ownerVisual{height:112px!important}
+  .ownerFunnelRail{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .ownerExperience{padding-bottom:76px!important}
+  .ownerFunnelRail{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ownerFunnelStage i{display:none}
+  .ownerPanelHead{align-items:flex-start}
+  .ownerPanelHead>a{font-size:9px}
+}
