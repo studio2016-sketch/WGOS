@@ -2,7 +2,7 @@ import Link from "next/link";
 import BrandFilter from "./BrandFilter";
 import GlobalSearch from "./GlobalSearch";
 
-export default function AdminNav({active,brands=[],brand}:{active:"commercial"|"operations"|"communications"|"equipment"|"calendar"|"marketing"|"purpose";brands?:any[];brand?:string}){
+export default function AdminNav({active,brands=[],brand}:{active:"commercial"|"operations"|"communications"|"equipment"|"calendar"|"marketing"|"purpose"|"agents";brands?:any[];brand?:string}){
  const q=brand?"?brand="+encodeURIComponent(brand):"";
  const nav=[
   {label:"Home",icon:"⌂",activeKey:"commercial",href:"/admin"+q},
@@ -14,7 +14,8 @@ export default function AdminNav({active,brands=[],brand}:{active:"commercial"|"
   {label:"Projects",icon:"◫",activeKey:"operations",href:"/admin/operations"+q},
   {label:"Comms",icon:"□",activeKey:"communications",href:"/admin/communications"+q},
   {label:"Schedule",icon:"◷",activeKey:"calendar",href:"/admin/calendar"+q},
-  {label:"Resources",icon:"♢",activeKey:"equipment",href:"/admin/equipment"+q}
+  {label:"Resources",icon:"♢",activeKey:"equipment",href:"/admin/equipment"+q},
+  {label:"Agents",icon:"✦",activeKey:"agents",href:"/admin/agents"+q}
  ];
  return <><aside className="commandRail ownerRail" aria-label="WGOS primary navigation">
   <Link href={"/admin"+q} className="railMark ownerRailMark"><span>WGOS</span><i>⌁</i></Link>
@@ -35,6 +36,7 @@ export default function AdminNav({active,brands=[],brand}:{active:"commercial"|"
    <Link className={active==="equipment"?"active":""} href={"/admin/equipment"+q}><i>05</i><span>Resources</span></Link>
    <Link className={active==="marketing"?"active":""} href={"/admin/marketing"+q}><i>06</i><span>Marketing</span></Link>
    <Link className={active==="purpose"?"active":""} href={"/admin/purpose"+q}><i>07</i><span>Purpose</span></Link>
+   <Link className={active==="agents"?"active":""} href={"/admin/agents"+q}><i>08</i><span>Agents</span></Link>
   </div>
   <div className="navContext">{brands.length>0&&<BrandFilter brands={brands}/>}</div>
  </nav></>;
