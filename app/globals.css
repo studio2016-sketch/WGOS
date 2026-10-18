@@ -1094,3 +1094,41 @@ linear-gradient(145deg,rgba(15,22,25,.98),rgba(8,13,16,.98))!important}
   .ownerPanelHead{align-items:flex-start}
   .ownerPanelHead>a{font-size:9px}
 }
+
+
+/* Business command workspace */
+.businessCommand{margin:14px 0 18px;padding:18px;border:1px solid rgba(219,193,143,.13);border-radius:16px;background:
+radial-gradient(circle at 90% 6%,rgba(215,182,111,.07),transparent 24%),
+linear-gradient(145deg,rgba(12,18,22,.97),rgba(8,12,15,.99))}
+.businessCommandHead{display:flex;justify-content:space-between;gap:18px;align-items:flex-end;margin-bottom:14px}
+.businessCommandHead h2{font:28px/1.05 Georgia,serif;color:#eee7dc;margin:4px 0 6px}
+.businessCommandHead p:last-child{margin:0;max-width:900px;color:#869197;font-size:10px;line-height:1.5}
+.businessCommandGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.businessCommandGrid.single{grid-template-columns:1fr}
+.businessCard{border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:14px;background:linear-gradient(145deg,rgba(15,21,25,.92),rgba(9,13,16,.98));min-width:0}
+.businessCardTitle{display:flex;justify-content:space-between;gap:16px;align-items:start;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.055)}
+.businessCardTitle small{display:block;color:#c4a767;font-size:7px;letter-spacing:.13em;text-transform:uppercase}
+.businessCardTitle h3{font:23px/1.06 Georgia,serif;color:#eee7dc;margin:4px 0}
+.businessCardTitle p{margin:0;color:#808b90;font-size:9px}
+.businessCardTitle>a{white-space:nowrap;text-decoration:none;border:1px solid rgba(215,182,111,.17);border-radius:999px;padding:7px 10px;color:#d5b76e;font-size:8px}
+.businessSpecialty{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.businessSpecialty a,.businessUniversal a{text-decoration:none;border:1px solid rgba(255,255,255,.055);border-radius:10px;background:rgba(255,255,255,.015);padding:10px;min-width:0}
+.businessSpecialty a:hover,.businessUniversal a:hover{border-color:rgba(215,182,111,.18);background:rgba(215,182,111,.025)}
+.businessSpecialty strong,.businessUniversal b{display:block;color:#e9e2d8;font-size:10px;margin-bottom:3px}
+.businessSpecialty span,.businessUniversal small{display:block;color:#7f8a8f;font-size:8px;line-height:1.4}
+.businessUniversal{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:10px}
+.businessUniversal a{padding:8px}
+.businessUniversal b{font-size:8px}
+.businessUniversal small{font-size:7px}
+@media(max-width:1100px){
+ .businessCommandGrid{grid-template-columns:1fr}
+ .businessUniversal{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:620px){
+ .businessCommand{padding:13px}
+ .businessCommandHead h2{font-size:24px}
+ .businessSpecialty{grid-template-columns:1fr}
+ .businessUniversal{grid-template-columns:1fr 1fr}
+ .businessCardTitle{display:grid}
+ .businessCardTitle>a{justify-self:start}
+}
