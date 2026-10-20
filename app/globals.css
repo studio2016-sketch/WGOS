@@ -1174,3 +1174,15 @@ linear-gradient(145deg,rgba(12,18,22,.97),rgba(8,12,15,.99))}
 .aiQuickMoves{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 12px}
 .aiQuickMoves>a{padding:8px 10px;border:1px solid rgba(215,182,111,.18);border-radius:999px;background:rgba(215,182,111,.045);color:#d9c18c;text-decoration:none;font-size:9px}
 .aiQuickMoves>a:hover{background:rgba(215,182,111,.09)}
+
+
+/* Business command: action-first operating controls */
+.businessQuickControl{display:grid;gap:8px;margin:4px 0 14px;padding:11px;border:1px solid rgba(215,182,111,.13);border-radius:12px;background:linear-gradient(180deg,rgba(215,182,111,.035),rgba(255,255,255,.01))}
+.businessQuickControl>small{font-size:7px;letter-spacing:.14em;color:#a58f62}
+.businessQuickControl>div{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px}
+.businessQuickControl a{display:flex;align-items:center;gap:7px;min-width:0;padding:9px 10px;border:1px solid rgba(255,255,255,.065);border-radius:10px;background:rgba(255,255,255,.018);text-decoration:none!important}
+.businessQuickControl a:hover{border-color:rgba(215,182,111,.24);background:rgba(215,182,111,.05)}
+.businessQuickControl b{display:grid;place-items:center;flex:0 0 22px;width:22px;height:22px;border-radius:7px;background:rgba(215,182,111,.08);color:#d7b66f;font-size:10px}
+.businessQuickControl span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#d8d2c9;font-size:9px}
+@media(max-width:1100px){.businessQuickControl>div{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:620px){.businessQuickControl>div{grid-template-columns:repeat(2,minmax(0,1fr))}.businessQuickControl a{padding:9px 8px}}

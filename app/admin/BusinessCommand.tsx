@@ -86,13 +86,33 @@ function profile(name:string){
    ["Schedule","/admin/calendar","Coordinate appearances and commitments."]
   ]
  };
- if(n.includes("cg")||n.includes("success")) return {
+ if(n.includes("williams strategic")) return {
+  label:"Strategic Development / Equity",
+  focus:"Manage ventures, investor relationships, development work and ownership opportunities.",
+  specialty:[
+   ["Venture pipeline","/admin","Track opportunities, partners and deal movement."],
+   ["Development work","/admin/operations","Manage diligence, launch work and deliverables."],
+   ["Investor relationships","/admin#relationships","Track investors, partners and follow-up."],
+   ["Economics","/admin/operations#finance","Review development cost, cash needs and deal economics."]
+  ]
+ };
+ if(n.includes("tradeos")) return {
+  label:"Financial Technology",
+  focus:"Manage product development, research operations, validation and platform growth.",
+  specialty:[
+   ["Product roadmap","/admin/operations","Track platform development and research milestones."],
+   ["Research pipeline","/admin","Manage strategic opportunities and external relationships."],
+   ["Resources","/admin/equipment","Track infrastructure and technical resources."],
+   ["Growth","/admin/marketing","Manage launch, education and acquisition campaigns."]
+  ]
+ };
+ if(n.includes("cg")||n.includes("success")||n.includes("enterprise")) return {
   label:"Consulting / Enterprise",
   focus:"Manage clients, engagements, deliverables and commercial growth.",
   specialty:[
    ["Client pipeline","/admin","Manage opportunities and proposals."],
    ["Engagements","/admin/operations","Track consulting projects and deliverables."],
-   ["Relationships","/admin","Manage organizations, contacts and follow-up."],
+   ["Relationships","/admin#relationships","Manage organizations, contacts and follow-up."],
    ["Finance","/admin/operations#finance","Control expenses, cash envelopes and exceptions."]
   ]
  };
@@ -177,6 +197,18 @@ export default function BusinessCommand({
      </div>
 
      <Link href={priority.href} className={"businessPriority "+priority.tone}><span><small>NEXT BEST ACTION</small><strong>{priority.label}</strong><em>{priority.detail}</em></span><b>→</b></Link>
+
+     <div className="businessQuickControl" aria-label={"Quick controls for "+b.name}>
+      <small>MANAGE NOW</small>
+      <div>
+       <Link href={"/admin"+qs(brandId)+"#commercial-forms"}><b>＋</b><span>New lead</span></Link>
+       <Link href={"/admin/operations"+qs(brandId)}><b>▣</b><span>New project</span></Link>
+       <Link href={"/admin/communications"+qs(brandId)}><b>□</b><span>Message</span></Link>
+       <Link href={"/admin/calendar"+qs(brandId)}><b>◷</b><span>Schedule</span></Link>
+       <Link href={"/admin/marketing"+qs(brandId)}><b>↗</b><span>Campaign</span></Link>
+       <Link href={"/admin/equipment"+qs(brandId)}><b>♢</b><span>Resource</span></Link>
+      </div>
+     </div>
 
      <div className="businessSpecialty">
       {p.specialty.map(([label,path,desc])=><Link key={label} href={withBrand(String(path),brandId)}><strong>{label}</strong><span>{desc}</span></Link>)}
