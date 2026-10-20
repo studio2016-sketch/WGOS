@@ -18,6 +18,7 @@ import ClientExperienceReadiness from "./ClientExperienceReadiness";
 import ClientDecisionSignals from "./ClientDecisionSignals";
 import {clientDecisionSignals} from "../../lib/client-signals";
 import {pendingNotifications} from "../../lib/notifications";
+import {scopedPendingNotifications} from "../../lib/scoped-notifications";
 import NotificationCenter from "./NotificationCenter";
 import {globalIntegrationStates,brandPaymentCommissioning} from "../../lib/integration-registry";
 import StripeBrandCommissioning from "./StripeBrandCommissioning";
@@ -37,7 +38,7 @@ export default async function AdminPage({searchParams}:{searchParams:Promise<{br
  try{[opportunities,dealProfiles,salesLearning,countermeasureReviews,refs,proposals,readiness,experienceReadiness,lifecycle]=await Promise.all([listOpportunities(),listDealCommandProfiles(),listSalesLearning(),listCountermeasureReviews(),relationshipReferenceData(),listProposals(),commercialReadiness(),clientExperienceReadiness(),commercialLifecycleRecords()]);}catch{}
  try{journeyLinks=await clientJourneyLinks(proposals.map((p:any)=>String(p.id)));}catch{}
  try{decisionSignals=await clientDecisionSignals();}catch{}
- try{notifications=await pendingNotifications();}catch{}
+ try{notifications=access.isGlobal?await pendingNotifications(100):await scopedPendingNotifications(String(access.identity.auth_user_id),100);}catch{}
  try{integrationStates=await globalIntegrationStates();}catch{}
  try{paymentCommissioning=await brandPaymentCommissioning();}catch{}
  try{workflow=await workflowHealth();}catch{}
