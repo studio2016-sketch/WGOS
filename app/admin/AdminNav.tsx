@@ -14,7 +14,8 @@ export default function AdminNav({active,brands=[],brand}:{active:"commercial"|"
   {label:"Projects",icon:"◫",activeKey:"operations",href:"/admin/operations"+q},
   {label:"Comms",icon:"□",activeKey:"communications",href:"/admin/communications"+q},
   {label:"Schedule",icon:"◷",activeKey:"calendar",href:"/admin/calendar"+q},
-  {label:"Resources",icon:"♢",activeKey:"equipment",href:"/admin/equipment"+q}
+  {label:"Resources",icon:"♢",activeKey:"equipment",href:"/admin/equipment"+q},
+  {label:"Catalog",icon:"▦",activeKey:"operations",href:"/admin/catalog"+q}
  ];
  return <><aside className="commandRail ownerRail" aria-label="WGOS primary navigation">
   <Link href={"/admin"+q} className="railMark ownerRailMark"><span>WGOS</span><i>⌁</i></Link>
