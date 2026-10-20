@@ -1,12 +1,19 @@
 import {NextResponse} from "next/server";
-import {requireApiAdmin} from "../../../../../lib/authz";
+import {requireApiUser,requireApiProject} from "../../../../../lib/authz";
 import {updateRecurringTaskRule} from "../../../../../lib/operations-board";
+import {db} from "../../../../../lib/db";
 
 export async function PUT(req:Request,{params}:{params:Promise<{id:string}>}){
- const auth=await requireApiAdmin();
+ const auth=await requireApiUser();
  if(!auth.ok)return NextResponse.json({updated:false,error:auth.error},{status:auth.status});
  try{
   const {id}=await params;
+  const sql=db();
+  const scope:any[]=await sql`SELECT project_id FROM wgos.recurring_task_rules WHERE id=${id}::uuid LIMIT 1`;
+  const projectId=String(scope[0]?.project_id||"");
+  if(!projectId)return NextResponse.json({updated:false,error:"RECURRING_RULE_NOT_FOUND"},{status:404});
+  const access=await requireApiProject(auth.identity,projectId);
+  if(!access.ok)return NextResponse.json({updated:false,error:access.error},{status:access.status});
   const body=await req.json();
   const rule:any=await updateRecurringTaskRule({
    ruleId:id,
