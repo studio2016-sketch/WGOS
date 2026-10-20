@@ -4,6 +4,7 @@ import {runDueRecurringTasks} from "../../../../lib/operations-board";
 import {processClientDecisionEvents} from "../../../../lib/workflow-engine";
 import {syncGmailReplies} from "../../../../lib/communications";
 import {recordSystemHealth} from "../../../../lib/system-health";
+import {observeOperationalExceptions} from "../../../../lib/automation-exception-watch";
 import {processDiscoveryAutomation} from "../../../../lib/discovery";
 import {ensureReadyDiscoveryProposalDrafts} from "../../../../lib/documents";
 
@@ -18,7 +19,10 @@ export async function GET(req:Request){
   ["decisions",()=>processClientDecisionEvents({limit:100})],
   ["discovery",()=>processDiscoveryAutomation({limit:60})],
   ["proposalDrafts",()=>ensureReadyDiscoveryProposalDrafts({limit:20})],
-  ["gmail",()=>syncGmailReplies({limit:50})]
+  ["gmail",()=>syncGmailReplies({limit:50})],
+  ...(process.env.WGOS_EXCEPTION_AUTOMATIONS_ENABLED==="true"
+   ?[["exceptionWatch",()=>observeOperationalExceptions({limit:100})] as const]
+   :[])
  ] as const;
  const settled=await Promise.allSettled(jobs.map(([,fn])=>fn()));
  const result:any={ran:true,correlationId};
