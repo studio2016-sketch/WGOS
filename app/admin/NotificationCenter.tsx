@@ -4,10 +4,12 @@ import {useState} from "react";
 export default function NotificationCenter({rows:initial}:{rows:any[]}){
  const [rows,setRows]=useState(initial),[busy,setBusy]=useState("");
  const severity=(event:string)=>event.includes("FAILED")||event.includes("INVALID")||event==="TASK_BLOCKED"?"CRITICAL":event.includes("REQUIRED")||event==="TASK_OVERDUE"||event==="PROJECT_DEADLINE_APPROACHING"?"ACTION":event==="NEW_WEB_INQUIRY"?"LEAD":"UPDATE";
+ const rank=(event:string)=>({CRITICAL:0,ACTION:1,LEAD:2,UPDATE:3}[severity(event)]??3);
+ const ordered=[...rows].sort((a,b)=>rank(String(a.event_type))-rank(String(b.event_type)));
  const counts=rows.reduce((m:Record<string,number>,x:any)=>{const k=severity(String(x.event_type));m[k]=(m[k]||0)+1;return m;},{});
  async function dismiss(id:string){setBusy(id);try{const r=await fetch("/api/admin/notifications/"+encodeURIComponent(id)+"/read",{method:"POST"});if(r.ok)setRows(x=>x.filter(n=>n.id!==id));}finally{setBusy("");}}
  return <section className="adminPanel"><div className="todayHead"><div><p className="eyebrow">WGOS · NOTIFICATIONS</p><h2>Executive attention</h2><p className="muted">{counts.CRITICAL||0} critical · {counts.ACTION||0} action · {counts.LEAD||0} leads · {counts.UPDATE||0} updates</p></div><span className="liveDot">{rows.length||"0"}</span></div>
- {!rows.length?<p className="muted">No pending internal notifications.</p>:<div className="todayList">{rows.map(x=>{const p=x.payload||{};let label="UPDATE",title=String(x.event_type).replaceAll("_"," "),note=p.note||p.reason||"",href="/admin";
+ {!rows.length?<p className="muted">No pending internal notifications.</p>:<div className="todayList">{ordered.map(x=>{const p=x.payload||{};let label="UPDATE",title=String(x.event_type).replaceAll("_"," "),note=p.note||p.reason||"",href="/admin";
   if(x.event_type==="NEW_WEB_INQUIRY"){label="LEAD";title="New web inquiry · "+x.brand_name;note=[p.name,p.email].filter(Boolean).join(" · ")||"New inquiry received";href=p.opportunity_id?"/admin?opportunity="+encodeURIComponent(String(p.opportunity_id)):(p.thread_id?"/admin/communications?thread="+encodeURIComponent(String(p.thread_id)):"/admin")}
   else if(x.event_type==="CLIENT_REVISION_REQUESTED"){label="ACTION";title="Client requested a revision · "+x.brand_name;href=p.entity_type==="task"?"/admin/operations?task="+encodeURIComponent(String(p.entity_id||"")):"/admin/operations?project="+encodeURIComponent(String(p.entity_id||""))}
   else if(x.event_type==="CLIENT_APPROVAL"){label="APPROVED";title="Client approval received · "+x.brand_name;href=p.entity_type==="task"?"/admin/operations?task="+encodeURIComponent(String(p.entity_id||"")):"/admin"}
