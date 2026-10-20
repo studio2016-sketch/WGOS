@@ -12,7 +12,7 @@ export default async function CatalogPage({searchParams}:{searchParams:Promise<{
  <p><Link href="/admin">← WGOS Command Center</Link></p>
  {!brand?<p>No authorized business catalog is currently available, or the database is unavailable.</p>:<>
  <nav aria-label="Choose a business">{brands.map(b=><Link key={b.id} href={"/admin/catalog?brand="+encodeURIComponent(b.id)} style={{display:"inline-block",padding:10,margin:5}}>{b.name}</Link>)}</nav>
- <CatalogDraftEditor key={brand.id} brandName={brand.name}/>
+ <CatalogDraftEditor key={brand.id} brandId={brand.id} brandName={brand.name}/>
  </>}
  </main>;
 }
