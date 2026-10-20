@@ -3,9 +3,19 @@ import {useState} from "react";
 type Item={sku:string;name:string;description:string;kind:"PRODUCT"|"SERVICE";category:string;image:string;qty:string;cost:string;retail:string;sale:string;};
 const blank:Item={sku:"",name:"",description:"",kind:"PRODUCT",category:"",image:"",qty:"",cost:"",retail:"",sale:""};
 const money=(n:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(n);
-export default function CatalogDraftEditor({brandName}:{brandName:string}){
+export default function CatalogDraftEditor({brandName,brandId}:{brandName:string;brandId:string}){
  const [item,setItem]=useState<Item>(blank);
  const [drafts,setDrafts]=useState<Item[]>([]);
+ const [saving,setSaving]=useState(false),[saveResult,setSaveResult]=useState("");
+ async function saveToWgos(){
+  setSaving(true);setSaveResult("");
+  try{const response=await fetch("/api/admin/catalog",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...item,brandId})});
+   const result=await response.json();if(!response.ok)throw new Error(result.error||"Could not save");
+   setSaveResult("Private draft saved in WGOS.");setItem(blank);
+  }catch(e){setSaveResult("Unable to save: "+(e instanceof Error?e.message:"Unknown error"));}
+  finally{setSaving(false);}
+ }
+
  const update=(key:keyof Item,value:string)=>setItem(p=>({...p,[key]:value}));
  const selling=Number(item.sale||item.retail||0),cost=Number(item.cost||0);
  const margin=selling>0?(selling-cost)/selling*100:null;
@@ -39,6 +49,7 @@ export default function CatalogDraftEditor({brandName}:{brandName:string}){
  <div><strong>Expected unit gross profit: {money(selling-cost)}</strong><p>Gross margin: {margin===null?"—":margin.toFixed(1)+"%"} · Excludes shipping, fees, and overhead.</p></div>
  </div>
  <button type="button" onClick={add} style={{padding:"14px 22px",borderRadius:12,background:"#233f6b",color:"white"}}>Add to draft list</button>
+ <button type="button" disabled={saving||!item.sku||!item.name} onClick={saveToWgos} style={{marginLeft:10,padding:"14px 22px",borderRadius:12}}>Save private draft to WGOS</button><p role="status">{saveResult}</p>
  <h2>Prepared items ({drafts.length})</h2>
  {drafts.map((p,i)=><div key={p.sku} style={{padding:12,borderBottom:"1px solid #ddd"}}><strong>{p.name}</strong> · {p.sku} · {money(Number(p.sale||p.retail||0))} <button type="button" onClick={()=>setDrafts(v=>v.filter((_,j)=>j!==i))}>Remove</button></div>)}
  <button disabled={!drafts.length} type="button" onClick={exportCsv}>Export draft CSV</button>
