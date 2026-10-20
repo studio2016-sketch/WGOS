@@ -5,6 +5,7 @@ import {processClientDecisionEvents} from "../../../../lib/workflow-engine";
 import {syncGmailReplies} from "../../../../lib/communications";
 import {recordSystemHealth} from "../../../../lib/system-health";
 import {observeOperationalExceptions} from "../../../../lib/automation-exception-watch";
+import {observeDepositExceptions} from "../../../../lib/automation-financial-exceptions";
 import {processDiscoveryAutomation} from "../../../../lib/discovery";
 import {ensureReadyDiscoveryProposalDrafts} from "../../../../lib/documents";
 
@@ -22,6 +23,9 @@ export async function GET(req:Request){
   ["gmail",()=>syncGmailReplies({limit:50})],
   ...(process.env.WGOS_EXCEPTION_AUTOMATIONS_ENABLED==="true"
    ?[["exceptionWatch",()=>observeOperationalExceptions({limit:100})] as const]
+   :[]),
+  ...(process.env.WGOS_FINANCIAL_EXCEPTION_AUTOMATIONS_ENABLED==="true"
+   ?[["depositReview",()=>observeDepositExceptions({limit:50})] as const]
    :[])
  ] as const;
  const settled=await Promise.allSettled(jobs.map(([,fn])=>fn()));
