@@ -14,7 +14,7 @@ export async function POST(request:Request){
  const cents=(value:unknown)=>Math.round(Number(value)*100);
  const cost=cents(input.cost||0),retail=cents(input.retail||0),sale=input.sale===""||input.sale==null?null:cents(input.sale);
  if(!sku||sku.length>80||!name||name.length>240||
-    (kind==="PRODUCT"&&(!Number.isInteger(qty)||qty<0))||
+    (kind==="PRODUCT"&&(!Number.isInteger(qty)||qty===null||qty<0))||
     ![cost,retail,...(sale===null?[]:[sale])].every(n=>Number.isSafeInteger(n)&&n>=0)||
     (sale!==null&&sale>retail))
   return NextResponse.json({error:"INVALID_CATALOG_INPUT"},{status:400});
