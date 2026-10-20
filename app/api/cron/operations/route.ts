@@ -6,6 +6,7 @@ import {syncGmailReplies} from "../../../../lib/communications";
 import {recordSystemHealth} from "../../../../lib/system-health";
 import {observeOperationalExceptions} from "../../../../lib/automation-exception-watch";
 import {observeDepositExceptions} from "../../../../lib/automation-financial-exceptions";
+import {observeProjectDeadlines} from "../../../../lib/automation-deadline-watch";
 import {processDiscoveryAutomation} from "../../../../lib/discovery";
 import {ensureReadyDiscoveryProposalDrafts} from "../../../../lib/documents";
 
@@ -26,6 +27,9 @@ export async function GET(req:Request){
    :[]),
   ...(process.env.WGOS_FINANCIAL_EXCEPTION_AUTOMATIONS_ENABLED==="true"
    ?[["depositReview",()=>observeDepositExceptions({limit:50})] as const]
+   :[]),
+  ...(process.env.WGOS_DEADLINE_AUTOMATIONS_ENABLED==="true"
+   ?[["deadlineWatch",()=>observeProjectDeadlines({limit:50})] as const]
    :[])
  ] as const;
  const settled=await Promise.allSettled(jobs.map(([,fn])=>fn()));
