@@ -26,7 +26,7 @@ export default function AdminNav({active,brands=[],brand}:{active:"commercial"|"
  <nav className="topNav ownerTopNav" aria-label="WGOS workspace">
   <Link href={"/admin"+q} className="wordmark" aria-label="WGOS owner command"><b>WGOS</b><small>OWNER COMMAND</small></Link>
   <div className="ownerTopSearch"><GlobalSearch brand={brand}/></div>
-  <Link className="newAction" href={"/admin#commercial-forms"}>＋ New</Link>
+  <Link className="newAction" href={"/admin"+q+"#commercial-forms"}>＋ New</Link>
   <div className="workspaceSwitch">
    <Link className={active==="commercial"?"active":""} href={"/admin"+q}><i>01</i><span>Home</span></Link>
    <Link className={active==="operations"?"active":""} href={"/admin/operations"+q}><i>02</i><span>Operations</span></Link>
