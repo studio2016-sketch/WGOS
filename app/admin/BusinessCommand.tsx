@@ -1,9 +1,18 @@
 import Link from "next/link";
 
-type Props={brands:any[];selectedBrand?:string};
+type Props={
+  brands:any[];
+  selectedBrand?:string;
+  opportunities?:any[];
+  proposals?:any[];
+  projects?:any[];
+  agreements?:any[];
+  threads?:any[];
+};
 
 function qs(id:string){return "?brand="+encodeURIComponent(id)}
 function normalize(name:string){return String(name||"").trim().toLowerCase()}
+function money(value:number){return "$"+Number(value||0).toLocaleString(undefined,{maximumFractionDigits:0})}
 
 function profile(name:string){
  const n=normalize(name);
@@ -117,22 +126,63 @@ function withBrand(path:string,id:string){
  return base+qs(id)+(hash?"#"+hash:"");
 }
 
-export default function BusinessCommand({brands,selectedBrand}:Props){
+export default function BusinessCommand({
+ brands,selectedBrand,opportunities=[],proposals=[],projects=[],agreements=[],threads=[]
+}:Props){
  const visible=selectedBrand?brands.filter(b=>String(b.id)===String(selectedBrand)):brands;
+ const portfolioPipeline=opportunities.filter((o:any)=>!["WON","LOST"].includes(String(o.stage))).reduce((n:number,o:any)=>n+Number(o.estimated_value||0),0);
+ const totalOwnerReview=proposals.filter((p:any)=>["DRAFT","OWNER_REVIEW","REVIEW_REQUIRED"].includes(String(p.status))).length;
+ const totalBlocked=projects.filter((p:any)=>String(p.status)==="BLOCKED").length;
+ const totalWaiting=threads.filter((t:any)=>String(t.recent_direction)==="INBOUND").length;
+
  return <section className="businessCommand" aria-label="Business management command">
   <div className="businessCommandHead">
-   <div><p className="eyebrow">{selectedBrand?"BUSINESS COMMAND":"PORTFOLIO BUSINESS COMMAND"}</p><h2>{selectedBrand?"Run this business":"Run every business from one operating system"}</h2><p>{selectedBrand?"The most useful operating controls for the selected company are gathered here.":"Choose a company, then move directly into revenue, delivery, finance, contracts, clients, communications, schedule, resources, growth or purpose."}</p></div>
+   <div><p className="eyebrow">{selectedBrand?"BUSINESS COMMAND":"PORTFOLIO BUSINESS COMMAND"}</p><h2>{selectedBrand?"Run this business":"Run every business from one operating system"}</h2><p>{selectedBrand?"Revenue, delivery, finance, clients and execution for the selected company are gathered here.":"Choose a company and move directly into the work that generates revenue, fulfills commitments and protects margin."}</p></div>
+   <div className="businessCommandSummary">
+    <span><small>PIPELINE</small><strong>{money(portfolioPipeline)}</strong></span>
+    <span><small>OWNER APPROVALS</small><strong>{totalOwnerReview}</strong></span>
+    <span><small>BLOCKED</small><strong>{totalBlocked}</strong></span>
+    <span><small>CLIENT WAITING</small><strong>{totalWaiting}</strong></span>
+   </div>
   </div>
   <div className={"businessCommandGrid "+(selectedBrand?"single":"")}>
    {visible.map((b:any)=>{
     const p=profile(b.name);
+    const brandId=String(b.id);
+    const open=opportunities.filter((o:any)=>String(o.brand_id)===brandId&&!["WON","LOST"].includes(String(o.stage)));
+    const pipeline=open.reduce((n:number,o:any)=>n+Number(o.estimated_value||0),0);
+    const review=proposals.filter((x:any)=>String(x.brand_id)===brandId&&["DRAFT","OWNER_REVIEW","REVIEW_REQUIRED"].includes(String(x.status)));
+    const active=projects.filter((x:any)=>String(x.brand_id)===brandId&&["PLANNING","ACTIVE","BLOCKED"].includes(String(x.status)));
+    const blocked=active.filter((x:any)=>String(x.status)==="BLOCKED");
+    const waiting=threads.filter((x:any)=>String(x.brand_id)===brandId&&String(x.recent_direction)==="INBOUND");
+    const signed=agreements.filter((x:any)=>String(x.brand_id)===brandId&&["SIGNED","ACTIVE","EXECUTED"].includes(String(x.status)));
+    const priority=review.length
+      ? {label:"Approve proposal",detail:review[0]?.title||review[0]?.client_name||"Proposal awaiting owner review",href:"/admin?proposal="+encodeURIComponent(review[0].id)+"&brand="+encodeURIComponent(brandId)+"#commercial-forms",tone:"gold"}
+      : blocked.length
+      ? {label:"Resolve blocked delivery",detail:blocked[0]?.title||"Project needs intervention",href:"/admin/operations?project="+encodeURIComponent(blocked[0].id)+"&brand="+encodeURIComponent(brandId),tone:"red"}
+      : waiting.length
+      ? {label:"Respond to client",detail:waiting[0]?.subject||waiting[0]?.title||"Inbound conversation waiting",href:"/admin/communications"+qs(brandId),tone:"violet"}
+      : open.length
+      ? {label:"Advance pipeline",detail:open[0]?.title||open[0]?.name||"Open commercial opportunity",href:"/admin?brand="+encodeURIComponent(brandId)+"&opportunity="+encodeURIComponent(open[0].id),tone:"blue"}
+      : {label:"No exception waiting",detail:"Routine movement is clear.",href:"/admin"+qs(brandId),tone:"green"};
+
     return <article key={b.id} className="businessCard">
-     <div className="businessCardTitle"><div><small>{p.label}</small><h3>{b.name}</h3><p>{p.focus}</p></div><Link href={"/admin"+qs(String(b.id))}>Open →</Link></div>
+     <div className="businessCardTitle"><div><small>{p.label}</small><h3>{b.name}</h3><p>{p.focus}</p></div><Link href={"/admin"+qs(brandId)}>Open →</Link></div>
+
+     <div className="businessPulse">
+      <Link href={"/admin"+qs(brandId)}><small>OPEN PIPELINE</small><strong>{money(pipeline)}</strong><span>{open.length} opportunity{open.length===1?"":"ies"}</span></Link>
+      <Link href={"/admin/operations"+qs(brandId)}><small>ACTIVE DELIVERY</small><strong>{active.length}</strong><span>{blocked.length?blocked.length+" blocked":"on track"}</span></Link>
+      <Link href={"/admin"+qs(brandId)+"#contracting"}><small>SIGNED WORK</small><strong>{signed.length}</strong><span>active agreements</span></Link>
+      <Link href={"/admin/communications"+qs(brandId)}><small>CLIENT WAITING</small><strong>{waiting.length}</strong><span>{waiting.length?"respond now":"clear"}</span></Link>
+     </div>
+
+     <Link href={priority.href} className={"businessPriority "+priority.tone}><span><small>NEXT BEST ACTION</small><strong>{priority.label}</strong><em>{priority.detail}</em></span><b>→</b></Link>
+
      <div className="businessSpecialty">
-      {p.specialty.map(([label,path,desc])=><Link key={label} href={withBrand(String(path),String(b.id))}><strong>{label}</strong><span>{desc}</span></Link>)}
+      {p.specialty.map(([label,path,desc])=><Link key={label} href={withBrand(String(path),brandId)}><strong>{label}</strong><span>{desc}</span></Link>)}
      </div>
      <div className="businessUniversal">
-      {universal.map(([label,path,desc])=><Link key={label} href={withBrand(String(path),String(b.id))}><b>{label}</b><small>{desc}</small></Link>)}
+      {universal.map(([label,path,desc])=><Link key={label} href={withBrand(String(path),brandId)}><b>{label}</b><small>{desc}</small></Link>)}
      </div>
     </article>
    })}
