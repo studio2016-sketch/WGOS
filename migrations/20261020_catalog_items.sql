@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS wgos.catalog_items (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+ brand_id text NOT NULL REFERENCES wgos.brands(id),
+ kind text NOT NULL CHECK (kind IN ('PRODUCT','SERVICE')),
+ sku text NOT NULL,
+ name text NOT NULL,
+ description text NOT NULL DEFAULT '',
+ category text NOT NULL DEFAULT '',
+ image_url text,
+ quantity integer,
+ wholesale_cents bigint NOT NULL DEFAULT 0,
+ retail_cents bigint NOT NULL DEFAULT 0,
+ sale_cents bigint,
+ status text NOT NULL DEFAULT 'DRAFT',
+ created_at timestamptz NOT NULL DEFAULT now(),
+ updated_at timestamptz NOT NULL DEFAULT now(),
+ UNIQUE(brand_id,sku),
+ CHECK(quantity IS NULL OR quantity>=0),
+ CHECK(wholesale_cents>=0 AND retail_cents>=0),
+ CHECK(sale_cents IS NULL OR (sale_cents>=0 AND sale_cents<=retail_cents))
+);
