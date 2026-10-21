@@ -1,5 +1,5 @@
 /** Sanitized, payload-free classification for cron job outcomes. */
-export type CronJobSummary = {name:string;status:"OK"|"FAILED"|"QUOTA_EXCEEDED"};
+export type CronJobSummary = {name:string;status:"OK"|"SKIPPED"|"FAILED"|"QUOTA_EXCEEDED"};
 
 function failureText(value:unknown):string{
  if(typeof value==="string")return value;
@@ -21,11 +21,13 @@ export function summarizeCronJobs(names:readonly string[],outcomes:readonly Prom
   if(!outcome)return {name,status:"FAILED"};
   if(outcome.status==="rejected")return {name,status:isQuotaFailure(outcome.reason)?"QUOTA_EXCEEDED":"FAILED"};
   const value=outcome.value;
-  const reportedFailure=!!value&&typeof value==="object"&&(
-   ("ok" in value&&(value as {ok?:unknown}).ok===false)||
-   ("success" in value&&(value as {success?:unknown}).success===false)
-  );
-  if(reportedFailure)return {name,status:isQuotaFailure(value)?"QUOTA_EXCEEDED":"FAILED"};
+  if(value&&typeof value==="object"){
+   if(("ok" in value&&(value as {ok?:unknown}).ok===false)||
+      ("success" in value&&(value as {success?:unknown}).success===false))
+    return {name,status:isQuotaFailure(value)?"QUOTA_EXCEEDED":"FAILED"};
+   if("configured" in value&&(value as {configured?:unknown}).configured===false)
+    return {name,status:"SKIPPED"};
+  }
   return {name,status:"OK"};
  });
 }
