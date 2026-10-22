@@ -1186,3 +1186,20 @@ linear-gradient(145deg,rgba(12,18,22,.97),rgba(8,12,15,.99))}
 .businessQuickControl span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#d8d2c9;font-size:9px}
 @media(max-width:1100px){.businessQuickControl>div{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:620px){.businessQuickControl>div{grid-template-columns:repeat(2,minmax(0,1fr))}.businessQuickControl a{padding:9px 8px}}
+
+/* Owner accessibility and actionable command surfaces — scoped to WGOS admin */
+.admin{font-size:16px;line-height:1.55}
+.admin .ownerExperience{font-size:16px}
+.admin .ownerExperience small,.admin .ownerExperience .ownerDomainBody span,.admin .ownerExperience .ownerAttentionItem span{font-size:max(14px,0.875rem);line-height:1.5}
+.admin .ownerExperience .ownerPanelHead p,.admin .ownerExperience .ownerAttentionItem small{font-size:13px;letter-spacing:.06em}
+.admin .ownerExperience a:focus-visible,.admin .ownerExperience button:focus-visible{outline:3px solid #e8c47a;outline-offset:3px}
+.admin .ownerExperience .ownerAttentionItem{min-height:76px}
+.admin .ownerQuickActions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:22px 0 26px}
+.admin .ownerQuickAction{display:flex;flex-direction:column;gap:5px;min-height:145px;padding:19px;border:1px solid #5b4b30;border-radius:12px;background:#16191b;text-decoration:none}
+.admin .ownerQuickAction:hover{border-color:#d8b76b;background:#202024}
+.admin .ownerQuickAction>span{font-weight:700;font-size:18px}
+.admin .ownerQuickAction strong{font-size:32px;line-height:1.2;color:#e6c780}
+.admin .ownerQuickAction small{color:#d2d5d4;font-size:14px;letter-spacing:0}
+.admin .ownerQuickAction b{margin-top:auto;font-size:14px;color:#e6c780}
+@media(max-width:900px){.admin .ownerQuickActions{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.admin .ownerQuickActions{grid-template-columns:1fr}.admin .ownerQuickAction{min-height:110px}}
