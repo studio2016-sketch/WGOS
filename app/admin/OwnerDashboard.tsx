@@ -122,7 +122,7 @@ export default function OwnerDashboard({
     <div className="ownerDomainGrid">
       {domains.map((d:any)=><Link key={d.label} href={d.href} className="ownerDomainCard">
         <div className={"ownerVisual "+d.visual}>
-          <img src={d.image} alt="" style={{objectPosition:d.position}} loading="lazy"/>
+          {d.visual==="instrument"&&<div aria-hidden="true" style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"radial-gradient(ellipse at 50% 45%,#42300f 0%,#0d0b09 65%,#050505 100%)",color:"#d8b76b",fontSize:"clamp(20px,3vw,40px)",fontWeight:800,letterSpacing:".14em",textShadow:"0 1px 12px #94723d",zIndex:0}}>BASSONE</div>}<img src={d.image} alt="" style={{objectPosition:d.position,position:"relative",zIndex:1}} loading="lazy" onError={undefined}/>
           <span className="ownerVisualShade" aria-hidden="true"/>
         </div>
         <div className="ownerDomainBody"><h2>{d.label}</h2><strong>{d.meta}</strong><span>{d.sub}</span></div>
