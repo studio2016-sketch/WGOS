@@ -55,7 +55,7 @@ export default function OwnerDashboard({
       eyebrow:"CLIENT",
       title:"Respond to waiting client",
       detail:[t.subject||t.title||"Inbound conversation waiting",t.preview||t.snippet||t.last_message_text||""].filter(Boolean).join(" — ").slice(0,240),
-      href:"/admin/comms"+query,
+      href:"/admin/communications"+query,
       tone:"violet"
     })),
     ...decisionSignals.slice(0,1).map((s:any)=>({
@@ -84,11 +84,18 @@ export default function OwnerDashboard({
     {label:"Premium Instruments",meta:"Bass One",sub:"commissions · clients · production",href:"/admin/equipment"+query,visual:"instrument",image:"/owner-domains/premium-instruments.jpg",position:"center 50%"},
     {label:"Finance",meta:money(pipelineValue),sub:openOpportunities.length+" open revenue opportunit"+(openOpportunities.length===1?"y":"ies"),href:"/admin/operations"+query+"#finance",visual:"finance",image:"/owner-domains/finance.webp",position:"center center"},
     {label:"Contracts",meta:signedAgreements.length+" active",sub:ownerReviewProposals.length?ownerReviewProposals.length+" proposal approval"+(ownerReviewProposals.length===1?"":"s")+" waiting":clientProposals.length+" client proposal"+(clientProposals.length===1?"":"s")+" moving",href:"/admin"+query+"#contracting",visual:"contracts",image:"/owner-domains/contracts.webp",position:"58% center"},
-    {label:"Clients",meta:waitingThreads.length+" waiting",sub:waitingThreads.length?"responses need attention":"relationships moving",href:"/admin/comms"+query,visual:"clients",image:"/owner-domains/clients.webp",position:"center center"},
+    {label:"Clients",meta:waitingThreads.length+" waiting",sub:waitingThreads.length?"responses need attention":"relationships moving",href:"/admin/communications"+query,visual:"clients",image:"/owner-domains/clients.webp",position:"center center"},
     {label:"Projects",meta:activeProjects.length+" active",sub:blockedProjects.length?blockedProjects.length+" blocked":"portfolio healthy",href:"/admin/operations"+query,visual:"projects",image:"/owner-domains/projects.webp",position:"58% 48%"}
   ];
 
-  const quickActions=[\n    {label:"Client waiting",count:waitingThreads.length,href:"/admin/comms"+query,description:"Read conversations and respond"},\n    {label:"Inquiries",count:openOpportunities.filter((o:any)=>["NEW","QUALIFYING"].includes(String(o.stage))).length,href:"/admin"+query+"#commercial-lifecycle",description:"Review new opportunities"},\n    {label:"Projects",count:activeProjects.length,href:"/admin/operations"+query,description:"Open work and resolve blockers"},\n    {label:"Decisions",count:decisionSignals.length+ownerReviewProposals.length,href:"/admin"+query+"#owner-detail-workspaces",description:"Review decisions and approvals"}\n  ];\n\n  const systems=[
+  const quickActions=[
+    {label:"Client waiting",count:waitingThreads.length,href:"/admin/communications"+query,description:"Read conversations and respond"},
+    {label:"Inquiries",count:openOpportunities.filter((o:any)=>["NEW","QUALIFYING"].includes(String(o.stage))).length,href:"/admin"+query+"#commercial-lifecycle",description:"Review new opportunities"},
+    {label:"Projects",count:activeProjects.length,href:"/admin/operations"+query,description:"Open work and resolve blockers"},
+    {label:"Decisions",count:decisionSignals.length+ownerReviewProposals.length,href:"/admin"+query+"#owner-detail-workspaces",description:"Review decisions and approvals"}
+  ];
+
+  const systems=[
     {label:"Artists",text:openOpportunities.length?"Opportunities and audience movement visible":"No exceptions surfaced"},
     {label:"Live Productions",text:blockedProjects.length?blockedProjects.length+" delivery exception"+(blockedProjects.length===1?"":"s"):"Builds and timelines moving"},
     {label:"Music School",text:"Purpose, program and growth workspace available"},
@@ -129,7 +136,9 @@ export default function OwnerDashboard({
       </Link>)}
     </div>
 
-    <nav className="ownerQuickActions" aria-label="Open work requiring action">{quickActions.map(a=><Link key={a.label} href={a.href} className="ownerQuickAction"><span>{a.label}</span><strong>{a.count}</strong><small>{a.description}</small><b aria-hidden="true">Open →</b></Link>)}</nav>\n\n    <div className="ownerMidGrid">
+    <nav className="ownerQuickActions" aria-label="Open work requiring action">{quickActions.map(a=><Link key={a.label} href={a.href} className="ownerQuickAction"><span>{a.label}</span><strong>{a.count}</strong><small>{a.description}</small><b aria-hidden="true">Open →</b></Link>)}</nav>
+
+    <div className="ownerMidGrid">
       <article className="ownerPanel ownerAttention">
         <div className="ownerPanelHead"><div><p>WHAT NEEDS ONLY YOU</p><h2>{attention.length} owner decision{attention.length===1?"":"s"}</h2></div><Link href={"/admin"+query}>→</Link></div>
         <div className="ownerAttentionList">{attention.map((a:any,i:number)=><Link key={i} href={a.href} className={"ownerAttentionItem "+a.tone}>
