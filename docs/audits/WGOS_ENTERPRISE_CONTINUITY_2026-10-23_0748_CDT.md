@@ -11,7 +11,7 @@ Scope: Authorized, noninteractive, evidence-backed inspection of the canonical d
 ## Priority 2 — Automation truthfulness
 - A read-only SQL aggregation showed **24** `operations_cron` records marked `OK` in the preceding two hours, latest **2026-10-23T12:45:41.935Z**. The three latest detail objects show five fulfilled promises and `failed=0`; this is not proof the jobs succeeded internally.
 - The default-branch scheduler still evaluates rejected promises only. The audit branch adds `DEGRADED`/`UNCONFIGURED` handling and per-job outcomes but is **not in production**.
-- Fresh source inspection found `syncGmailReplies` returns `errors` as a **number**, while the audit-branch classifier previously only checked `errors` as an array. A reversible source correction on the audit branch now handles numeric and array errors (commit `cf3d32964c244c535d7913d8295076ad798a9437`). Preview build and runtime behavior must be independently checked before promotion.
+- Fresh source inspection found `syncGmailReplies` returns `errors` as a **number**, while the audit-branch classifier previously only checked `errors` as an array. A reversible source correction on the audit branch now handles numeric and array errors (commit `cf3d32964c244c535d7913d8295076ad798a9437`). Seven isolated predicate checks extracted from the committed source passed (numeric errors, array errors, failed jobs, invalid recipients, explicit failure, healthy, empty result). This is **not** an end-to-end route or Gmail integration test. The code commit's Vercel preview deployment later reported **READY**; runtime behavior must still be independently checked before promotion.
 - The preceding hour contained **zero newly created notification events** at query time. That does not verify successful email ingestion or discovery execution.
 
 ## Priority 3 — Notification backlog
@@ -24,13 +24,13 @@ Scope: Authorized, noninteractive, evidence-backed inspection of the canonical d
 
 ## Deployment and application evidence
 - Vercel runtime-error aggregation for the past hour returned no error clusters; this is not a comprehensive functional test.
-- Latest checked audit-branch commit `cf3d329` was observed in a preview deployment initially reporting `BUILDING`; final status must be checked separately. Existing earlier audit preview `9a63711` reported `READY`.
+- Latest checked audit-branch commit `cf3d329` was observed in a preview deployment subsequently reporting **`READY`** as deployment `dpl_4xM8EDBbWGTrD5kjteQQ2yzXQ31F`. This is build verification, not functional verification. Existing earlier audit preview `9a63711` reported `READY`.
 - No new production deployment was initiated by this audit.
 
 ## Stage classification
 | Work item | Planned | Coded | Tested | Deployed | Verified |
 |---|---|---|---|---|---|
-| Cron-health internal error detection | Yes | Audit branch, incl. numeric errors | Static source inspection only | Preview build pending at first check; not production | Not end-to-end |
+| Cron-health internal error detection | Yes | Audit branch, incl. numeric errors | 7 isolated source-predicate checks passed | Preview READY; not production | Not end-to-end |
 | Database recovery drill | Yes | N/A | Not run | No changes | Not verified |
 | Stripe v1/v2 event destination inventory | Yes | N/A | Read-only API checks | No changes | Verified empty inventories for inspected account |
 | Inquiry/notification backlog | Yes | N/A | Read-only aggregate query | No changes | Verified counts at query time |
