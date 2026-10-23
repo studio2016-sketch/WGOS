@@ -51,7 +51,8 @@ export async function GET(req:Request){
  try{await recordSystemHealth({component:"operations_cron",status:healthStatus,correlationId,details:{failed,partial,unconfigured,total:jobs.length,jobOutcomes,jobs:Object.fromEntries(jobs.map(([name],i)=>[name,settled[i].status]))}});}
  catch{healthRecorded=false;console.error("WGOS_OPERATIONS_HEALTH_WRITE_FAILED",JSON.stringify({correlationId}));}
  result.health.recorded=healthRecorded;
- if(failed+partial+unconfigured)console.error("WGOS_OPERATIONS_CRON_DEGRADED",JSON.stringify(result));
+ if(!healthRecorded)result.health.status="DEGRADED";
+ if(!healthRecorded||failed+partial+unconfigured)console.error("WGOS_OPERATIONS_CRON_DEGRADED",JSON.stringify(result));
  else console.log("WGOS_OPERATIONS_CRON_OK",JSON.stringify(result));
  return NextResponse.json(result,{status:failed?500:200,headers:{"Cache-Control":"no-store, private"}});
 }
