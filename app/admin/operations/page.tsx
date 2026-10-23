@@ -66,7 +66,7 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
   <AdminNav active="work" brands={brands} brand={selectedBrand}/>
   <header className="adminHead commandHero">
    <div><p className="eyebrow">WGOS · OPERATIONS</p><h1>Delivery Command</h1><p>Projects, deliverables, dependencies, ownership, approvals and deadlines in one native workspace.</p><div className="heroSignals"><span>● {projects.length} PROJECTS</span><span>◈ {blockedTasks} BLOCKED</span><span>↗ {portfolioProgress}% COMPLETE</span></div></div>
-   <div className="adminActions"><Link href={selectedBrand?"/admin?brand="+encodeURIComponent(selectedBrand):"/admin"}>Commercial Command →</Link><NewProjectForm brands={brands} users={users}/></div>
+   <div className="adminActions" id="new-project"><Link href={selectedBrand?"/admin?brand="+encodeURIComponent(selectedBrand):"/admin"}>Commercial Command →</Link><NewProjectForm brands={brands} users={users}/></div>
   </header>
 
   <section className="opsPulse"><article><small>ACTIVE PROJECTS</small><strong>{projects.length}</strong><span>current portfolio</span></article><article><small>PORTFOLIO PROGRESS</small><strong>{portfolioProgress}%</strong><span>{doneTasks} of {totalTasks} tasks complete</span></article><article><small>BLOCKED</small><strong>{blockedTasks}</strong><span>{blockedTasks?"needs intervention":"clear"}</span></article><article><small>OVERDUE</small><strong>{overdueTasks}</strong><span>{overdueTasks?"needs movement":"on schedule"}</span></article></section>
