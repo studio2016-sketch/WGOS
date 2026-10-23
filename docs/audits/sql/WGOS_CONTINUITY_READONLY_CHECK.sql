@@ -1,5 +1,5 @@
 -- WGOS read-only business-continuity check
--- Extended and revalidated against production Neon 2026-10-23 at 17:5x UTC.
+-- Extended and revalidated against production Neon 2026-10-23 at 21:54 UTC.
 -- Aggregate metrics only: no customer identifiers, email addresses or message bodies.
 -- wgos is the application schema; public has zero application tables.
 -- RLS coverage is a security posture metric, NOT evidence of an exploit.
@@ -49,8 +49,13 @@ WITH cron AS (
  count(*) FILTER (WHERE c.relforcerowsecurity) AS wgos_rls_forced_tables
  FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
  WHERE n.nspname='wgos' AND c.relkind='r'
+
+, role_posture AS (
+ SELECT r.rolbypassrls AS inspection_role_bypasses_rls,
+ (SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='wgos' AND c.relkind='r' AND pg_get_userbyid(c.relowner)=current_user) AS wgos_tables_owned_by_inspection_role
+ FROM pg_roles r WHERE r.rolname=current_user
 )
 SELECT now() AS checked_at,
  (SELECT count(*) FROM pg_stat_activity WHERE wait_event_type='Lock') AS lock_waits,
- cron.*,notices.*,affected_summary.*,recent_inquiry_integrity.*,rls_summary.*
-FROM cron CROSS JOIN notices CROSS JOIN affected_summary CROSS JOIN recent_inquiry_integrity CROSS JOIN rls_summary;
+ cron.*,notices.*,affected_summary.*,recent_inquiry_integrity.*,rls_summary.*,role_posture.*
+FROM cron CROSS JOIN notices CROSS JOIN affected_summary CROSS JOIN recent_inquiry_integrity CROSS JOIN rls_summary CROSS JOIN role_posture;
