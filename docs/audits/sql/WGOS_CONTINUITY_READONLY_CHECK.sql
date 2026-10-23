@@ -49,7 +49,7 @@ WITH cron AS (
  count(*) FILTER (WHERE c.relforcerowsecurity) AS wgos_rls_forced_tables
  FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
  WHERE n.nspname='wgos' AND c.relkind='r'
-
+)
 , role_posture AS (
  SELECT r.rolbypassrls AS inspection_role_bypasses_rls,
  (SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='wgos' AND c.relkind='r' AND pg_get_userbyid(c.relowner)=current_user) AS wgos_tables_owned_by_inspection_role
