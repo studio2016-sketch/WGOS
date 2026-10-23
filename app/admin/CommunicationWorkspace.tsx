@@ -1,10 +1,9 @@
 "use client";
-import {useEffect,useState} from "react";
+import {useState} from "react";
 import {useRouter} from "next/navigation";
 
 export default function CommunicationWorkspace({threads,messages,brands,organizations,contacts,selectedId}:{threads:any[];messages:any[];brands:any[];organizations:any[];contacts:any[];selectedId?:string}){
  const router=useRouter();const [busy,setBusy]=useState("");const [note,setNote]=useState("");const [error,setError]=useState("");const [newThread,setNewThread]=useState({brandId:brands[0]?.id||"",channel:"EMAIL",subject:"",organizationId:"",contactId:""});
- useEffect(()=>{if(selectedId){document.getElementById("selected-client-conversation")?.scrollIntoView({behavior:"smooth",block:"start"});}},[selectedId]);
  const selected=threads.find(t=>String(t.id)===String(selectedId))||threads[0];const scopedContacts=contacts.filter((c:any)=>!newThread.organizationId||String(c.organization_id||"")===String(newThread.organizationId));const waiting=threads.filter(t=>String(t.recent_direction||"").toUpperCase()==="INBOUND").length;
  async function createThread(){setBusy("thread");setError("");try{const response=await fetch("/api/admin/communications",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(newThread)});const result=await response.json();if(!response.ok)throw new Error(result.error||"Unable to create thread");router.push("/admin/communications?thread="+encodeURIComponent(result.thread.id));router.refresh();}catch(e){setError(e instanceof Error?e.message:"Unable to create thread");}finally{setBusy("");}}
  async function logMessage(direction:string){if(!selected)return;setBusy("message");setError("");try{const response=await fetch("/api/admin/communications/"+selected.id+"/messages",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({direction,body:note})});const result=await response.json();if(!response.ok)throw new Error(result.error||"Unable to log message");setNote("");router.refresh();}catch(e){setError(e instanceof Error?e.message:"Unable to log message");}finally{setBusy("");}}
