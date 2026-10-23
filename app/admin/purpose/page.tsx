@@ -9,7 +9,7 @@ export default async function PurposePage({ searchParams }: { searchParams: Prom
   const data: any = await listPurposeEngine(access.identity.auth_user_id, access.isGlobal);
   const selectedBrand = data.brands.some((b: any) => b.id === query.brand) ? String(query.brand) : "";
   return <main className="admin">
-    <AdminNav active="purpose" brands={data.brands} brand={selectedBrand} />
+    <AdminNav active="home" brands={data.brands} brand={selectedBrand} />
     <header className="adminHead commandHero">
       <div>
         <p className="eyebrow">WGOS · PURPOSE</p>
