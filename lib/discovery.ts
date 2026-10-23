@@ -104,7 +104,7 @@ async function deliverViaBrandSite(payload:any){
 export async function processDiscoveryAutomation(input:{limit?:number}={}){
  const sql=db();const limit=Math.max(1,Math.min(Number(input.limit||40),100));
  const rows:any[]=await sql`SELECT o.id,o.brand_id,o.organization_id,o.title,o.stage,o.discovery,o.contact_name,o.contact_email,o.created_at FROM wgos.opportunities o
- WHERE o.source='PUBLIC_WEB_INQUIRY' AND o.stage IN ('NEW','QUALIFYING','DISCOVERY') AND o.contact_email IS NOT NULL
+ WHERE o.source='PUBLIC_WEB_INQUIRY' AND o.brand_id=(SELECT id FROM wgos.brands WHERE name='Studio2016' LIMIT 1) AND o.stage IN ('NEW','QUALIFYING','DISCOVERY') AND o.contact_email IS NOT NULL
  AND EXISTS(SELECT 1 FROM wgos.audit_events ae WHERE ae.entity_type='opportunity' AND ae.entity_id=o.id::text AND ae.action='PUBLIC_WEB_INQUIRY_RECEIVED')
  AND NOT EXISTS(
   SELECT 1 FROM wgos.opportunities newer
@@ -117,7 +117,7 @@ export async function processDiscoveryAutomation(input:{limit?:number}={}){
    AND EXISTS(SELECT 1 FROM wgos.audit_events ae2 WHERE ae2.entity_type='opportunity' AND ae2.entity_id=newer.id::text AND ae2.action='PUBLIC_WEB_INQUIRY_RECEIVED')
  )
  ORDER BY o.created_at ASC LIMIT ${limit}`;
- let sent=0,reminded=0,skipped=0,failed=0;const errors:string[]=[];
+ let sent=0,reminded=0,skipped=0,failed=0,invalidRecipients=0;const errors:string[]=[];
  for(const o of rows){try{
   const d=o.discovery||{},meta=d._discovery||{},assessment=assessDiscovery(d);const created=new Date(o.created_at).getTime(),now=Date.now();
   const sentAt=meta.email_sent_at?new Date(meta.email_sent_at).getTime():0;const followups=Number(meta.followup_count||0);
@@ -129,6 +129,7 @@ export async function processDiscoveryAutomation(input:{limit?:number}={}){
   else if(sentAt&&assessment.status!=="READY_FOR_PROPOSAL"&&followups<2&&now-sentAt>=72*60*60*1000)kind="reminder";
   if(!kind){console.log("DISCOVERY_SKIP",JSON.stringify({id:String(o.id),reason:"not_due",ageMinutes:Math.round((now-created)/60000),sentAt:meta.email_sent_at||null,followups,status:assessment.status,readiness:assessment.readiness}));skipped++;continue;}
   const prepared=await prepareDiscoveryEmail(String(o.id));if(!prepared){skipped++;continue;}
+  if(String(o.contact_email||"").includes("..")){invalidRecipients++;skipped++;const existing:any[]=await sql`SELECT id FROM wgos.notification_events WHERE brand_id=${o.brand_id} AND event_type='DISCOVERY_AUTOMATION_FAILED' AND payload->>'opportunity_id'=${String(o.id)} AND created_at>now()-interval '24 hours' LIMIT 1`;if(!existing[0])await sql`INSERT INTO wgos.notification_events(brand_id,recipient_subject,channel,event_type,status,payload) VALUES(${o.brand_id},'OWNER','IN_APP','DISCOVERY_AUTOMATION_FAILED','PENDING',${JSON.stringify({opportunity_id:String(o.id),error:"Invalid recipient syntax; manual review required"})}::jsonb)`;continue;}
   const first=String(o.contact_name||"").trim().split(/\s+/)[0]||"there";
   const subject=kind==="initial"?"A few details will help us design the right Studio2016 approach":"A quick follow-up on your Studio2016 project";
   const intro=kind==="initial"
@@ -152,5 +153,5 @@ export async function processDiscoveryAutomation(input:{limit?:number}={}){
   const existing:any[]=await sql`SELECT id FROM wgos.notification_events WHERE brand_id=${o.brand_id} AND event_type='DISCOVERY_AUTOMATION_FAILED' AND payload->>'opportunity_id'=${String(o.id)} AND created_at>now()-interval '6 hours' LIMIT 1`;
   if(!existing[0])await sql`INSERT INTO wgos.notification_events(brand_id,recipient_subject,channel,event_type,status,payload) VALUES(${o.brand_id},'OWNER','IN_APP','DISCOVERY_AUTOMATION_FAILED','PENDING',${JSON.stringify({opportunity_id:String(o.id),error:message})}::jsonb)`;
  }catch{}}}
- return {seen:rows.length,sent,reminded,skipped,failed,errors};
+ return {seen:rows.length,sent,reminded,skipped,failed,invalidRecipients,errors};
 }
