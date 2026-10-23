@@ -1,6 +1,9 @@
 -- WGOS read-only business-continuity check
 -- Extended and revalidated against production Neon 2026-10-23 at 17:5x UTC.
 -- Aggregate metrics only: no customer identifiers, email addresses or message bodies.
+-- wgos is the application schema; public has zero application tables.
+-- RLS coverage is a security posture metric, NOT evidence of an exploit.
+-- The presence of app-layer authorization does not establish DB-layer RLS.
 -- A health event marked OK without jobOutcomes is NOT proof of successful jobs.
 -- Pending notifications are not necessarily unanswered authentic inquiries.
 WITH cron AS (
@@ -18,6 +21,7 @@ WITH cron AS (
  max(created_at) FILTER (WHERE status='PENDING' AND event_type='NEW_WEB_INQUIRY') AS latest_pending_inquiry_at,
  count(*) FILTER (WHERE status='PENDING' AND event_type='DISCOVERY_AUTOMATION_FAILED') AS pending_discovery_failures,
  count(*) FILTER (WHERE event_type='DISCOVERY_AUTOMATION_FAILED' AND created_at >= now()-interval '1 hour') AS discovery_alerts_created_1h,
+ count(DISTINCT payload->>'opportunity_id') FILTER (WHERE event_type='DISCOVERY_AUTOMATION_FAILED' AND created_at >= now()-interval '1 hour') AS distinct_discovery_opportunities_1h,
  count(*) FILTER (WHERE status='PENDING' AND event_type='DISCOVERY_AUTOMATION_FAILED' AND created_at < now()-interval '24 hours') AS stale_discovery_alerts_24h,
  count(*) FILTER (WHERE status='PENDING' AND event_type='DISCOVERY_AUTOMATION_FAILED' AND coalesce(payload->>'error','') LIKE 'Invalid `to` field.%') AS invalid_to_field_alerts
  FROM wgos.notification_events
@@ -39,7 +43,14 @@ WITH cron AS (
  LEFT JOIN wgos.communication_threads t ON t.id::text=n.payload->>'thread_id'
  WHERE n.event_type='NEW_WEB_INQUIRY' AND n.created_at>=now()-interval '2 hours'
 )
+, rls_summary AS (
+ SELECT count(*) AS wgos_base_tables,
+ count(*) FILTER (WHERE c.relrowsecurity) AS wgos_rls_enabled_tables,
+ count(*) FILTER (WHERE c.relforcerowsecurity) AS wgos_rls_forced_tables
+ FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+ WHERE n.nspname='wgos' AND c.relkind='r'
+)
 SELECT now() AS checked_at,
  (SELECT count(*) FROM pg_stat_activity WHERE wait_event_type='Lock') AS lock_waits,
- cron.*,notices.*,affected_summary.*,recent_inquiry_integrity.*
-FROM cron CROSS JOIN notices CROSS JOIN affected_summary CROSS JOIN recent_inquiry_integrity;
+ cron.*,notices.*,affected_summary.*,recent_inquiry_integrity.*,rls_summary.*
+FROM cron CROSS JOIN notices CROSS JOIN affected_summary CROSS JOIN recent_inquiry_integrity CROSS JOIN rls_summary;
