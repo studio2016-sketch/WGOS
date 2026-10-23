@@ -35,12 +35,19 @@ export async function GET(req:Request){
  const settled=await Promise.allSettled(jobs.map(([,fn])=>fn()));
  const result:any={ran:true,correlationId};
  let failed=0,partial=0,unconfigured=0;
+ const jobOutcomes:Record<string,string>={};
  for(let i=0;i<jobs.length;i++){
   const name=jobs[i][0],x=settled[i];
-  if(x.status==="fulfilled"){result[name]=x.value;const v:any=x.value;if(v?.configured===false)unconfigured++;else if(v?.ok===false||Number(v?.failed||0)>0||Number(v?.invalidRecipients||0)>0||(Array.isArray(v?.errors)&&v.errors.length>0))partial++;}
-  else{failed++;result[name]={ok:false,error:x.reason instanceof Error?x.reason.message:"JOB_FAILED"};}
+  if(x.status==="fulfilled"){
+   result[name]=x.value;const v:any=x.value;
+   if(v?.configured===false){unconfigured++;jobOutcomes[name]="UNCONFIGURED";}
+   else if(v?.ok===false||Number(v?.failed||0)>0||Number(v?.invalidRecipients||0)>0||(Array.isArray(v?.errors)&&v.errors.length>0)){partial++;jobOutcomes[name]="DEGRADED";}
+   else jobOutcomes[name]="OK";
+  }else{failed++;jobOutcomes[name]="FAILED";result[name]={ok:false,error:x.reason instanceof Error?x.reason.message:"JOB_FAILED"};}
  }
- try{await recordSystemHealth({component:"operations_cron",status:(failed+partial+unconfigured)?"DEGRADED":"OK",correlationId,details:{failed,partial,unconfigured,total:jobs.length,jobs:Object.fromEntries(jobs.map(([name],i)=>[name,settled[i].status]))}});}catch{}
+ const healthStatus=(failed+partial+unconfigured)?"DEGRADED":"OK";
+ result.health={status:healthStatus,failed,partial,unconfigured,jobOutcomes};
+ try{await recordSystemHealth({component:"operations_cron",status:healthStatus,correlationId,details:{failed,partial,unconfigured,total:jobs.length,jobOutcomes,jobs:Object.fromEntries(jobs.map(([name],i)=>[name,settled[i].status]))}});}catch{}
  if(failed+partial+unconfigured)console.error("WGOS_OPERATIONS_CRON_DEGRADED",JSON.stringify(result));
  else console.log("WGOS_OPERATIONS_CRON_OK",JSON.stringify(result));
  return NextResponse.json(result,{status:failed?500:200,headers:{"Cache-Control":"no-store, private"}});
