@@ -63,7 +63,7 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
  }
 
  return <main className="admin">
-  <AdminNav active="operations" brands={brands} brand={selectedBrand}/>
+  <AdminNav active="work" brands={brands} brand={selectedBrand}/>
   <header className="adminHead commandHero">
    <div><p className="eyebrow">WGOS · OPERATIONS</p><h1>Delivery Command</h1><p>Projects, deliverables, dependencies, ownership, approvals and deadlines in one native workspace.</p><div className="heroSignals"><span>● {projects.length} PROJECTS</span><span>◈ {blockedTasks} BLOCKED</span><span>↗ {portfolioProgress}% COMPLETE</span></div></div>
    <div className="adminActions"><Link href={selectedBrand?"/admin?brand="+encodeURIComponent(selectedBrand):"/admin"}>Commercial Command →</Link><NewProjectForm brands={brands} users={users}/></div>
