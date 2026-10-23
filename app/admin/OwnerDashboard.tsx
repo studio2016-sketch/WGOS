@@ -77,6 +77,17 @@ export default function OwnerDashboard({
     });
   }
 
+  const startActions=[
+    {label:"Reply to a client",detail:waitingThreads.length?waitingThreads.length+" waiting":"Open messages",icon:"✉",href:waitingThreads[0]?"/admin/communications?thread="+encodeURIComponent(waitingThreads[0].id)+(selectedBrand?"&brand="+encodeURIComponent(selectedBrand):""):"/admin/communications"+query},
+    {label:"View calendar",detail:"Schedule & availability",icon:"◷",href:"/admin/calendar"+query},
+    {label:"Review proposal",detail:ownerReviewProposals.length?ownerReviewProposals.length+" needs approval":"Commercial pipeline",icon:"◇",href:ownerReviewProposals[0]?"/admin/proposals/"+encodeURIComponent(ownerReviewProposals[0].id):"/admin"+query+"#commercial-lifecycle"},
+    {label:"Contracts",detail:"Review or edit terms",icon:"▧",href:"/admin"+query+"#contracting"},
+    {label:"Create / manage work",detail:"Projects, tasks, deliverables",icon:"▣",href:"/admin/operations"+query},
+    {label:"People",detail:"Team, roles, access",icon:"♧",href:"/admin/people"+query},
+    {label:"Money",detail:"Cash, expenses, payments",icon:"▤",href:"/admin/operations"+query+"#finance"},
+    {label:"Marketing",detail:"Campaigns, content, growth",icon:"◎",href:"/admin/marketing"+query}
+  ];
+
   const domains=[
     {label:"Artists",meta:(openOpportunities.length||0)+" opportunities",sub:"bookings · releases · audience",href:"/admin/marketing"+query,visual:"artist",image:"/owner-domains/artists.webp",position:"center 38%"},
     {label:"Live Productions",meta:activeProjects.length+" active",sub:blockedProjects.length?blockedProjects.length+" delivery exception"+(blockedProjects.length===1?"":"s"):"all delivery on track",href:"/admin/operations"+query,visual:"live",image:"/owner-domains/live-production.webp",position:"center 48%"},
@@ -119,6 +130,12 @@ export default function OwnerDashboard({
       <TimeAwareOwnerHero name={firstName} selectedBrand={Boolean(selectedBrand)}/>
     </div>
 
+    <article className="ownerStart ownerPanel" id="start-here">
+      <div className="ownerStartHead"><div><p>START HERE</p><h2>What do you want to do?</h2><span>WGOS will take you to the right record. You do not need to know where the underlying system stores it.</span></div></div>
+      <div className="ownerStartGrid">{startActions.map((a:any)=><Link key={a.label} href={a.href} className="ownerStartAction"><b>{a.icon}</b><span><strong>{a.label}</strong><small>{a.detail}</small></span><i>→</i></Link>)}</div>
+    </article>
+
+    <div className="ownerSectionLabel"><div><p>BUSINESS AREAS</p><h2>One operating system, multiple businesses and functions</h2></div><span>Use the business switcher above to focus every workspace.</span></div>
     <div className="ownerDomainGrid">
       {domains.map((d:any)=><Link key={d.label} href={d.href} className="ownerDomainCard">
         <div className={"ownerVisual "+d.visual}>
