@@ -41,7 +41,7 @@ export async function GET(req:Request){
   if(x.status==="fulfilled"){
    result[name]=x.value;const v:any=x.value;
    if(v?.configured===false){unconfigured++;jobOutcomes[name]="UNCONFIGURED";}
-   else if(v?.ok===false||Number(v?.failed||0)>0||Number(v?.invalidRecipients||0)>0||(Array.isArray(v?.errors)&&v.errors.length>0)){partial++;jobOutcomes[name]="DEGRADED";}
+   else if(v?.ok===false||Number(v?.failed||0)>0||Number(v?.invalidRecipients||0)>0||(Array.isArray(v?.errors)?v.errors.length>0:Number(v?.errors||0)>0)){partial++;jobOutcomes[name]="DEGRADED";}
    else jobOutcomes[name]="OK";
   }else{failed++;jobOutcomes[name]="FAILED";result[name]={ok:false,error:x.reason instanceof Error?x.reason.message:"JOB_FAILED"};}
  }
