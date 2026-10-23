@@ -17,7 +17,10 @@ export async function listThreadMessages(threadId:string){
 
 export async function createCommunicationThread(input:{brandId:string;channel:string;subject?:string;organizationId?:string|null;contactId?:string|null;actor:string}){
  if(!channels.has(input.channel))throw new Error("Unsupported communication channel.");
- const sql=db();if(input.contactId){const contact:any[]=await sql`SELECT id,organization_id FROM wgos.contacts WHERE id=${input.contactId}::uuid LIMIT 1`;if(!contact[0])throw new Error("Contact not found.");if(input.organizationId&&String(contact[0].organization_id||"")!==String(input.organizationId))throw new Error("Contact is outside the selected organization.");}const rows=await sql`INSERT INTO wgos.communication_threads(brand_id,organization_id,contact_id,channel,subject,status) VALUES(${input.brandId},${input.organizationId||null}::uuid,${input.contactId||null}::uuid,${input.channel},${input.subject?.trim()||null},'OPEN') RETURNING *`;
+ const sql=db();
+ if(input.organizationId){const organizations:any[]=await sql`SELECT 1 FROM wgos.organization_brands WHERE organization_id=${input.organizationId}::uuid AND brand_id=${input.brandId} LIMIT 1`;if(!organizations.length)throw new Error("Organization is not linked to the selected business.");}
+ if(input.contactId){const contact:any[]=await sql`SELECT c.id,c.organization_id FROM wgos.contacts c JOIN wgos.contact_brands cb ON cb.contact_id=c.id AND cb.brand_id=${input.brandId} WHERE c.id=${input.contactId}::uuid LIMIT 1`;if(!contact[0])throw new Error("Contact is not linked to the selected business.");if(input.organizationId&&String(contact[0].organization_id||"")!==String(input.organizationId))throw new Error("Contact is outside the selected organization.");}
+ const rows=await sql`INSERT INTO wgos.communication_threads(brand_id,organization_id,contact_id,channel,subject,status) VALUES(${input.brandId},${input.organizationId||null}::uuid,${input.contactId||null}::uuid,${input.channel},${input.subject?.trim()||null},'OPEN') RETURNING *`;
  const thread:any=rows[0];await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata) VALUES(${input.actor},'COMMUNICATION_THREAD_CREATED','communication_thread',${String(thread.id)},jsonb_build_object('brandId',${input.brandId},'channel',${input.channel}))`;return thread;
 }
 
