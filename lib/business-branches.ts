@@ -4,7 +4,7 @@ const common=[
  {label:"Bookings",description:"Inquiries and proposals",path:"/admin/branch/bookings"},
  {label:"Projects",description:"Work and delivery",path:"/admin/operations"},
  {label:"Messages",description:"Conversations",path:"/admin/communications"},
- {label:"Finances",description:"Costs and payments",path:"/admin/branch/finances"}
+ {label:"Finances",description:"Costs and payments",path:"/admin/records/finances"}
 ];
 export function businessBranches(name:string):Branch[]{
  const n=name.toLowerCase();
@@ -24,15 +24,15 @@ export function businessBranches(name:string):Branch[]{
  {label:"Equipment",description:"Assets and stock",path:"/admin/equipment"},common[0],common[4]];
  if(n.includes("sound legacy"))return [
  {label:"Enrollment",description:"Students and inquiries",path:"/admin/branch/clients"},
- {label:"Programs",description:"Classes and curriculum",path:"/admin/branch/projects"},
+ {label:"Programs",description:"Classes and curriculum",path:"/admin/records/projects"},
  {label:"Faculty",description:"Staff and access",path:"/admin/people"},
  {label:"Schedule",description:"Dates and classes",path:"/admin/calendar"},common[4]];
  if(n.includes("tradeos"))return [
- {label:"Research",description:"Evidence and hypotheses",path:"/admin/branch/projects"},
+ {label:"Research",description:"Evidence and hypotheses",path:"/admin/records/projects"},
  {label:"Certification",description:"Validation and controls",path:"/admin/branch/approvals"},
  common[2],common[3],common[4]];
  if(n.includes("williams strategic"))return [
  {label:"Ventures",description:"Development opportunities",path:"/admin/branch/bookings"},
- common[0],common[2],{label:"Agreements",description:"Terms and signatures",path:"/admin/branch/contracts"},common[4]];
+ common[0],common[2],{label:"Agreements",description:"Terms and signatures",path:"/admin/records/contracts"},common[4]];
  return common;
 }
