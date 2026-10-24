@@ -13,7 +13,7 @@ export default async function BranchRecords({params,searchParams}:{params:Promis
  const sql=db();const brands=await sql`select name from wgos.brands where id=${brand}::uuid limit 1`;
  if(!brands.length)notFound();
  const name=String(brands[0].name);
- const branch=businessBranches(name).find(x=>x.path==="/admin/branch/"+subject);
+ const branch=businessBranches(name).find(x=>x.path==="/admin/records/"+subject);
  if(!branch)notFound();
  const lifecycle=await commercialLifecycleRecords();
  const source=subject==="projects"?lifecycle.projects:subject==="contracts"?lifecycle.agreements:lifecycle.payments;
