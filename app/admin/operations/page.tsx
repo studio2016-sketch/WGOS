@@ -30,7 +30,7 @@ const emptyCashEnvelopes={brands:[],policies:[],summary:[],allocations:[]};
 
 export default async function OperationsPage({searchParams}:{searchParams:Promise<{project?:string;brand?:string;task?:string;view?:string}>}){
  const query=await searchParams;const access=await commandAccess();
- const view=["overview","projects","contracts","expenses","finances"].includes(String(query.view))?String(query.view):"overview";
+ const view=["overview","projects","contracts","expenses","finances"].includes(String(query.view))?String(query.view):(query.project?"projects":"overview");
  const [projectRows,refs,contractExecutionRaw,contractFinanceRaw,accountingProfilesRaw,expenseIntelligenceRaw,financeExceptionsRaw,cashEnvelopesRaw]=await Promise.all([
   safeLoad(listOperationsProjects(access.identity.auth_user_id,access.isGlobal),[] as any[]),
   safeLoad(getOperationsReferenceData(access.identity.auth_user_id,access.isGlobal),{users:[],brands:[]} as any),
