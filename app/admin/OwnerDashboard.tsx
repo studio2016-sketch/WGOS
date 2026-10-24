@@ -149,7 +149,7 @@ export default function OwnerDashboard({
           <span><strong>{money(pipelineValue)}</strong> pipeline (estimated)</span>
         </div>
       </article>
-      <div className="ownerDeepLink"><span>Need advanced tools?</span><a href="#owner-detail-workspaces">Open full workspace ↓</a></div>
+
     </section>;
   }
 
