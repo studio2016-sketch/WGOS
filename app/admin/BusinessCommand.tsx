@@ -50,7 +50,7 @@ function profile(name:string){
   label:"Retail / E-commerce",
   focus:"Manage demand, campaigns, customers and fulfillment work.",
   specialty:[
-   ["Sales pipeline","/admin","Track customer and wholesale opportunities."],
+   ["Inventory & products","/admin/boutique","Review quantities, prices, and product records."],
    ["Fulfillment","/admin/operations","Run launches, inventory work and operational tasks."],
    ["Marketing","/admin/marketing","Manage campaigns, content and attributed growth."],
    ["Customers","/admin","Manage customer relationships and follow-up."]
