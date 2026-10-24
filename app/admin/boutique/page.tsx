@@ -14,6 +14,6 @@ export default async function BoutiquePage({searchParams}:{searchParams:Promise<
  <Link href={"/admin?brand="+encodeURIComponent(brand)}>← Dionne’s Boutique command</Link>
  <header style={{margin:"30px 0"}}><p className="eyebrow">DIONNE’S BOUTIQUE · WGOS</p><h1>Inventory & Products</h1><p>Review product records, adjust draft quantities and prices, and export proposed changes for reconciliation.</p></header>
  <BoutiqueCatalog initial={snapshot}/>
- <section style={{marginTop:30}}><h2>Sales & Orders</h2><p>Live sales and order totals are not connected yet. No invented sales figures are shown.</p><p>Stripe event integration, fulfillment, supplier receiving and database write approvals are required before this becomes a live management workspace.</p></section>
+
  </main>;
 }
