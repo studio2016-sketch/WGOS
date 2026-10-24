@@ -131,7 +131,7 @@ export default function OwnerDashboard({
     const brandName=String(selected?.name||selected?.display_name||"Selected business");
     const retail=/dionne/i.test(brandName);
     const primary=retail?[
-      {label:"Inventory & products",detail:"Catalog, stock, images and reorder work",href:"/admin/operations"+query,icon:"▣"},
+      {label:"Inventory & products",detail:"Catalog, stock, images and reorder work",href:"/admin/boutique"+query,icon:"▣"},
       {label:"Orders & fulfillment",detail:"Purchases, packing and delivery",href:"/admin/operations"+query,icon:"◈"},
       {label:"Customers & messages",detail:waitingThreads.length+" waiting",href:"/admin/communications"+query,icon:"✉"},
       {label:"Sales & money",detail:"Revenue, payments and exceptions",href:"/admin/operations"+query+"#finance",icon:"▤"}
