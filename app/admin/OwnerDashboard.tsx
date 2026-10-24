@@ -1,3 +1,4 @@
+import {businessBranches} from "../../lib/business-branches";
 import Link from "next/link";
 import TimeAwareOwnerHero from "./TimeAwareOwnerHero";
 
@@ -129,14 +130,7 @@ export default function OwnerDashboard({
   if(selectedBrand){
     const selected=brands.find((b:any)=>String(b.id)===String(selectedBrand));
     const brandName=String(selected?.name||selected?.display_name||"Selected business");
-    const retail=/dionne/i.test(brandName);
-    const primary=retail?[
-      {label:"Inventory & products",detail:"Catalog, stock, images and reorder work",href:"/admin/boutique"+query,icon:"▣"},
-      {label:"Orders & fulfillment",detail:"Purchases, packing and delivery",href:"/admin/boutique/orders"+query,icon:"◈"},
-      {label:"Customers & messages",detail:waitingThreads.length+" waiting",href:"/admin/boutique/customers"+query,icon:"✉"},
-      {label:"Sales",detail:"Transactions and revenue",href:"/admin/boutique/sales"+query,icon:"▤"},
-      {label:"Finances",detail:"Expenses and profitability",href:"/admin/boutique/finances"+query,icon:"◇"}
-    ]:startActions.filter(a=>["Reply to a client","Review proposal","Create / manage work","View calendar","Money"].includes(a.label));
+    const primary=businessBranches(brandName).map(item=>({label:item.label,detail:item.description,href:item.path+query,icon:"◇"}));
     return <section className="ownerExperience" aria-label="Selected business command">
       <div className="ownerHero"><div style={{padding:"24px 0"}}><p className="eyebrow">WGOS · BUSINESS COMMAND</p><h1 style={{fontSize:"clamp(28px,4vw,44px)",margin:"8px 0"}}>{brandName}</h1><p>Only the work and decisions relevant to this business.</p></div></div>
       <article className="ownerPanel ownerAttention">
