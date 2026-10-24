@@ -1,5 +1,5 @@
 import Link from "next/link";
-import BrandFilter from "./BrandFilter";
+import BusinessSwitcher from "./BusinessSwitcher";
 import {businessBranches} from "../../lib/business-branches";
 import GlobalSearch from "./GlobalSearch";
 
@@ -32,6 +32,6 @@ export default function AdminNav({active,brands=[],brand}:{active:ActiveKey;bran
   <Link href={"/admin"+q} className="wordmark" aria-label="WGOS owner command"><b>WGOS</b><small>OWNER COMMAND</small></Link>
   <div className="ownerTopSearch"><GlobalSearch brand={brand}/></div>
   <Link className="newAction" href={"/admin"+q+"#start-here"}>＋ Do</Link>
-  <div className="navContext">{brands.length>0&&<BrandFilter brands={brands}/>}</div>
+  <div className="navContext">{brands.length>0&&<BusinessSwitcher brands={brands}/>}</div>
  </nav></>;
 }
