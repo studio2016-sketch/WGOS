@@ -20,7 +20,6 @@ export default function AdminNav({active,brands=[],brand}:{active:ActiveKey;bran
  ];
  const selected=brands.find((b:any)=>String(b.id)===String(brand));
  const focused=selected?[{label:"Home",icon:"⌂",key:"home",href:"/admin"+q},...businessBranches(String(selected.name)).map((b:any)=>({label:b.label,icon:"◇",key:"branch",href:b.path+q}))]:nav;
- const selectedHref="/admin"+q;
  return <><aside className="commandRail ownerRail" aria-label="WGOS primary navigation">
   <Link href={"/admin"+q} className="railMark ownerRailMark"><span>WGOS</span><i>⌁</i></Link>
   <div className="railNav ownerRailNav">{focused.map((item:any)=><Link key={item.label} className={active===item.key?"active":""} href={item.href}><b>{item.icon}</b><span>{item.label}</span></Link>)}</div>
