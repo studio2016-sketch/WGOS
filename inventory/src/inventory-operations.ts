@@ -35,3 +35,16 @@ export function compareSnapshots(oldRows:SnapshotRow[],newRows:SnapshotRow[]){
  return fields.filter(k=>(old[k]??null)!==(current[k]??null)).map(field=>({sku:old.sku,field,before:old[field]??null,after:current[field]??null}));
  }).concat(newRows.filter(x=>!oldRows.some(y=>y.sku===x.sku)).map(x=>({sku:x.sku,field:'new',before:null,after:x})));
 }
+
+// Inventory comparison gate: a missing source catalog must never count as parity.
+export function verifyCatalogParity(legacy:SnapshotRow[],staged:SnapshotRow[]) {
+ const differences=compareSnapshots(legacy,staged);
+ const duplicate=(rows:SnapshotRow[])=>rows.length!==new Set(rows.map(r=>r.sku)).size;
+ const blockers:string[]=[];
+ if(!legacy.length)blockers.push('Legacy catalog snapshot missing');
+ if(!staged.length)blockers.push('Staged catalog snapshot missing');
+ if(duplicate(legacy))blockers.push('Duplicate legacy SKUs');
+ if(duplicate(staged))blockers.push('Duplicate staged SKUs');
+ if(differences.length)blockers.push('Catalog discrepancies');
+ return {passed:blockers.length===0,blockers,differences};
+}
