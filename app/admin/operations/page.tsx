@@ -50,7 +50,7 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
  const expenseIntelligence:any=selectedBrand?{...expenseIntelligenceRaw,brands:expenseIntelligenceRaw.brands.filter((x:any)=>x.id===selectedBrand),claims:expenseIntelligenceRaw.claims.filter((x:any)=>x.brand_id===selectedBrand),mileage:expenseIntelligenceRaw.mileage.filter((x:any)=>x.brand_id===selectedBrand),budgets:expenseIntelligenceRaw.budgets.filter((x:any)=>x.brand_id===selectedBrand),rules:expenseIntelligenceRaw.rules.filter((x:any)=>x.brand_id===selectedBrand),forecast:expenseIntelligenceRaw.forecast.filter((x:any)=>x.brand_id===selectedBrand),bankInbox:expenseIntelligenceRaw.bankInbox.filter((x:any)=>x.brand_id===selectedBrand),contracts:expenseIntelligenceRaw.contracts.filter((x:any)=>x.brand_id===selectedBrand),projects:expenseIntelligenceRaw.projects.filter((x:any)=>x.brand_id===selectedBrand)}:expenseIntelligenceRaw;
  const financeExceptions:any=selectedBrand?{...financeExceptionsRaw,brands:financeExceptionsRaw.brands.filter((x:any)=>x.id===selectedBrand),alerts:financeExceptionsRaw.alerts.filter((x:any)=>x.brand_id===selectedBrand),transactions:financeExceptionsRaw.transactions.filter((x:any)=>x.brand_id===selectedBrand),suggestions:financeExceptionsRaw.suggestions.filter((x:any)=>x.brand_id===selectedBrand)}:financeExceptionsRaw;
  const cashEnvelopes:any=selectedBrand?{...cashEnvelopesRaw,brands:cashEnvelopesRaw.brands.filter((x:any)=>x.id===selectedBrand),policies:cashEnvelopesRaw.policies.filter((x:any)=>x.brand_id===selectedBrand),summary:cashEnvelopesRaw.summary.filter((x:any)=>x.brand_id===selectedBrand),allocations:cashEnvelopesRaw.allocations.filter((x:any)=>x.brand_id===selectedBrand)}:cashEnvelopesRaw;
- let selectedId=query.project||projects[0]?.id||"";
+ let selectedId=projects.some((p:any)=>String(p.id)===String(query.project))?String(query.project):String(projects[0]?.id||"");
  const totalTasks=projects.reduce((n:number,p:any)=>n+Number(p.task_count||0),0);
  const doneTasks=projects.reduce((n:number,p:any)=>n+Number(p.done_count||0),0);
  const blockedTasks=projects.reduce((n:number,p:any)=>n+Number(p.blocked_count||0),0);
@@ -65,9 +65,9 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
 
  return <main className="admin">
   <AdminNav active="work" brands={brands} brand={selectedBrand}/>
-  <header className="adminHead commandHero">
-   <div><p className="eyebrow">WGOS · OPERATIONS</p><h1>Delivery Command</h1><p>Projects, deliverables, dependencies, ownership, approvals and deadlines in one native workspace.</p><div className="heroSignals"><span>● {projects.length} PROJECTS</span><span>◈ {blockedTasks} BLOCKED</span><span>↗ {portfolioProgress}% COMPLETE</span></div></div>
-   <div className="adminActions" id="new-project"><Link href={selectedBrand?"/admin?brand="+encodeURIComponent(selectedBrand):"/admin"}>Commercial Command →</Link><NewProjectForm brands={brands} users={users}/></div>
+  <header className="adminHead commandHero" style={{maxWidth:"100%",minWidth:0}}>
+   <div><p className="eyebrow">WGOS · OPERATIONS</p><h1>{view==="overview"?"Delivery Command":view==="projects"?"Projects":view==="contracts"?"Contracts":view==="expenses"?"Expenses":"Finances"}</h1>{view==="overview"&&<p>Projects, deliverables, dependencies, ownership, approvals and deadlines in one native workspace.</p>}{view==="overview"&&<div className="heroSignals"><span>● {projects.length} PROJECTS</span><span>◈ {blockedTasks} BLOCKED</span><span>↗ {portfolioProgress}% COMPLETE</span></div>}</div>
+   <div className="adminActions" id="new-project"><Link href={selectedBrand?"/admin?brand="+encodeURIComponent(selectedBrand):"/admin"}>Commercial Command →</Link>{view==="projects"&&<NewProjectForm brands={selectedBrand?brands.filter((b:any)=>String(b.id)===selectedBrand):brands} users={users}/>}</div>
   </header>
 
   <nav aria-label="Operations workspaces" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(145px,1fr))",gap:12,margin:"20px 0"}}>
