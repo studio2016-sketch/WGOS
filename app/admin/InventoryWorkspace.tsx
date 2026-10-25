@@ -3,12 +3,21 @@ import {useMemo,useState} from "react";
 import {useRouter} from "next/navigation";
 
 export default function InventoryWorkspace({brandId,snapshot}:{brandId:string;snapshot:any}){
- const router=useRouter();const [busy,setBusy]=useState("");const [error,setError]=useState("");const [adding,setAdding]=useState(false);const [productName,setProductName]=useState("");const [manufacturer,setManufacturer]=useState("");const [sku,setSku]=useState("");const [category,setCategory]=useState("");const [variantName,setVariantName]=useState("");const [price,setPrice]=useState("");const [cost,setCost]=useState("");const [imageUrl,setImageUrl]=useState("");
+ const router=useRouter();const [busy,setBusy]=useState("");const [error,setError]=useState("");const [adding,setAdding]=useState(false);const [productName,setProductName]=useState("");const [manufacturer,setManufacturer]=useState("");const [sku,setSku]=useState("");const [category,setCategory]=useState("");const [variantName,setVariantName]=useState("");const [price,setPrice]=useState("");const [cost,setCost]=useState("");const [imageUrl,setImageUrl]=useState("");const [uploading,setUploading]=useState(false);
  const products=snapshot.products||[],locations=snapshot.locations||[];const location=locations[0];
  const totals=useMemo(()=>products.reduce((a:any,p:any)=>({on:a.on+Number(p.on_hand||0),available:a.available+Number(p.available||0),retail:a.retail+Number(p.retail_value_cents||0)}),{on:0,available:0,retail:0}),[products]);
  async function adjust(productId:string,delta:number,type="ADJUSTMENT"){
   if(!location)return;setBusy(productId);setError("");
   try{const r=await fetch("/api/admin/inventory/adjust",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({brandId,productId,locationId:location.id,quantityDelta:delta,movementType:type})});const d=await r.json();if(!r.ok)throw new Error(d.error||"Unable to adjust inventory");router.refresh();}catch(e){setError(e instanceof Error?e.message:"Unable to adjust inventory");}finally{setBusy("");}
+ }
+ async function uploadImage(file:File){
+  setUploading(true);setError("");
+  try{
+   const form=new FormData();form.append("brandId",brandId);form.append("image",file);
+   const r=await fetch("/api/admin/inventory/upload",{method:"POST",body:form});
+   const d=await r.json();if(!r.ok)throw new Error(d.error||"Image upload failed");
+   setImageUrl(String(d.url||""));
+  }catch(e){setError(e instanceof Error?e.message:"Image upload failed")}finally{setUploading(false)}
  }
  async function addProduct(e:React.FormEvent<HTMLFormElement>){
   e.preventDefault();setBusy("add");setError("");
@@ -33,8 +42,11 @@ export default function InventoryWorkspace({brandId,snapshot}:{brandId:string;sn
    <label>Variant / size<input value={variantName} onChange={e=>setVariantName(e.target.value)}/></label>
    <label>Retail price ($)<input type="number" min="0" step="0.01" required value={price} onChange={e=>setPrice(e.target.value)}/></label>
    <label>Cost ($), optional<input type="number" min="0" step="0.01" value={cost} onChange={e=>setCost(e.target.value)}/></label>
-   <label>Product image URL<input type="url" value={imageUrl} onChange={e=>setImageUrl(e.target.value)}/></label>
-   <button className="primary" disabled={busy==="add"}>{busy==="add"?"Saving…":"Save to Shadow Catalog"}</button>
+   <label>Upload product photo<input type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={uploading||busy==="add"} onChange={e=>{const file=e.target.files?.[0];if(file)void uploadImage(file)}}/></label>
+   {uploading&&<p className="muted">Uploading image…</p>}
+   {imageUrl&&<div><img src={imageUrl} alt="Product image preview" style={{maxWidth:180,maxHeight:180,objectFit:"contain",borderRadius:12}}/><p className="muted">Photo ready to save with product.</p></div>}
+   <label>Or paste an image URL<input type="url" value={imageUrl} onChange={e=>setImageUrl(e.target.value)}/></label>
+   <button className="primary" disabled={busy==="add"||uploading}>{busy==="add"?"Saving…":"Save to Shadow Catalog"}</button>
   </form>}
   {error&&<p className="lifecycleMessage">{error}</p>}
   <div className="resourceSignals"><span><b>{products.length}</b> PRODUCTS</span><span><b>{totals.on}</b> ON HAND</span><span><b>{totals.available}</b> AVAILABLE</span><span><b>{"$"+(totals.retail/100).toFixed(2)}</b> RETAIL VALUE</span></div>
