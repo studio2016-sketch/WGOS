@@ -16,7 +16,7 @@ export async function POST(req:Request){
  const brandId=String(form.get("brandId")||"");
  const access=await requireApiBrandAdmin(auth.identity,brandId);
  if(!access.ok)return NextResponse.json({ok:false,error:access.error},{status:access.status});
- if(brandId!=="dionnesBoutique")return NextResponse.json({ok:false,error:"BRAND_NOT_SUPPORTED"},{status:400});
+ if(!["dionnesBoutique","bassOneBasses"].includes(brandId))return NextResponse.json({ok:false,error:"BRAND_NOT_SUPPORTED"},{status:400});
  const file=form.get("image");
  if(!(file instanceof File))return NextResponse.json({ok:false,error:"IMAGE_REQUIRED"},{status:400});
  const extension=types.get(file.type);
