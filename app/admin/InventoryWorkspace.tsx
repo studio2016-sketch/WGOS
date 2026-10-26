@@ -76,7 +76,7 @@ export default function InventoryWorkspace({brandId,snapshot}:{brandId:string;sn
   </form>}
   {error&&<p className="lifecycleMessage">{error}</p>}
   <div className="resourceSignals"><span><b>{products.length}</b> PRODUCTS</span><span><b>{totals.on}</b> ON HAND</span><span><b>{totals.available}</b> AVAILABLE</span><span><b>{"$"+(totals.retail/100).toFixed(2)}</b> RETAIL VALUE</span></div>
-  <section className="adminPanel"><div className="equipmentHead"><div><p className="eyebrow">CATALOG + STOCK</p><h3>{brandId==="bassOneBasses"?"Bass One Basses":brandId==="dionnesBoutique"?"Dionne’s Boutique":brandId}</h3></div><small>{snapshot.state?.reconciliation_status||"NOT_STARTED"} · cutover {snapshot.state?.cutover_ready?"ready":"locked"}</small></div>
+  <section className="adminPanel"><div className="equipmentHead"><div><p className="eyebrow">CATALOG + STOCK</p><h3>{brandId==="bassOne"?"Bass One Basses":brandId==="dionnesBoutique"?"Dionne’s Boutique":brandId}</h3></div><small>{snapshot.state?.reconciliation_status||"NOT_STARTED"} · cutover {snapshot.state?.cutover_ready?"ready":"locked"}</small></div>
    {!products.length?<p className="muted">No shadow inventory imported yet. The control plane is ready for the catalog migration.</p>:
    <div className="inventoryTable">{products.map((p:any)=><article className="inventoryRow" key={p.product_id}>
     <div className="inventoryProduct">{p.image_url&&<img src={p.image_url} alt=""/>}<div><small>{p.category||"PRODUCT"} · {p.manufacturer||""}</small><strong>{p.product_name}</strong><span>{p.variant_name||"Standard"} · {p.condition_status}</span></div></div>
