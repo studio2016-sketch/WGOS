@@ -26,14 +26,18 @@ export function countVariance(expected:number,observed:number){
  return observed-expected;
 }
 export type SnapshotRow={sku:string;barcode?:string|null;quantity:number;priceCents:number;imageUrl?:string|null;active:boolean};
-export function compareSnapshots(oldRows:SnapshotRow[],newRows:SnapshotRow[]){
+export type SnapshotDifference =
+ | {sku:string;field:'missing';before:SnapshotRow;after:null}
+ | {sku:string;field:'new';before:null;after:SnapshotRow}
+ | {sku:string;field:'barcode'|'quantity'|'priceCents'|'imageUrl'|'active';before:string|number|boolean|null;after:string|number|boolean|null};
+export function compareSnapshots(oldRows:SnapshotRow[],newRows:SnapshotRow[]):SnapshotDifference[]{
  const map=new Map(newRows.map(x=>[x.sku,x]));
- return oldRows.flatMap(old=>{
+ return oldRows.flatMap((old):SnapshotDifference[]=>{
  const current=map.get(old.sku);
- if(!current)return [{sku:old.sku,field:'missing',before:old,after:null}];
+ if(!current)return [{sku:old.sku,field:'missing' as const,before:old,after:null}];
  const fields=['barcode','quantity','priceCents','imageUrl','active'] as const;
  return fields.filter(k=>(old[k]??null)!==(current[k]??null)).map(field=>({sku:old.sku,field,before:old[field]??null,after:current[field]??null}));
- }).concat(newRows.filter(x=>!oldRows.some(y=>y.sku===x.sku)).map(x=>({sku:x.sku,field:'new',before:null,after:x})));
+ }).concat(newRows.filter(x=>!oldRows.some(y=>y.sku===x.sku)).map(x=>({sku:x.sku,field:'new' as const,before:null,after:x})));
 }
 
 // Inventory comparison gate: a missing source catalog must never count as parity.
