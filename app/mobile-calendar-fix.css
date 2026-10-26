@@ -1,0 +1,26 @@
+/* WGOS mobile width containment: calendar and shared workspaces */
+html,body{max-width:100%;overflow-x:clip}
+.admin,.admin>section,.admin .calendarWorkspace,.admin .calendarLayout,
+.admin .calendarLayout>*,.admin .calendarWorkspace>.adminPanel{min-width:0;max-width:100%}
+.admin :is(.adminPanel,.calendarLayout,.calendarWorkspace,.monthScroller){box-sizing:border-box}
+.admin :is(input,select,textarea){max-width:100%;min-width:0}
+@media(max-width:900px){
+ .admin .calendarLayout,.admin .calendarWorkspace{display:grid;grid-template-columns:minmax(0,1fr)!important}
+ .admin .calendarLayout>*,.admin .calendarWorkspace>*{width:100%;min-width:0}
+}
+@media(max-width:600px){
+ .admin{width:100%;padding-inline:16px}
+ .admin .calendarWorkspace .adminPanel{padding:12px!important}
+ .admin .calendarTitle,.admin .monthToolbar{min-width:0}
+ .admin .monthScroller{width:100%;overflow-x:visible;padding-bottom:0}
+ .admin .monthGrid{width:100%;min-width:0;grid-template-columns:repeat(7,minmax(0,1fr))}
+ .admin .weekday{min-width:0;padding:6px 0;font-size:9px;letter-spacing:0}
+ .admin .monthDay{min-width:0;min-height:76px;padding:3px 2px}
+ .admin .monthDay>span{font-size:10px;margin-bottom:3px}
+ .admin .calendarEvent.compact{min-width:0;width:100%;padding:3px 2px;margin-top:3px;overflow:hidden}
+ .admin .calendarEvent.compact :is(time,strong,small){display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .admin .calendarEvent.compact time{font-size:9px}
+ .admin .calendarEvent.compact strong{font-size:10px}
+ .admin .calendarEvent.compact small{font-size:9px}
+ .admin .calendarLayout form,.admin .calendarLayout form>*{min-width:0;max-width:100%}
+}
