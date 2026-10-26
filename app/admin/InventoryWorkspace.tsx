@@ -3,7 +3,7 @@ import {useMemo,useState} from "react";
 import {useRouter} from "next/navigation";
 
 export default function InventoryWorkspace({brandId,snapshot}:{brandId:string;snapshot:any}){
- const router=useRouter();const [busy,setBusy]=useState("");const [error,setError]=useState("");const [adding,setAdding]=useState(false);const [productName,setProductName]=useState("");const [manufacturer,setManufacturer]=useState("");const [sku,setSku]=useState("");const [category,setCategory]=useState("");const [variantName,setVariantName]=useState("");const [price,setPrice]=useState("");const [cost,setCost]=useState("");const [imageUrl,setImageUrl]=useState("");const [uploading,setUploading]=useState(false);
+ const router=useRouter();const [busy,setBusy]=useState("");const [error,setError]=useState("");const [adding,setAdding]=useState(false);const [productName,setProductName]=useState("");const [manufacturer,setManufacturer]=useState("");const [sku,setSku]=useState("");const [category,setCategory]=useState("");const [variantName,setVariantName]=useState("");const [price,setPrice]=useState("");const [cost,setCost]=useState("");const [imageUrl,setImageUrl]=useState("");const [uploading,setUploading]=useState(false);const [editingPhoto,setEditingPhoto]=useState("");
  const products=snapshot.products||[],locations=snapshot.locations||[];const location=locations[0];
  const totals=useMemo(()=>products.reduce((a:any,p:any)=>({on:a.on+Number(p.on_hand||0),available:a.available+Number(p.available||0),retail:a.retail+Number(p.retail_value_cents||0)}),{on:0,available:0,retail:0}),[products]);
  async function adjust(productId:string,delta:number,type="ADJUSTMENT"){
@@ -19,6 +19,17 @@ export default function InventoryWorkspace({brandId,snapshot}:{brandId:string;sn
    setImageUrl(String(d.url||""));
   }catch(e){setError(e instanceof Error?e.message:"Image upload failed")}finally{setUploading(false)}
  }
+ async function replacePhoto(productId:string,file:File){
+  setEditingPhoto(productId);setError("");
+  try{
+   const form=new FormData();form.append("brandId",brandId);form.append("image",file);
+   const upload=await fetch("/api/admin/inventory/upload",{method:"POST",body:form});
+   const image=await upload.json();if(!upload.ok)throw new Error(image.error||"Photo upload failed");
+   const save=await fetch("/api/admin/inventory",{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({brandId,productId,imageUrl:image.url})});
+   const result=await save.json();if(!save.ok)throw new Error(result.error||"Photo update failed");
+   router.refresh();
+  }catch(e){setError(e instanceof Error?e.message:"Unable to update photo")}finally{setEditingPhoto("")}
+ }
  async function addProduct(e:React.FormEvent<HTMLFormElement>){
   e.preventDefault();setBusy("add");setError("");
   try{
@@ -28,7 +39,7 @@ export default function InventoryWorkspace({brandId,snapshot}:{brandId:string;sn
   }catch(e){setError(e instanceof Error?e.message:"Unable to add product")}finally{setBusy("")}
  }
  return <section className="cinematicWorkspace inventoryWorkspace">
-  <div className="workspaceTitle"><div><p className="eyebrow">RETAIL INVENTORY · SHADOW CONTROL</p><h2>Inventory Command</h2><p className="muted">WGOS is tracking a private inventory copy. It is not controlling Dionne’s live storefront yet.</p></div><span className="status">{snapshot.state?.mode||"SHADOW"}</span></div>
+  <div className="workspaceTitle"><div><p className="eyebrow">RETAIL INVENTORY · SHADOW CONTROL</p><h2>Inventory Command</h2><p className="muted">WGOS is tracking a private inventory copy. It does not change the public storefront until an approved cutover.</p></div><span className="status">{snapshot.state?.mode||"SHADOW"}</span></div>
   <div style={{display:"flex",gap:12,flexWrap:"wrap",margin:"16px 0"}}>
    <button type="button" className="primary" onClick={()=>setAdding(v=>!v)}>{adding?"Close Product Entry":"＋ Add Product"}</button>
    <span className="muted">Products remain private until catalog reconciliation and approved cutover.</span>
@@ -50,13 +61,13 @@ export default function InventoryWorkspace({brandId,snapshot}:{brandId:string;sn
   </form>}
   {error&&<p className="lifecycleMessage">{error}</p>}
   <div className="resourceSignals"><span><b>{products.length}</b> PRODUCTS</span><span><b>{totals.on}</b> ON HAND</span><span><b>{totals.available}</b> AVAILABLE</span><span><b>{"$"+(totals.retail/100).toFixed(2)}</b> RETAIL VALUE</span></div>
-  <section className="adminPanel"><div className="equipmentHead"><div><p className="eyebrow">CATALOG + STOCK</p><h3>Dionne’s Boutique</h3></div><small>{snapshot.state?.reconciliation_status||"NOT_STARTED"} · cutover {snapshot.state?.cutover_ready?"ready":"locked"}</small></div>
+  <section className="adminPanel"><div className="equipmentHead"><div><p className="eyebrow">CATALOG + STOCK</p><h3>{brandId==="bassOneBasses"?"Bass One Basses":brandId==="dionnesBoutique"?"Dionne’s Boutique":brandId}</h3></div><small>{snapshot.state?.reconciliation_status||"NOT_STARTED"} · cutover {snapshot.state?.cutover_ready?"ready":"locked"}</small></div>
    {!products.length?<p className="muted">No shadow inventory imported yet. The control plane is ready for the catalog migration.</p>:
    <div className="inventoryTable">{products.map((p:any)=><article className="inventoryRow" key={p.product_id}>
     <div className="inventoryProduct">{p.image_url&&<img src={p.image_url} alt=""/>}<div><small>{p.category||"PRODUCT"} · {p.manufacturer||""}</small><strong>{p.product_name}</strong><span>{p.variant_name||"Standard"} · {p.condition_status}</span></div></div>
     <div><small>PRICE</small><strong>{"$"+(Number(p.price_cents||0)/100).toFixed(2)}</strong></div>
     <div><small>ON HAND</small><strong>{Number(p.on_hand||0)}</strong><span>{Number(p.available||0)} available</span></div>
-    <div className="inventoryActions"><button disabled={busy===p.product_id} onClick={()=>adjust(p.product_id,1,"RECEIPT")}>＋ Receive</button><button disabled={busy===p.product_id||Number(p.on_hand||0)<=0} onClick={()=>adjust(p.product_id,-1,"ADJUSTMENT")}>− Adjust</button></div>
+    <div className="inventoryActions"><label style={{display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer"}}> {editingPhoto===p.product_id?"Updating photo…":"Replace photo"}<input aria-label={"Replace photo for "+p.product_name} type="file" accept="image/jpeg,image/png,image/webp,image/avif" style={{maxWidth:150}} disabled={Boolean(editingPhoto)} onChange={e=>{const file=e.target.files?.[0];if(file)void replacePhoto(p.product_id,file)}}/></label><button disabled={busy===p.product_id} onClick={()=>adjust(p.product_id,1,"RECEIPT")}>＋ Receive</button><button disabled={busy===p.product_id||Number(p.on_hand||0)<=0} onClick={()=>adjust(p.product_id,-1,"ADJUSTMENT")}>− Adjust</button></div>
    </article>)}</div>}
   </section>
   <section className="principle"><strong>Cutover rule:</strong> no storefront authority until catalog, quantities, pricing and image references are reconciled and explicitly approved.</section>
