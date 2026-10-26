@@ -1,3 +1,4 @@
+import {createHash} from "node:crypto";
 import {NextResponse} from "next/server";
 export const dynamic="force-dynamic";
 export async function GET(){
@@ -11,5 +12,5 @@ export async function GET(){
    providerStatus=response.status===200?"responding":response.status===401||response.status===403?"authorization-required":response.status===404?"route-not-found":response.status<500?"responding-with-error":"provider-error";
   }catch{providerStatus="network-error"}
  }
- return NextResponse.json({ready:auth&&database&&providerReachable,authConfigured:auth,databaseConfigured:database,providerReachable,providerStatus,environment:process.env.VERCEL_ENV==="production"?"production":"nonproduction",message:"This diagnostic never verifies a password or grants access."},{status:auth&&database&&providerReachable?200:503,headers:{"Cache-Control":"no-store, private"}});
+ return NextResponse.json({ready:auth&&database&&providerReachable,authConfigured:auth,databaseConfigured:database,providerReachable,providerStatus,providerFingerprint:base?createHash("sha256").update(base).digest("hex").slice(0,16):null,environment:process.env.VERCEL_ENV==="production"?"production":"nonproduction",message:"This diagnostic never verifies a password or grants access."},{status:auth&&database&&providerReachable?200:503,headers:{"Cache-Control":"no-store, private"}});
 }
