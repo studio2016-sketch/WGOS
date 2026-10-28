@@ -37,3 +37,28 @@ Production/preview verification and release state must be recorded separately; a
 7. Cross-browser Chrome and Safari interaction testing and real-user performance measurements remain to be completed. Browser privacy can limit attribution; unknown must remain unknown. Browser choice is distinct from the search engine used.
 
 References: https://developers.google.com/search/docs/fundamentals/seo-starter-guide ; https://www.indexnow.org/documentation ; https://duckduckgo.com/duckduckgo-help-pages/results/sources ; https://www.apple.com/business/connect/
+
+## Release evidence
+
+Released October 28, 2026 after Vercel preview checks passed. Production deployments reached READY for the following merge commits:
+
+| System | Production commit | Change |
+|---|---|---|
+| WGOS | 32aa4cd3e5f757d8d5ea35c5974ea74bad0994b9 | Search & Sales workspace, normalization and telemetry controls |
+| Bass One Basses | bef6bd9ac687b2aebe457ba612c86c41185ce0a1 | Public canonical/sitemap and consultation attribution |
+| Studio2016 | 4bb3d917e413a7d38518d4a76a1c231b68e634ad | Attribution, page canonicals and removal of repeated brand titles |
+| Jermaine Williams | c767ffb3c0bf138ab49f5f05c18445137958b9fd | Inquiry attribution and server-selected routing |
+| Charmin Greene | 40c01e8c5dd32b1b2667f023e64a118c8f7aff59 | Attribution and script repairs |
+| Charmin & Jermaine | 171a4e6fad7d3844f1702a47a76bb37addeff23c | Attribution and script repairs |
+
+Public domain HTTP verification: all five public homepages returned 200; Bass One's custom-domain canonical and collection sitemap URL were present and the Vercel URL was absent from its sitemap. Studio2016's project page now has one brand suffix and a page-specific canonical. WGOS /admin/seo redirects an anonymous request to /login; login has noindex metadata and /robots.txt disallows crawling. A deliberately invalid public SALE event returned 400 SERVER_CONFIRMED_EVENT_REQUIRED before any business write. This negative test did not create a sale. All four local HTTP smoke checks also passed.
+
+Corrected WGOS's bassOne public-domain profile from bass-one-basses.vercel.app to www.bassonebasses.com using an exact old-value guard, within a transaction with an audit event. No DNS or external account settings changed.
+
+WGOS's IndexNow notifier verified deployed ownership files and public page responses and submitted 20 reviewed URLs: Bass One 2, Studio2016 3, Jermaine Williams 5, Charmin Greene 5 and Charmin & Jermaine 5. Each returned HTTP 202: receipt acknowledged, ownership validation pending. No claim of crawling, indexing, ranking or sales improvement is made. Future changes are not scheduled for automatic submission by this release.
+
+Sound Legacy's prepared changes are draft PR https://github.com/studio2016-sketch/Sound-Legacy-Institute/pull/1 and remain outside production while the public domain returns 503. Dionne's Boutique and CG Enterprises were audited without removing their prelaunch controls.
+
+Chrome/WebKit binary installation was attempted but the download returned an invalid/truncated archive. Cross-browser interaction QA therefore remains incomplete. Vercel preview HTTP checks used the existing authenticated Vercel connection; the private WGOS workspace was not accessed with an application user identity, so authenticated multi-brand UI behavior remains unverified. Provider ingestion, end-to-end real inquiry/contract/payment linkage, live/test payment mode and refunds remain open dependencies.
+
+Runtime observation: error/fatal log scans scoped to each of the six released production deployments returned no grouped records in the last 30 minutes. This is limited to observed traffic and exercised requests; monitoring drains and continuous detection were not verified.
