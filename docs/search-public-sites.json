@@ -1,0 +1,57 @@
+[
+  {
+    "repo": "studio2016-site",
+    "host": "www.studio2016.com",
+    "key": "ade4cf802eecc6a33ea9065bef5a0545",
+    "paths": [
+      "/",
+      "/houston-event-production",
+      "/start-a-project"
+    ]
+  },
+  {
+    "repo": "Jermaine-Williams",
+    "host": "www.jermainewilliams.com",
+    "key": "6c0e38824aef9c44149125e6aff0261f",
+    "paths": [
+      "/",
+      "/hire-bassist",
+      "/music-production",
+      "/weddings",
+      "/private-events"
+    ]
+  },
+  {
+    "repo": "Charmin-Greene",
+    "host": "www.charmingreene.com",
+    "key": "a1b08674fbee3d04563ef1a890562ce6",
+    "paths": [
+      "/",
+      "/featured-saxophonist",
+      "/horn-arranging",
+      "/private-events",
+      "/weddings"
+    ]
+  },
+  {
+    "repo": "Charmin-Jermaine",
+    "host": "www.charminjermaine.com",
+    "key": "831180ceaabef7f9b7b02a1a5dd5bc35",
+    "paths": [
+      "/",
+      "/live-entertainment",
+      "/luxury-wedding-live-music-houston",
+      "/corporate-event-entertainment-houston",
+      "/private-event-live-music-houston"
+    ]
+  },
+  {
+    "repo": "Bass-One-Basses",
+    "host": "www.bassonebasses.com",
+    "key": "58c6afb203acd68f4dc03f6359c72960",
+    "paths": [
+      "/",
+      "/collection"
+    ]
+  }
+]

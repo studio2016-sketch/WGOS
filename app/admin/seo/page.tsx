@@ -1,0 +1,27 @@
+import Link from 'next/link';
+import AdminNav from '../AdminNav';
+import {commandAccess} from '../../../lib/authz';
+import {getOperationsReferenceData} from '../../../lib/operations-board';
+import {getSearchRevenue} from '../../../lib/search-revenue';
+import {searchSites} from '../../../lib/search-sites';
+
+export const dynamic='force-dynamic';
+export default async function SearchRevenuePage({searchParams}:{searchParams:Promise<{brand?:string}>}){
+ const q=await searchParams,access=await commandAccess();
+ const refs=await getOperationsReferenceData(access.identity.auth_user_id,access.isGlobal);
+ const brands:any[]=refs.brands as any[];
+ const selected=brands.some(b=>b.id===q.brand)?String(q.brand):'';
+ const scoped=selected?brands.filter(b=>b.id===selected):brands;
+ let data:Awaited<ReturnType<typeof getSearchRevenue>>|null=null;
+ try{data=await getSearchRevenue(scoped.map(b=>String(b.id)));}catch{ /* Report an unavailable read, never a zero. */ }
+ const leads=data?.groups.filter(g=>!g.currency)||[],receipts=data?.groups.filter(g=>g.currency)||[];
+ const name=(id:string)=>brands.find(b=>b.id===id)?.name||id;
+ return <main className="admin"><AdminNav active="marketing" brands={brands} brand={selected}/>
+  <header className="adminHead commandHero"><div><p className="eyebrow">WGOS · SEARCH & SALES</p><h1>Search that earns business</h1><p>Prioritize qualified inquiries, won opportunities and collected payments for each brand.</p><Link className="newAction" href={'/admin/marketing'+(selected?'?brand='+encodeURIComponent(selected):'')}>Marketing workspace →</Link></div></header>
+  <section style={{padding:20}} aria-label="Measurement status"><h2>Measurement status</h2><p>Google Search Console, Bing Webmaster Tools and GA4 ingestion are not verified in WGOS. GSC Wizard access was blocked by an inactive subscription on October 28, 2026. Search clicks, sessions, conversion rates and profit are unavailable.</p><p>Attribution below is visitor-reported and can be incomplete. The inquiry table covers records created in the last 28 days. The payment table covers payments recorded in that period, including payments on older inquiries. These are different cohorts.</p><p>Paid records come from WGOS payments linked through the same brand’s proposal and website inquiry. Amounts are collected payments recorded as PAID by the Stripe integration; they are not net revenue or profit. Browser events and estimated deal values are excluded. Payment mode and refunds still require reconciliation.</p>{data?<small>Rolling window: {data.start} to {data.end}. Source: WGOS opportunities and payments.</small>:<p role="status">WGOS measurement is unavailable. No zero totals are inferred.</p>}</section>
+  <section style={{padding:20,overflowX:'auto'}}><h2>Website inquiry outcomes</h2><table style={{width:'100%',textAlign:'left'}}><thead><tr>{['Business','Channel / source','Original landing page','Inquiries','Won opportunities'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{leads.map((g,i)=><tr key={i}><td>{name(g.brandId)}</td><td>{g.channel} / {g.source}</td><td>{g.landingPath||'Unknown'}</td><td>{g.inquiries}</td><td>{g.won}</td></tr>)}</tbody></table>{data&&!leads.length&&<p>No recorded website inquiries in this window. This does not establish that the websites received no inquiries.</p>}</section>
+  <section style={{padding:20,overflowX:'auto'}}><h2>Linked collected payments</h2><table style={{width:'100%',textAlign:'left'}}><thead><tr>{['Business','Channel / source','Original landing page','Payments','Collected amount'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{receipts.map((g,i)=><tr key={i}><td>{name(g.brandId)}</td><td>{g.channel} / {g.source}</td><td>{g.landingPath||'Unknown'}</td><td>{g.receipts}</td><td>{g.currency} {g.amount.toFixed(2)}</td></tr>)}</tbody></table>{data&&!receipts.length&&<p>No linked collected payments recorded in this window. Payment collection and reconciliation must be verified before judging search revenue.</p>}</section>
+  <section style={{padding:20}}><h2>Business priorities</h2><p>Public checks dated October 28, 2026. These are recorded observations, not continuous monitoring.</p><div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(250px,1fr))',gap:16}}>{scoped.map(b=>{const s=searchSites[b.id];return <article key={b.id} style={{padding:20,border:'1px solid #8886',borderRadius:12}}><h3>{b.name}</h3>{s?<><a href={'https://'+s.domain} target="_blank" rel="noreferrer">{s.domain}</a><p><strong>{s.status}</strong></p><p>{s.goal}</p><p>{s.next}</p></>:<p>Public website and sales goal need verification.</p>}</article>;})}</div></section>
+  <section style={{padding:20}}><h2>Search coverage</h2><p>Google: crawlability, useful service pages, truthful structured data and verified business listings. Bing: the same fundamentals plus verified Webmaster Tools and IndexNow after domain ownership is confirmed. DuckDuckGo largely sources traditional links from Bing. Chrome and Safari require browser testing of the booking and checkout journey. Eligible local businesses also need accurate Google, Bing and Apple Maps listings.</p><p><a href="https://developers.google.com/search/docs/fundamentals/seo-starter-guide">Google guidance</a> · <a href="https://www.bing.com/indexnow">IndexNow</a> · <a href="https://duckduckgo.com/duckduckgo-help-pages/results/sources">DuckDuckGo sources</a> · <a href="https://www.apple.com/business/connect/">Apple Business Connect</a></p></section>
+ </main>;
+}

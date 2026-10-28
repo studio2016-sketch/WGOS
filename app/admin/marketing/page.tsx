@@ -1,4 +1,5 @@
 import AdminNav from "../AdminNav";
+import Link from "next/link";
 import MarketingDeliverablesClient from "./MarketingDeliverablesClient";
 import GrowthMetricsClient from "./GrowthMetricsClient";
 import GrowthCampaignsClient from "./GrowthCampaignsClient";
@@ -23,6 +24,7 @@ export default async function MarketingPage({searchParams}:{searchParams:Promise
  return <main className="admin"><AdminNav active="marketing" brands={brands} brand={selectedBrand}/>
   <header className="adminHead commandHero"><div><p className="eyebrow">WGOS · MARKETING</p><h1>Content Supply Chain</h1><p>Track every photo, video, flyer, fact, testimonial, show detail and other input needed to keep each brand's campaigns moving.</p><div className="heroSignals"><span>● {outstanding} OUTSTANDING</span><span>◈ {received} IN HAND</span><span>↗ {blocked} BLOCKED</span></div></div></header>
   <section className="opsPulse"><article><small>OPEN INPUTS</small><strong>{outstanding}</strong><span>still needed</span></article><article><small>IN HAND</small><strong>{received}</strong><span>ready or being produced</span></article><article><small>BLOCKED</small><strong>{blocked}</strong><span>needs intervention</span></article><article><small>TOTAL TRACKED</small><strong>{rows.length}</strong><span>current brand scope</span></article></section>
+  <p><Link className="newAction" href={"/admin/seo"+(selectedBrand?"?brand="+encodeURIComponent(selectedBrand):"" )}>Search & sales command center →</Link></p>
   <MarketingDeliverablesClient rows={rows} brands={brands}/>
   <section className="opsPulse"><article><small>SOCIAL VIEWS</small><strong>{Number(metrics.views).toLocaleString()}</strong><span>tracked content views</span></article><article><small>OUTBOUND CLICKS</small><strong>{Number(metrics.clicks).toLocaleString()}</strong><span>social / video exits</span></article><article><small>LIST GROWTH</small><strong>{Number(metrics.signups).toLocaleString()}</strong><span>direct audience added</span></article><article><small>ATTRIBUTED REVENUE</small><strong>{"$"+(Number(metrics.revenueCents)/100).toLocaleString(undefined,{maximumFractionDigits:0})}</strong><span>{Number(metrics.sales).toLocaleString()} tracked sales</span></article></section>
   <GrowthSources sources={sources as any[]}/>

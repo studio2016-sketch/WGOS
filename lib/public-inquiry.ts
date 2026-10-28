@@ -1,6 +1,7 @@
 import "server-only";
 import {db} from "./db";
 import {createHash} from "crypto";
+import {searchAttribution} from "./search-attribution";
 
 const clean=(v:unknown,max=1000)=>String(v??"").trim().slice(0,max);
 const emailOk=(v:string)=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -74,6 +75,7 @@ export async function submitPublicInquiry(input:{
   details[key]=typeof v==="string"?clean(v,1200):v;
  }
  if(message)details.message=message;
+ details.searchAttribution=searchAttribution(rawDetails);
  details.source="PUBLIC_WEB_INQUIRY";
  const eventDate=clean(details.eventDate||details.date,20);
  const opportunities:any[]=await sql`INSERT INTO wgos.opportunities(
