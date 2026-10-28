@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireApiUser, requireApiBrandAdmin } from "../../../../lib/authz";
-import { buildGoogleAuthorizationUrl, generateOauthState, generatePkcePair } from "../../../../lib/search-console/oauth";
-import { createGoogleOauthAttempt } from "../../../../lib/search-console/oauth-attempts";
+import { requireApiUser, requireApiBrandAdmin } from "../../../../../lib/authz";
+import { buildGoogleAuthorizationUrl, generateOauthState, generatePkcePair } from "../../../../../lib/search-console/oauth";
+import { createGoogleOauthAttempt } from "../../../../../lib/search-console/oauth-attempts";
 
 export const runtime = "nodejs";
 export async function POST(request: NextRequest) {
