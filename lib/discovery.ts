@@ -1,6 +1,7 @@
 import "server-only";
 import {createHmac,timingSafeEqual} from "crypto";
 import {db} from "./db";
+import {isPlausibleContactEmail,safeDiscoveryDeliveryError} from "./discovery-delivery-policy";
 
 type DiscoveryState={status:string;readiness:number;missing:string[];questions:Array<{key:string;label:string;prompt:string;type?:string;required?:boolean}>;email_sent_at?:string|null;followup_count?:number;last_response_at?:string|null};
 
@@ -128,6 +129,18 @@ export async function processDiscoveryAutomation(input:{limit?:number}={}){
   else if(sentAt&&assessment.status!=="READY_FOR_PROPOSAL"&&followups<1&&now-sentAt>=24*60*60*1000)kind="reminder";
   else if(sentAt&&assessment.status!=="READY_FOR_PROPOSAL"&&followups<2&&now-sentAt>=72*60*60*1000)kind="reminder";
   if(!kind){console.log("DISCOVERY_SKIP",JSON.stringify({id:String(o.id),reason:"not_due",ageMinutes:Math.round((now-created)/60000),sentAt:meta.email_sent_at||null,followups,status:assessment.status,readiness:assessment.readiness}));skipped++;continue;}
+  // Invalid contact addresses need owner correction, not repeated delivery attempts.
+  if(!isPlausibleContactEmail(o.contact_email)){
+   const already:any[]=await sql`SELECT id FROM wgos.notification_events
+    WHERE brand_id=${o.brand_id} AND event_type='DISCOVERY_AUTOMATION_FAILED'
+      AND payload->>'opportunity_id'=${String(o.id)}
+      AND payload->>'error'='INVALID_CONTACT_EMAIL' LIMIT 1`;
+   if(!already[0])await sql`INSERT INTO wgos.notification_events
+    (brand_id,recipient_subject,channel,event_type,status,payload)
+    VALUES(${o.brand_id},'OWNER','IN_APP','DISCOVERY_AUTOMATION_FAILED','PENDING',
+      ${JSON.stringify({opportunity_id:String(o.id),error:"INVALID_CONTACT_EMAIL"})}::jsonb)`;
+   skipped++;continue;
+  }
   const prepared=await prepareDiscoveryEmail(String(o.id));if(!prepared){skipped++;continue;}
   const first=String(o.contact_name||"").trim().split(/\s+/)[0]||"there";
   const subject=kind==="initial"?"A few details will help us design the right Studio2016 approach":"A quick follow-up on your Studio2016 project";
@@ -148,7 +161,7 @@ export async function processDiscoveryAutomation(input:{limit?:number}={}){
   await sql`UPDATE wgos.opportunities SET discovery=${JSON.stringify(nextDiscovery)}::jsonb,stage=CASE WHEN stage='NEW' THEN 'QUALIFYING' ELSE stage END,updated_at=now() WHERE id=${String(o.id)}::uuid`;
   await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata) VALUES('system:discovery',${kind==="initial"?"DISCOVERY_EMAIL_SENT":"DISCOVERY_REMINDER_SENT"},'opportunity',${String(o.id)},${JSON.stringify({deliveryId:delivery.id||null,readiness:assessment.readiness})}::jsonb)`;
   if(kind==="initial")sent++;else reminded++;
- }catch(e){failed++;const message=e instanceof Error?e.message:"Discovery automation failed";errors.push(message);try{
+ }catch(e){failed++;const message=safeDiscoveryDeliveryError(e);errors.push(message);try{
   const existing:any[]=await sql`SELECT id FROM wgos.notification_events WHERE brand_id=${o.brand_id} AND event_type='DISCOVERY_AUTOMATION_FAILED' AND payload->>'opportunity_id'=${String(o.id)} AND created_at>now()-interval '6 hours' LIMIT 1`;
   if(!existing[0])await sql`INSERT INTO wgos.notification_events(brand_id,recipient_subject,channel,event_type,status,payload) VALUES(${o.brand_id},'OWNER','IN_APP','DISCOVERY_AUTOMATION_FAILED','PENDING',${JSON.stringify({opportunity_id:String(o.id),error:message})}::jsonb)`;
  }catch{}}}
