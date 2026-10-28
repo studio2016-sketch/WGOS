@@ -5,9 +5,11 @@ export function isPlausibleContactEmail(value: unknown): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 }
 
+/** Do not persist raw provider exceptions: they can contain names, addresses and tokens. */
 export function safeDiscoveryDeliveryError(error: unknown): string {
-  const message = error instanceof Error ? error.message : "Discovery automation failed";
-  return message
-    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[redacted-email]")
-    .slice(0, 300);
+  const message = error instanceof Error ? error.message : "";
+  if (/invalid.{0,100}(email|address)|(email|address).{0,100}invalid/i.test(message)) return "INVALID_CONTACT_EMAIL";
+  if (/rate.?limit|too many requests|\b429\b/i.test(message)) return "DISCOVERY_DELIVERY_RATE_LIMITED";
+  if (/unauthorized|forbidden|\b401\b|\b403\b/i.test(message)) return "DISCOVERY_DELIVERY_AUTH_FAILURE";
+  return "DISCOVERY_DELIVERY_FAILED";
 }
