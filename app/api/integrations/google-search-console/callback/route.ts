@@ -3,7 +3,6 @@ import { requireApiUser, requireApiBrandAdmin } from "../../../../../lib/authz";
 import { consumeGoogleOauthAttempt } from "../../../../../lib/search-console/oauth-attempts";
 import { exchangeGoogleAuthorizationCode, GOOGLE_SEARCH_CONSOLE_SCOPE } from "../../../../../lib/search-console/oauth";
 import { listSearchConsoleProperties } from "../../../../../lib/search-console/client";
-import { saveSearchConsoleConnection } from "../../../../../lib/search-console/connections";
 
 export const runtime = "nodejs";
 export async function GET(request: NextRequest) {
