@@ -1,5 +1,5 @@
 import "server-only";
-import { requireApiUser, requireApiBrand } from "../authz";
+import { requireApiBrand } from "../authz";
 
 const SEARCH_CONSOLE_BASE = "https://www.googleapis.com/webmasters/v3";
 
@@ -8,7 +8,7 @@ const SEARCH_CONSOLE_BASE = "https://www.googleapis.com/webmasters/v3";
  * from trusted server-side callers only. Never expose it to client components.
  */
 export async function listSearchConsoleProperties(input: {
-  identity: unknown;
+  identity: any;
   brandId: string;
   accessToken: string;
 }): Promise<Array<{ siteUrl: string; permissionLevel?: string }>> {
