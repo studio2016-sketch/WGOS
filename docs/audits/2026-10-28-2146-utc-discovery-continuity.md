@@ -11,6 +11,7 @@
 ## Business continuity and customer communications
 - 318 pending notifications: 194 `NEW_WEB_INQUIRY` (194 distinct opportunities, across 4 brands) and 124 `DISCOVERY_AUTOMATION_FAILED` (only **6 distinct opportunities**, across 3 brands). 5 READ notifications.
 - The 124 failures have one distinct error message, consistently related to an invalid email address. Raw addresses were intentionally not copied into this report.
+- Follow-up SQL cross-check: **all 6 affected opportunities** have contact email values that fail the proposed format guard; 0 of 6 passed. This validates that the proposed guard addresses the currently observed malformed-address cohort without exposing any customer addresses. It is not a runtime execution test.
 - Discovery failure cadence: 12 notifications on Oct 24, 25, 26 and 27 UTC; 9 on Oct 28 at observation. Source code `lib/discovery.ts` attempts delivery for eligible opportunities and deduplicates failure notifications only within 6h. This explains why the same six opportunities can generate repeated failures. It does not prove the clients were otherwise uncontacted.
 - Outbox: 1 PROCESSED; unresolved dead letters: 0. No bulk status changes, outbound sends, or deletion authorized.
 - **Action:** Owner/team should reconcile 194 inquiries with communication threads and contact records before sending, marking read, or resetting anything. Validate invalid email addresses from authenticated records rather than copying customer data into audit artifacts.
