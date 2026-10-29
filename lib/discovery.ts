@@ -77,7 +77,8 @@ export async function savePublicDiscovery(input:{opportunityId:string;token:stri
  const assessment=assessDiscovery(merged,String(o.brand_id));const now=new Date().toISOString();
  merged._discovery={...((merged as any)._discovery||{}),...assessment,last_response_at:now};
  const nextStage=assessment.status==="READY_FOR_PROPOSAL"?"DISCOVERY":"DISCOVERY";
- await sql`UPDATE wgos.opportunities SET discovery=${JSON.stringify(merged)}::jsonb,stage=${nextStage},updated_at=now() WHERE id=${input.opportunityId}::uuid`;
+ const updated:any[]=await sql`UPDATE wgos.opportunities SET discovery=${JSON.stringify(merged)}::jsonb,stage=${nextStage},updated_at=now() WHERE id=${input.opportunityId}::uuid AND stage IN ('NEW','QUALIFYING','DISCOVERY') RETURNING id`;
+ if(!updated[0])throw new Error("DISCOVERY_STAGE_LOCKED");
  await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata) VALUES('client:discovery','DISCOVERY_RESPONSE_RECEIVED','opportunity',${input.opportunityId},${JSON.stringify({readiness:assessment.readiness,status:assessment.status})}::jsonb)`;
  await sql`INSERT INTO wgos.notification_events(brand_id,recipient_subject,channel,event_type,status,payload) VALUES(${o.brand_id},'OWNER','IN_APP','DISCOVERY_RESPONSE_RECEIVED','PENDING',${JSON.stringify({opportunity_id:input.opportunityId,readiness:assessment.readiness,status:assessment.status})}::jsonb)`;
  const threads:any[]=await sql`SELECT t.id FROM wgos.communication_threads t JOIN wgos.communication_messages m ON m.thread_id=t.id WHERE t.brand_id=${o.brand_id} AND m.metadata->>'opportunityId'=${input.opportunityId} ORDER BY t.created_at DESC LIMIT 1`;
