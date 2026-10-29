@@ -40,7 +40,7 @@ SELECT component, status, count(*) FROM wgos.system_health_events
 - Authenticated cross-entity access controls not independently tested.
 - Production discovery email and cron health fixes are not deployed.
 
-## Customer-delivery continuity gate — added 2026-10-29 06:56 UTC
+## Customer-delivery continuity gate — added 2026-10-29 06:53 UTC
 - Source review of `lib/discovery.ts` confirms the Studio2016 transport call precedes the communication-message, opportunity-state and audit-event writes. If the provider accepts the email and a later database write fails, a retry could send again without a durable success record. **This is a plausible failure window, not proof of duplicate delivery.**
 - Before release, inspect the actual Studio2016 endpoint for durable provider idempotency and request tracing. A stable idempotency key alone is not sufficient unless the receiver enforces it. Test the provider-accepted/database-write-failed scenario in isolated staging without sending to customers.
 - Reconcile each candidate opportunity against provider delivery IDs, communication messages and audit events before any replay. Do not infer delivery from `DISCOVERY_EMAIL_SENT` audit entries alone, and do not bulk resend from notification counts.
