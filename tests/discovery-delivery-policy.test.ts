@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {isPlausibleContactEmail,safeDiscoveryDeliveryError} from "../lib/discovery-delivery-policy";
+import {isPlausibleContactEmail,safeDiscoveryDeliveryError,isApprovedDiscoverySender} from "../lib/discovery-delivery-policy";
 
 test("discovery email guard accepts ordinary addresses",()=>{
  assert.equal(isPlausibleContactEmail("client@example.com"),true);
@@ -23,5 +23,13 @@ test("provider error classification never exposes customer data",()=>{
   assert.equal(actual,expected);
   assert.equal(actual.includes("client@example.com"),false);
   assert.equal(actual.includes("abc123"),false);
+ }
+});
+
+
+test("discovery transport is restricted to Studio2016",()=>{
+ assert.equal(isApprovedDiscoverySender("studio2016"),true);
+ for(const brand of ["charmin","charminJermaine","soundLegacy","",null,undefined]) {
+  assert.equal(isApprovedDiscoverySender(brand),false,String(brand));
  }
 });
