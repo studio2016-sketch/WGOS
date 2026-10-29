@@ -2,7 +2,7 @@ import Link from "next/link";
 import BrandFilter from "./BrandFilter";
 import GlobalSearch from "./GlobalSearch";
 
-type ActiveKey="home"|"clients"|"work"|"messages"|"calendar"|"people"|"money"|"marketing"|"resources";
+type ActiveKey="home"|"clients"|"work"|"showprep"|"messages"|"calendar"|"people"|"money"|"marketing"|"resources";
 
 export default function AdminNav({active,brands=[],brand}:{active:ActiveKey;brands?:any[];brand?:string}){
  const q=brand?"?brand="+encodeURIComponent(brand):"";
@@ -10,6 +10,7 @@ export default function AdminNav({active,brands=[],brand}:{active:ActiveKey;bran
   {label:"Home",icon:"⌂",key:"home",href:"/admin"+q},
   {label:"Clients",icon:"◇",key:"clients",href:"/admin"+q+"#owner-detail-workspaces"},
   {label:"Work",icon:"▣",key:"work",href:"/admin/operations"+q},
+  {label:"Show Prep",icon:"♫",key:"showprep",href:"/admin/show-prep"+q},
   {label:"Messages",icon:"□",key:"messages",href:"/admin/communications"+q},
   {label:"Calendar",icon:"◷",key:"calendar",href:"/admin/calendar"+q},
   {label:"People",icon:"♧",key:"people",href:"/admin/people"+q},
