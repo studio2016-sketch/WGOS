@@ -13,3 +13,10 @@ export function safeDiscoveryDeliveryError(error: unknown): string {
   if (/unauthorized|forbidden|\b401\b|\b403\b/i.test(message)) return "DISCOVERY_DELIVERY_AUTH_FAILURE";
   return "DISCOVERY_DELIVERY_FAILED";
 }
+
+/** The existing delivery endpoint and message template are Studio2016-specific.
+ * Fail closed until other brands have verified sender, content and transport.
+ */
+export function isApprovedDiscoverySender(brandId: unknown): boolean {
+  return brandId === "studio2016";
+}
