@@ -1,7 +1,7 @@
 import "server-only";
 import {createHmac,timingSafeEqual} from "crypto";
 import {db} from "./db";
-import {isPlausibleContactEmail,safeDiscoveryDeliveryError} from "./discovery-delivery-policy";
+import {isPlausibleContactEmail,safeDiscoveryDeliveryError,isApprovedDiscoverySender} from "./discovery-delivery-policy";
 
 type DiscoveryState={status:string;readiness:number;missing:string[];questions:Array<{key:string;label:string;prompt:string;type?:string;required?:boolean}>;email_sent_at?:string|null;followup_count?:number;last_response_at?:string|null};
 
@@ -105,7 +105,7 @@ async function deliverViaBrandSite(payload:any){
 export async function processDiscoveryAutomation(input:{limit?:number}={}){
  const sql=db();const limit=Math.max(1,Math.min(Number(input.limit||40),100));
  const rows:any[]=await sql`SELECT o.id,o.brand_id,o.organization_id,o.title,o.stage,o.discovery,o.contact_name,o.contact_email,o.created_at FROM wgos.opportunities o
- WHERE o.source='PUBLIC_WEB_INQUIRY' AND o.stage IN ('NEW','QUALIFYING','DISCOVERY') AND o.contact_email IS NOT NULL
+ WHERE o.brand_id='studio2016' AND o.source='PUBLIC_WEB_INQUIRY' AND o.stage IN ('NEW','QUALIFYING','DISCOVERY') AND o.contact_email IS NOT NULL
  AND EXISTS(SELECT 1 FROM wgos.audit_events ae WHERE ae.entity_type='opportunity' AND ae.entity_id=o.id::text AND ae.action='PUBLIC_WEB_INQUIRY_RECEIVED')
  AND NOT EXISTS(
   SELECT 1 FROM wgos.opportunities newer
@@ -120,6 +120,9 @@ export async function processDiscoveryAutomation(input:{limit?:number}={}){
  ORDER BY o.created_at ASC LIMIT ${limit}`;
  let sent=0,reminded=0,skipped=0,failed=0;const errors:string[]=[];
  for(const o of rows){try{
+  // Fail closed: this transport and email copy are Studio2016-specific.
+  // Other brands require an explicitly verified brand-specific delivery path.
+  if(!isApprovedDiscoverySender(o.brand_id)){skipped++;continue;}
   const d=o.discovery||{},meta=d._discovery||{},assessment=assessDiscovery(d);const created=new Date(o.created_at).getTime(),now=Date.now();
   const sentAt=meta.email_sent_at?new Date(meta.email_sent_at).getTime():0;const followups=Number(meta.followup_count||0);
   let kind:"initial"|"reminder"|null=null;
