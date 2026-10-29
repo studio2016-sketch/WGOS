@@ -70,3 +70,14 @@ test("discovery email guard rejects invalid DNS label characters",()=>{
   "client@xn--bcher-kva.example","client@a.co"
  ])assert.equal(isPlausibleContactEmail(email),true,email);
 });
+
+test("discovery email guard rejects provider-incompatible local-part syntax and length",()=>{
+ for(const email of [
+  "client:wrong@example.com","client,wrong@example.com",
+  "client;wrong@example.com","client\\name@example.com",
+  "client(name)@example.com",`${"a".repeat(65)}@example.com`
+ ])assert.equal(isPlausibleContactEmail(email),false,email);
+ for(const email of [
+  "first.last+tag@example.co.uk","o'connor@example.com","a@b.co"
+ ])assert.equal(isPlausibleContactEmail(email),true,email);
+});
