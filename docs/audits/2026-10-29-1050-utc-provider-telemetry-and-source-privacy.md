@@ -30,3 +30,9 @@ Scope: read-only GitHub, Neon, Vercel, Resend and attempted Stripe inspection. N
 | Verified | SQL responsiveness, current backup metadata, notification counts, provider 422 samples, GitHub visibility and deployment metadata; **not** live email delivery or restore |
 
 No production code, records, customer communications, permissions, payments, configuration or paid resources were changed in this audit.
+
+## Post-report verification (same audit run)
+
+- Added a synthetic regression case to `tests/discovery-delivery-policy.test.ts` for Resend's observed invalid-recipient error shape; GitHub commit `ac9816077a76f9a3e77dc5b1c47b4bfed6fc7e06`, file readback confirmed.
+- An independently reconstructed, isolated Node.js 22.16.0 policy harness executed **7/7 passing cases**. This was **not** the repository's CI run or a production email test; the GitHub-hosted source could not be downloaded into the isolated test container because external DNS access was unavailable.
+- Vercel reported the report-commit preview READY. The new regression-test commit preview was BUILDING when checked; do not mark it deployed/verified until ready.
