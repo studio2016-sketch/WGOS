@@ -33,3 +33,11 @@ test("discovery transport is restricted to Studio2016",()=>{
   assert.equal(isApprovedDiscoverySender(brand),false,String(brand));
  }
 });
+
+// Provider telemetry identified repeated 422 responses for this malformed-address class.
+// This test uses synthetic addresses only; no customer data or provider calls.
+test("discovery email guard rejects consecutive dots in domain labels",()=>{
+ for(const email of ["client@example..com","client@sub..example.com","client@example.com.."]){
+  assert.equal(isPlausibleContactEmail(email),false,email);
+ }
+});
