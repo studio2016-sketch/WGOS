@@ -19,3 +19,8 @@ export function publicDiscoveryMessageMetadata(input: {
     status: input.status,
   };
 }
+
+/** Public discovery links may only mutate opportunities still in intake. */
+export function canAcceptPublicDiscoveryStage(stage: unknown): boolean {
+  return stage === "NEW" || stage === "QUALIFYING" || stage === "DISCOVERY";
+}
