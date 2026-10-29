@@ -2,7 +2,7 @@ import "server-only";
 import {createHmac,timingSafeEqual} from "crypto";
 import {db} from "./db";
 import {isPlausibleContactEmail,safeDiscoveryDeliveryError,isApprovedDiscoverySender} from "./discovery-delivery-policy";
-import {discoveryPromptForBrand,publicDiscoveryMessageMetadata} from "./discovery-brand-policy";
+import {discoveryPromptForBrand,publicDiscoveryMessageMetadata,canAcceptPublicDiscoveryStage} from "./discovery-brand-policy";
 
 type DiscoveryState={status:string;readiness:number;missing:string[];questions:Array<{key:string;label:string;prompt:string;type?:string;required?:boolean}>;email_sent_at?:string|null;followup_count?:number;last_response_at?:string|null};
 
@@ -70,6 +70,8 @@ export async function getPublicDiscovery(opportunityId:string,token:string){
 export async function savePublicDiscovery(input:{opportunityId:string;token:string;answers:Record<string,unknown>}){
  if(!verifyDiscoveryToken(input.opportunityId,input.token))throw new Error("INVALID_DISCOVERY_ACCESS");
  const sql=db();const rows:any[]=await sql`SELECT id,brand_id,discovery,stage FROM wgos.opportunities WHERE id=${input.opportunityId}::uuid LIMIT 1`;const o=rows[0];if(!o)throw new Error("Opportunity not found.");
+ // Do not let a previously issued public link reopen a lost or proposal-stage opportunity.
+ if(!canAcceptPublicDiscoveryStage(o.stage))throw new Error("DISCOVERY_STAGE_LOCKED");
  const safe:any={};for(const [k,v] of Object.entries(input.answers||{}).slice(0,30))safe[String(k).slice(0,80)]=String(v??"").trim().slice(0,5000);
  const merged={...(o.discovery||{}),answers:{...((o.discovery||{}).answers||{}),...safe}};
  const assessment=assessDiscovery(merged,String(o.brand_id));const now=new Date().toISOString();
@@ -91,9 +93,9 @@ export async function prepareDiscoveryEmail(opportunityId:string){
  return {...o,assessment,url};
 }
 
-async function findThread(sql:any,opportunityId:string){
+async function findThread(sql:any,opportunityId:string,brandId:string){
  const rows:any[]=await sql`SELECT t.id FROM wgos.communication_threads t JOIN wgos.communication_messages m ON m.thread_id=t.id
- WHERE m.metadata->>'opportunityId'=${opportunityId} ORDER BY t.created_at DESC LIMIT 1`;return rows[0]?String(rows[0].id):null;
+ WHERE t.brand_id=${brandId} AND m.metadata->>'opportunityId'=${opportunityId} ORDER BY t.created_at DESC LIMIT 1`;return rows[0]?String(rows[0].id):null;
 }
 
 async function deliverViaBrandSite(payload:any){
@@ -154,7 +156,7 @@ export async function processDiscoveryAutomation(input:{limit?:number}={}){
   const questionText=prepared.assessment.questions.slice(0,5).map((q:any,i:number)=>`${i+1}. ${q.prompt}`).join("\n");
   const body=`Hi ${first},\n\n${intro}\n\nThe next step is a short discovery pass. You can answer the remaining questions in your private Studio2016 workspace:\n\n${prepared.url}\n\nThe most important items still open are:\n${questionText||"We have the core information needed and will review the project next."}\n\nIf you already have a rider, stage plot, venue drawing, equipment list, schedule, photos, or other technical documents, you can paste share links in the discovery workspace.\n\nWe use this step to make the proposal more accurate, reduce change orders, and make sure our recommendation reflects the outcome you're actually trying to create.\n\nStudio2016\nThe System Behind the Experience.`;
   const delivery=await deliverViaBrandSite({to:o.contact_email,subject,body,replyTo:prepared.reply_to_email||undefined,kind,opportunityId:String(o.id)});
-  const threadId=await findThread(sql,String(o.id));
+  const threadId=await findThread(sql,String(o.id),String(o.brand_id));
   if(threadId){
    await sql`UPDATE wgos.communication_threads SET channel='EMAIL',updated_at=now() WHERE id=${threadId}::uuid`;
    await sql`INSERT INTO wgos.communication_messages(thread_id,direction,sender_ref,recipient_refs,body_ref,external_message_ref,metadata)
