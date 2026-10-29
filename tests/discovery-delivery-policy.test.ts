@@ -50,3 +50,10 @@ test("discovery email guard rejects invalid local and DNS label edges",()=>{
  ])assert.equal(isPlausibleContactEmail(email),false,email);
  assert.equal(isPlausibleContactEmail("client@xn--bcher-kva.example"),true);
 });
+
+test("Resend invalid recipient field is classified without exposing provider details",()=>{
+ const error=new Error("Invalid `to` field. The email address needs to follow the `user@example.com` format.");
+ const classified=safeDiscoveryDeliveryError(error);
+ assert.equal(classified,"INVALID_CONTACT_EMAIL");
+ assert.equal(classified.includes("user@example.com"),false);
+});
