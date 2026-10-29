@@ -1,6 +1,7 @@
 /** Pure guards for discovery email delivery; no network or database access. */
 export function isPlausibleContactEmail(value: unknown): boolean {
-  const email = String(value ?? "").trim();
+  // Validate exactly what will be sent; trimming here could approve a different raw recipient.
+  const email = String(value ?? "");
   if (email.length < 6 || email.length > 254 || email.includes("..")) return false;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return false;
   const [local, domain] = email.split("@");
