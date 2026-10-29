@@ -2,7 +2,13 @@
 export function isPlausibleContactEmail(value: unknown): boolean {
   const email = String(value ?? "").trim();
   if (email.length < 6 || email.length > 254 || email.includes("..")) return false;
-  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return false;
+  const [local, domain] = email.split("@");
+  if (local.startsWith(".") || local.endsWith(".")) return false;
+  // Provider-incompatible edges: DNS labels must be nonempty, <=63 characters,
+  // and cannot start or end with a hyphen.
+  return domain.split(".").every(label =>
+    label.length > 0 && label.length <= 63 && !label.startsWith("-") && !label.endsWith("-"));
 }
 
 /** Do not persist raw provider exceptions: they can contain names, addresses and tokens. */
