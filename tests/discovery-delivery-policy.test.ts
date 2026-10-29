@@ -57,3 +57,16 @@ test("Resend invalid recipient field is classified without exposing provider det
  assert.equal(classified,"INVALID_CONTACT_EMAIL");
  assert.equal(classified.includes("user@example.com"),false);
 });
+
+// ASCII DNS labels are required by the delivery provider; internationalized domains
+// should be supplied in punycode form. All addresses here are synthetic.
+test("discovery email guard rejects invalid DNS label characters",()=>{
+ for(const email of [
+  "client@exa_mple.com","client@exam!ple.com","client@foo$.com",
+  "client@sub_.example.com","client@exa[mple.com","client@examéple.com"
+ ])assert.equal(isPlausibleContactEmail(email),false,email);
+ for(const email of [
+  "client@example.com","client@sub-domain.example.co.uk",
+  "client@xn--bcher-kva.example","client@a.co"
+ ])assert.equal(isPlausibleContactEmail(email),true,email);
+});
