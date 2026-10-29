@@ -2,6 +2,7 @@ import "server-only";
 import {createHmac,timingSafeEqual} from "crypto";
 import {db} from "./db";
 import {isPlausibleContactEmail,safeDiscoveryDeliveryError,isApprovedDiscoverySender} from "./discovery-delivery-policy";
+import {discoveryPromptForBrand,publicDiscoveryMessageMetadata} from "./discovery-brand-policy";
 
 type DiscoveryState={status:string;readiness:number;missing:string[];questions:Array<{key:string;label:string;prompt:string;type?:string;required?:boolean}>;email_sent_at?:string|null;followup_count?:number;last_response_at?:string|null};
 
@@ -23,19 +24,19 @@ export function verifyDiscoveryToken(opportunityId:string,token:string){
 }
 
 function intakeValue(d:any,key:string){return d?.[key]??d?.answers?.[key]??"";}
-export function assessDiscovery(discovery:any={}):DiscoveryState{
+export function assessDiscovery(discovery:any={},brandId:string="studio2016"):DiscoveryState{
  const d=discovery||{},answers=d.answers||{};
  const requirements=[
   ["successCriteria","Success criteria","What would make this project feel completely successful to you?","textarea",true],
-  ["scopeDetails","Scope clarity","What specifically should Studio2016 be responsible for delivering?","textarea",true],
+  ["scopeDetails","Scope clarity",discoveryPromptForBrand(brandId,"What specifically should Studio2016 be responsible for delivering?","What services or deliverables would you like us to provide?"),"textarea",true],
   ["decisionAuthority","Decision authority","Who approves the investment and final scope?","text",true],
   ["decisionProcess","Decision process","Who else is involved, and what must happen before a final decision is made?","textarea",true],
   ["budgetConversation","Budget context","What investment range should we design around, or how would you prefer to establish budget?","text",true],
-  ["existingSystems","Existing environment","What equipment, systems, venue production, or house resources already exist?","textarea",false],
-  ["venueConstraints","Venue constraints","Are there venue, rigging, power, access, labor, noise, or operating restrictions we should account for?","textarea",false],
-  ["scheduleConstraints","Schedule","What are the critical load-in, rehearsal, doors, event, strike, or completion deadlines?","textarea",false],
-  ["broadcastRecording","Media","Will you need livestream, IMAG, recording, playback, broadcast, or content-delivery support?","textarea",false],
-  ["technicalDocs","Documents","Share links to any rider, stage plot, venue drawing, photos, inventory, schedule, or technical documents.","textarea",false]
+  ["existingSystems","Existing environment",discoveryPromptForBrand(brandId,"What equipment, systems, venue production, or house resources already exist?","What information, resources, or preparations do you already have?"),"textarea",false],
+  ["venueConstraints","Venue constraints",discoveryPromptForBrand(brandId,"Are there venue, rigging, power, access, labor, noise, or operating restrictions we should account for?","Are there location, access, scheduling, or other constraints we should know about?"),"textarea",false],
+  ["scheduleConstraints","Schedule",discoveryPromptForBrand(brandId,"What are the critical load-in, rehearsal, doors, event, strike, or completion deadlines?","What are your important dates, milestones, or deadlines?"),"textarea",false],
+  ["broadcastRecording","Media",discoveryPromptForBrand(brandId,"Will you need livestream, IMAG, recording, playback, broadcast, or content-delivery support?","Will you need any recording, media, or content support?"),"textarea",false],
+  ["technicalDocs","Documents",discoveryPromptForBrand(brandId,"Share links to any rider, stage plot, venue drawing, photos, inventory, schedule, or technical documents.","Share links to any relevant documents, images, plans, or schedules."),"textarea",false]
  ] as const;
  const intakeChecks:{key:string;label:string;value:any;weight:number}[]=[
   {key:"timeline",label:"timeline",value:intakeValue(d,"timeline"),weight:9},
@@ -59,10 +60,10 @@ export function assessDiscovery(discovery:any={}):DiscoveryState{
 
 export async function getPublicDiscovery(opportunityId:string,token:string){
  if(!verifyDiscoveryToken(opportunityId,token))return null;
- const sql=db();const rows:any[]=await sql`SELECT o.id,o.title,o.stage,o.discovery,o.contact_name,o.contact_email,b.name brand_name,x.public_domain
+ const sql=db();const rows:any[]=await sql`SELECT o.id,o.brand_id,o.title,o.stage,o.discovery,o.contact_name,o.contact_email,b.name brand_name,x.public_domain
  FROM wgos.opportunities o JOIN wgos.brands b ON b.id=o.brand_id LEFT JOIN wgos.brand_experience_profiles x ON x.brand_id=o.brand_id
  WHERE o.id=${opportunityId}::uuid LIMIT 1`;
- const o=rows[0];if(!o)return null;const assessment=assessDiscovery(o.discovery||{});
+ const o=rows[0];if(!o)return null;const assessment=assessDiscovery(o.discovery||{},String(o.brand_id));
  return {id:String(o.id),title:o.title,brandName:o.brand_name,contactName:o.contact_name,stage:o.stage,discovery:o.discovery||{},assessment};
 }
 
@@ -71,14 +72,14 @@ export async function savePublicDiscovery(input:{opportunityId:string;token:stri
  const sql=db();const rows:any[]=await sql`SELECT id,brand_id,discovery,stage FROM wgos.opportunities WHERE id=${input.opportunityId}::uuid LIMIT 1`;const o=rows[0];if(!o)throw new Error("Opportunity not found.");
  const safe:any={};for(const [k,v] of Object.entries(input.answers||{}).slice(0,30))safe[String(k).slice(0,80)]=String(v??"").trim().slice(0,5000);
  const merged={...(o.discovery||{}),answers:{...((o.discovery||{}).answers||{}),...safe}};
- const assessment=assessDiscovery(merged);const now=new Date().toISOString();
+ const assessment=assessDiscovery(merged,String(o.brand_id));const now=new Date().toISOString();
  merged._discovery={...((merged as any)._discovery||{}),...assessment,last_response_at:now};
  const nextStage=assessment.status==="READY_FOR_PROPOSAL"?"DISCOVERY":"DISCOVERY";
  await sql`UPDATE wgos.opportunities SET discovery=${JSON.stringify(merged)}::jsonb,stage=${nextStage},updated_at=now() WHERE id=${input.opportunityId}::uuid`;
  await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata) VALUES('client:discovery','DISCOVERY_RESPONSE_RECEIVED','opportunity',${input.opportunityId},${JSON.stringify({readiness:assessment.readiness,status:assessment.status})}::jsonb)`;
  await sql`INSERT INTO wgos.notification_events(brand_id,recipient_subject,channel,event_type,status,payload) VALUES(${o.brand_id},'OWNER','IN_APP','DISCOVERY_RESPONSE_RECEIVED','PENDING',${JSON.stringify({opportunity_id:input.opportunityId,readiness:assessment.readiness,status:assessment.status})}::jsonb)`;
- const threads:any[]=await sql`SELECT t.id FROM wgos.communication_threads t JOIN wgos.communication_messages m ON m.thread_id=t.id WHERE m.metadata->>'opportunityId'=${input.opportunityId} ORDER BY t.created_at DESC LIMIT 1`;
- if(threads[0])await sql`INSERT INTO wgos.communication_messages(thread_id,direction,sender_ref,body_ref,metadata) VALUES(${String(threads[0].id)}::uuid,'INBOUND','client:discovery',${"Discovery workspace submitted · "+assessment.readiness+"% readiness"},${JSON.stringify({provider:"STUDIO2016_DISCOVERY",opportunityId:input.opportunityId,answers:safe,status:assessment.status})}::jsonb)`;
+ const threads:any[]=await sql`SELECT t.id FROM wgos.communication_threads t JOIN wgos.communication_messages m ON m.thread_id=t.id WHERE t.brand_id=${o.brand_id} AND m.metadata->>'opportunityId'=${input.opportunityId} ORDER BY t.created_at DESC LIMIT 1`;
+ if(threads[0])await sql`INSERT INTO wgos.communication_messages(thread_id,direction,sender_ref,body_ref,metadata) VALUES(${String(threads[0].id)}::uuid,'INBOUND','client:discovery',${"Discovery workspace submitted · "+assessment.readiness+"% readiness"},${JSON.stringify(publicDiscoveryMessageMetadata({brandId:String(o.brand_id),opportunityId:input.opportunityId,answers:safe,status:assessment.status}))}::jsonb)`;
  return assessment;
 }
 
@@ -86,7 +87,7 @@ export async function prepareDiscoveryEmail(opportunityId:string){
  const sql=db();const rows:any[]=await sql`SELECT o.id,o.brand_id,o.title,o.stage,o.discovery,o.contact_name,o.contact_email,o.created_at,b.name brand_name,x.public_domain,x.sender_name,x.reply_to_email
  FROM wgos.opportunities o JOIN wgos.brands b ON b.id=o.brand_id LEFT JOIN wgos.brand_experience_profiles x ON x.brand_id=o.brand_id
  WHERE o.id=${opportunityId}::uuid LIMIT 1`;const o=rows[0];if(!o||!o.contact_email||!o.public_domain)return null;
- const assessment=assessDiscovery(o.discovery||{});const token=issueDiscoveryToken(String(o.id));const url="https://"+String(o.public_domain).replace(/^https?:\/\//,"").replace(/\/$/,"")+"/discovery/"+o.id+"?access="+encodeURIComponent(token);
+ const assessment=assessDiscovery(o.discovery||{},String(o.brand_id));const token=issueDiscoveryToken(String(o.id));const url="https://"+String(o.public_domain).replace(/^https?:\/\//,"").replace(/\/$/,"")+"/discovery/"+o.id+"?access="+encodeURIComponent(token);
  return {...o,assessment,url};
 }
 
@@ -123,7 +124,7 @@ export async function processDiscoveryAutomation(input:{limit?:number}={}){
   // Fail closed: this transport and email copy are Studio2016-specific.
   // Other brands require an explicitly verified brand-specific delivery path.
   if(!isApprovedDiscoverySender(o.brand_id)){skipped++;continue;}
-  const d=o.discovery||{},meta=d._discovery||{},assessment=assessDiscovery(d);const created=new Date(o.created_at).getTime(),now=Date.now();
+  const d=o.discovery||{},meta=d._discovery||{},assessment=assessDiscovery(d,String(o.brand_id));const created=new Date(o.created_at).getTime(),now=Date.now();
   const sentAt=meta.email_sent_at?new Date(meta.email_sent_at).getTime():0;const followups=Number(meta.followup_count||0);
   let kind:"initial"|"reminder"|null=null;
   const urgent=/^immediate\b/i.test(clean(d.urgency));
