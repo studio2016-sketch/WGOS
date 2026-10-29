@@ -81,3 +81,10 @@ test("discovery email guard rejects provider-incompatible local-part syntax and 
   "first.last+tag@example.co.uk","o'connor@example.com","a@b.co"
  ])assert.equal(isPlausibleContactEmail(email),true,email);
 });
+
+// The transport sends the stored recipient verbatim; never validate a trimmed surrogate.
+test("discovery guard rejects raw recipient whitespace",()=>{
+ for(const email of [" client@example.com","client@example.com ","\tclient@example.com","client@example.com\n"])
+  assert.equal(isPlausibleContactEmail(email),false,JSON.stringify(email));
+ assert.equal(isPlausibleContactEmail("client@example.com"),true);
+});
