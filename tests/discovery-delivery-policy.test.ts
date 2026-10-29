@@ -41,3 +41,12 @@ test("discovery email guard rejects consecutive dots in domain labels",()=>{
   assert.equal(isPlausibleContactEmail(email),false,email);
  }
 });
+
+test("discovery email guard rejects invalid local and DNS label edges",()=>{
+ for(const email of [
+  ".client@example.com","client.@example.com","client@-example.com",
+  "client@example-.com","client@sub.-example.com","client@sub.example-.com",
+  `client@${"a".repeat(64)}.com`
+ ])assert.equal(isPlausibleContactEmail(email),false,email);
+ assert.equal(isPlausibleContactEmail("client@xn--bcher-kva.example"),true);
+});
