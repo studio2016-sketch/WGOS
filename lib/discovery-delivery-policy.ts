@@ -5,10 +5,10 @@ export function isPlausibleContactEmail(value: unknown): boolean {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return false;
   const [local, domain] = email.split("@");
   if (local.startsWith(".") || local.endsWith(".")) return false;
-  // Provider-incompatible edges: DNS labels must be nonempty, <=63 characters,
-  // and cannot start or end with a hyphen.
+  // Provider-compatible ASCII DNS labels: use punycode for internationalized domains.
+  // Reject invalid punctuation, underscores, overlength labels and hyphen boundaries.
   return domain.split(".").every(label =>
-    label.length > 0 && label.length <= 63 && !label.startsWith("-") && !label.endsWith("-"));
+    /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$/.test(label));
 }
 
 /** Do not persist raw provider exceptions: they can contain names, addresses and tokens. */
