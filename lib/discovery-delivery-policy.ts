@@ -4,7 +4,10 @@ export function isPlausibleContactEmail(value: unknown): boolean {
   if (email.length < 6 || email.length > 254 || email.includes("..")) return false;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return false;
   const [local, domain] = email.split("@");
-  if (local.startsWith(".") || local.endsWith(".")) return false;
+  // Accept provider-compatible dot-atom local parts, not malformed quoted/punctuated forms.
+  // Local parts over 64 bytes are invalid; the ASCII-only guard keeps byte and character counts aligned.
+  if (local.length > 64 || !/^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*$/.test(local)) return false;
+  if (domain.length > 253) return false;
   // Provider-compatible ASCII DNS labels: use punycode for internationalized domains.
   // Reject invalid punctuation, underscores, overlength labels and hyphen boundaries.
   return domain.split(".").every(label =>
