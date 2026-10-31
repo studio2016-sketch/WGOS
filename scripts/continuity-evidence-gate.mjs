@@ -9,6 +9,8 @@ import {pathToFileURL} from 'node:url';
 
 export const REQUIRED_SYSTEMS = Object.freeze(['WGOS', 'TradeOS', 'DionnesBoutique']);
 const MAX_EVIDENCE_AGE_MS = 2 * 60 * 60 * 1000;
+// Draft conservative ceiling; policy and reviewer attestation must be approved before release.
+const MAX_RESTORE_VALIDITY_MS = 30 * 24 * 60 * 60 * 1000;
 const FUTURE_SKEW_MS = 5 * 60 * 1000;
 const ref = v => typeof v === 'string' && v.trim().length >= 8 && !/^(none|unknown|pending|n\/a|unverified)$/i.test(v.trim());
 const finiteNonnegative = v => typeof v === 'number' && Number.isFinite(v) && v >= 0;
@@ -51,8 +53,10 @@ export function evaluateContinuity(manifest, now = new Date()) {
       continue;
     }
     const start = time(r.started_at_utc), end = time(r.completed_at_utc), source = time(r.source_snapshot_at_utc);
-    if (![start,end,source].every(Number.isFinite) || source > start || start > end || end > clock + FUTURE_SKEW_MS ||
-        clock - end > MAX_EVIDENCE_AGE_MS) reasons.push(`${name}:RESTORE_TIMELINE_INVALID_OR_STALE`);
+    const validUntil = time(r.review_valid_until_utc);
+    if (![start,end,source,validUntil].every(Number.isFinite) || source > start || start > end ||
+        end > clock + FUTURE_SKEW_MS || validUntil < end || validUntil > end + MAX_RESTORE_VALIDITY_MS ||
+        clock > validUntil) reasons.push(`${name}:RESTORE_TIMELINE_INVALID_OR_STALE`);
     if (r.rpo_minutes > r.target_rpo_minutes || r.rto_minutes > r.target_rto_minutes) reasons.push(`${name}:RECOVERY_TARGET_EXCEEDED`);
   }
   if (manifest.databases.length !== REQUIRED_SYSTEMS.length) reasons.push('DATABASE_COVERAGE_INCOMPLETE');
