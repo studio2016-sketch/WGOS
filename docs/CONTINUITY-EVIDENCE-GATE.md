@@ -14,6 +14,7 @@ The command exits with status 1 and `BLOCKED` if required evidence is missing, s
 ## Evidence contract
 
 - Manifest `observed_at_utc` and each database `sql_checked_at_utc` must be within two hours of evaluation.
+- **Restore rehearsals do not need to repeat every two hours.** A reviewer-attested `restore.review_valid_until_utc` must be later than the completed rehearsal and still valid at evaluation. The draft gate caps attestation validity at 30 days after completion; this is a **proposed ceiling, not an approved recovery policy**. Any schema, credential, topology or access-control change affecting recovery requires independent re-review even if the date has not expired. The manifest alone cannot detect such changes; a human must verify this before accepting evidence.
 - Cover all three named systems: WGOS, TradeOS, DionnesBoutique. A partial or duplicate set fails closed.
 - Each system requires a SQL query evidence reference, protected default branch, and isolated restore record containing approval, cost review, independent review, source snapshot, restore receipt, critical-record and schema matches, authenticated isolation test, and measured RPO/RTO within stated targets.
 - Cross-entity authentication must have a test evidence reference.
