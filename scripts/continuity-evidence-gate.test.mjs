@@ -12,7 +12,8 @@ const good = () => ({
       authenticated_isolation_passed: true, operator_approval_ref: 'approval-1234', cost_review_ref: 'cost-review-1234',
       independent_review_ref: 'review-1234', restore_receipt_ref: 'receipt-1234', source_snapshot_ref: 'snapshot-1234',
       rpo_minutes: 1, rto_minutes: 2, target_rpo_minutes: 5, target_rto_minutes: 10,
-      source_snapshot_at_utc: at(-12), started_at_utc: at(-7), completed_at_utc: at(-5)}
+      source_snapshot_at_utc: at(-12), started_at_utc: at(-7), completed_at_utc: at(-5),
+      review_valid_until_utc: at(10080)}
   })),
   identity: {authenticated_cross_entity_test_passed: true, test_evidence_ref: 'auth-test-1234'},
   delivery: {provider_delivery_verified: true, provider_receipt_evidence_ref: 'receipt-1234', recipient_error_count: 0,
@@ -40,7 +41,14 @@ test('restore without cost review blocks', () => { const m=good(); m.databases[0
 test('restore without entity isolation blocks', () => { const m=good(); m.databases[0].restore.authenticated_isolation_passed=false; blocked(m,'WGOS:RESTORE_CERTIFICATION_MISSING'); });
 test('restore without critical data match blocks', () => { const m=good(); m.databases[0].restore.critical_records_match=false; blocked(m,'WGOS:RESTORE_CERTIFICATION_MISSING'); });
 test('bad restore timeline blocks', () => { const m=good(); m.databases[0].restore.started_at_utc=at(-15); blocked(m,'WGOS:RESTORE_TIMELINE_INVALID_OR_STALE'); });
-test('stale restore blocks', () => { const m=good(); m.databases[0].restore.completed_at_utc=at(-130); blocked(m,'WGOS:RESTORE_TIMELINE_INVALID_OR_STALE'); });
+test('reviewed restore may remain valid beyond two hours without repeated paid drills', () => {
+  const m=good(); const r=m.databases[0].restore;
+  r.source_snapshot_at_utc=at(-190); r.started_at_utc=at(-185); r.completed_at_utc=at(-180);
+  assert.equal(result(m).status,'EVIDENCE_COMPLETE_HUMAN_REVIEW_REQUIRED');
+});
+test('expired restore review blocks', () => { const m=good(); m.databases[0].restore.review_valid_until_utc=at(-1); blocked(m,'WGOS:RESTORE_TIMELINE_INVALID_OR_STALE'); });
+test('restore review cannot exceed draft thirty-day ceiling', () => { const m=good(); m.databases[0].restore.review_valid_until_utc=at(31*1440); blocked(m,'WGOS:RESTORE_TIMELINE_INVALID_OR_STALE'); });
+test('missing restore review expiry blocks', () => { const m=good(); delete m.databases[0].restore.review_valid_until_utc; blocked(m,'WGOS:RESTORE_TIMELINE_INVALID_OR_STALE'); });
 test('RPO over target blocks', () => { const m=good(); m.databases[0].restore.rpo_minutes=6; blocked(m,'WGOS:RECOVERY_TARGET_EXCEEDED'); });
 test('RTO over target blocks', () => { const m=good(); m.databases[0].restore.rto_minutes=11; blocked(m,'WGOS:RECOVERY_TARGET_EXCEEDED'); });
 test('non-numeric RTO blocks', () => { const m=good(); m.databases[0].restore.rto_minutes='2'; blocked(m,'WGOS:RESTORE_CERTIFICATION_MISSING'); });
