@@ -49,6 +49,15 @@ export function evaluateContinuity(manifest, now = new Date()) {
     const checked = time(d.sql_checked_at_utc);
     if (!Number.isFinite(checked) || checked > clock + FUTURE_SKEW_MS || clock - checked > MAX_EVIDENCE_AGE_MS) reasons.push(`${name}:SQL_STALE`);
     if (d.default_branch_protected !== true) reasons.push(`${name}:BRANCH_UNPROTECTED`);
+    // A SQL ping or short PITR history is not a verified durable recovery source.
+    // A reviewer must confirm a scheduled snapshot or independent backup with retention.
+    const recoveryChecked = time(d.recovery_source_checked_at_utc);
+    if (!['scheduled_snapshot', 'independent_backup'].includes(d.recovery_source_type) ||
+        d.durable_recovery_source_verified !== true || d.recovery_source_retention_reviewed !== true ||
+        !ref(d.recovery_source_evidence_ref) || !Number.isFinite(recoveryChecked) ||
+        recoveryChecked > clock + FUTURE_SKEW_MS || clock - recoveryChecked > MAX_EVIDENCE_AGE_MS) {
+      reasons.push(`${name}:DURABLE_RECOVERY_SOURCE_UNVERIFIED`);
+    }
     const r = d.restore;
     if (!r || r.isolated !== true || r.production_unchanged !== true || r.schema_fingerprint_match !== true ||
         r.critical_records_match !== true || r.authenticated_isolation_passed !== true ||
