@@ -43,7 +43,7 @@ test('restore without critical data match blocks', () => { const m=good(); m.dat
 test('bad restore timeline blocks', () => { const m=good(); m.databases[0].restore.started_at_utc=at(-15); blocked(m,'WGOS:RESTORE_TIMELINE_INVALID_OR_STALE'); });
 test('reviewed restore may remain valid beyond two hours without repeated paid drills', () => {
   const m=good(); const r=m.databases[0].restore;
-  r.source_snapshot_at_utc=at(-190); r.started_at_utc=at(-185); r.completed_at_utc=at(-180);
+  r.source_snapshot_at_utc=at(-190); r.started_at_utc=at(-185); r.completed_at_utc=at(-180); r.rto_minutes=5;
   assert.equal(result(m).status,'EVIDENCE_COMPLETE_HUMAN_REVIEW_REQUIRED');
 });
 test('expired restore review blocks', () => { const m=good(); m.databases[0].restore.review_valid_until_utc=at(-1); blocked(m,'WGOS:RESTORE_TIMELINE_INVALID_OR_STALE'); });
