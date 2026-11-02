@@ -12,7 +12,8 @@ const good = () => ({
       authenticated_isolation_passed: true, operator_approval_ref: 'approval-1234', cost_review_ref: 'cost-review-1234',
       independent_review_ref: 'review-1234', restore_receipt_ref: 'receipt-1234', source_snapshot_ref: 'snapshot-1234',
       rpo_minutes: 1, rto_minutes: 2, target_rpo_minutes: 5, target_rto_minutes: 10,
-      source_snapshot_at_utc: at(-12), started_at_utc: at(-7), completed_at_utc: at(-5),
+      source_snapshot_at_utc: at(-12), incident_at_utc: at(-7), recovered_data_at_utc: at(-8),
+      started_at_utc: at(-7), completed_at_utc: at(-5), first_authenticated_operation_at_utc: at(-5),
       review_valid_until_utc: at(10080)}
   })),
   identity: {authenticated_cross_entity_test_passed: true, test_evidence_ref: 'auth-test-1234'},
@@ -43,7 +44,8 @@ test('restore without critical data match blocks', () => { const m=good(); m.dat
 test('bad restore timeline blocks', () => { const m=good(); m.databases[0].restore.started_at_utc=at(-15); blocked(m,'WGOS:RESTORE_TIMELINE_INVALID_OR_STALE'); });
 test('reviewed restore may remain valid beyond two hours without repeated paid drills', () => {
   const m=good(); const r=m.databases[0].restore;
-  r.source_snapshot_at_utc=at(-190); r.started_at_utc=at(-185); r.completed_at_utc=at(-180); r.rto_minutes=5;
+  r.source_snapshot_at_utc=at(-190); r.incident_at_utc=at(-185); r.recovered_data_at_utc=at(-186);
+  r.started_at_utc=at(-185); r.completed_at_utc=at(-180); r.first_authenticated_operation_at_utc=at(-180); r.rto_minutes=5;
   assert.equal(result(m).status,'EVIDENCE_COMPLETE_HUMAN_REVIEW_REQUIRED');
 });
 test('expired restore review blocks', () => { const m=good(); m.databases[0].restore.review_valid_until_utc=at(-1); blocked(m,'WGOS:RESTORE_TIMELINE_INVALID_OR_STALE'); });
@@ -53,6 +55,32 @@ test('RPO over target blocks', () => { const m=good(); m.databases[0].restore.rp
 test('RTO over target blocks', () => { const m=good(); m.databases[0].restore.rto_minutes=11; blocked(m,'WGOS:RECOVERY_TARGET_EXCEEDED'); });
 test('reported RTO shorter than observed restore duration blocks', () => { const m=good(); m.databases[0].restore.rto_minutes=0; blocked(m,'WGOS:RECOVERY_METRIC_INCONSISTENT'); });
 test('reported RTO equal to observed restore duration is accepted', () => { const m=good(); m.databases[0].restore.rto_minutes=2; assert.equal(result(m).status,'EVIDENCE_COMPLETE_HUMAN_REVIEW_REQUIRED'); });
+
+test('reported RPO shorter than incident-to-recovered-data blocks', () => {
+  const m=good(); m.databases[0].restore.rpo_minutes=0; blocked(m,'WGOS:RECOVERY_METRIC_INCONSISTENT');
+});
+test('RTO must include delay before restore and application authentication', () => {
+  const m=good(); const r=m.databases[0].restore;
+  r.incident_at_utc=at(-10); r.recovered_data_at_utc=at(-11);
+  r.first_authenticated_operation_at_utc=at(-4); r.rto_minutes=2;
+  blocked(m,'WGOS:RECOVERY_METRIC_INCONSISTENT');
+});
+test('missing authenticated application recovery timestamp blocks', () => {
+  const m=good(); delete m.databases[0].restore.first_authenticated_operation_at_utc;
+  blocked(m,'WGOS:RESTORE_TIMELINE_INVALID_OR_STALE');
+});
+test('recovered data timestamp cannot be after incident', () => {
+  const m=good(); m.databases[0].restore.recovered_data_at_utc=at(-6);
+  blocked(m,'WGOS:RESTORE_TIMELINE_INVALID_OR_STALE');
+});
+test('first authenticated operation cannot precede restore completion', () => {
+  const m=good(); m.databases[0].restore.first_authenticated_operation_at_utc=at(-6);
+  blocked(m,'WGOS:RESTORE_TIMELINE_INVALID_OR_STALE');
+});
+test('incident cannot occur after restoration begins', () => {
+  const m=good(); m.databases[0].restore.incident_at_utc=at(-6);
+  blocked(m,'WGOS:RESTORE_TIMELINE_INVALID_OR_STALE');
+});
 test('non-numeric RTO blocks', () => { const m=good(); m.databases[0].restore.rto_minutes='2'; blocked(m,'WGOS:RESTORE_CERTIFICATION_MISSING'); });
 test('missing authenticated isolation blocks', () => { const m=good(); m.identity.authenticated_cross_entity_test_passed=false; blocked(m,'ENTITY_ISOLATION_UNVERIFIED'); });
 test('delivery provider error blocks', () => { const m=good(); m.delivery.recipient_error_count=1; blocked(m,'DELIVERY_UNVERIFIED'); });
