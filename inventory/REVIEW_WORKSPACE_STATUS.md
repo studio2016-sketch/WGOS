@@ -1,0 +1,2 @@
+# Boutique inventory review persistence
+A schema and guarded API are staged, but neither is live. The GET endpoint reads only draft rows, never checkout inventory. The PATCH endpoint deliberately refuses writes until a transactionally atomic audit trail is implemented and tested. The endpoint currently requires administrator role plus boutique brand management permission; this is narrower than future manager access. SQL migration requires database privilege review. Do not merge or deploy as a working inventory editor until tests and end-to-end validation pass.

@@ -28,8 +28,9 @@ const emptyExpenseIntelligence={brands:[],claims:[],mileage:[],budgets:[],rules:
 const emptyFinanceExceptions={brands:[],alerts:[],transactions:[],suggestions:[]};
 const emptyCashEnvelopes={brands:[],policies:[],summary:[],allocations:[]};
 
-export default async function OperationsPage({searchParams}:{searchParams:Promise<{project?:string;brand?:string;task?:string}>}){
+export default async function OperationsPage({searchParams}:{searchParams:Promise<{project?:string;brand?:string;task?:string;view?:string}>}){
  const query=await searchParams;const access=await commandAccess();
+ const view=["overview","projects","contracts","expenses","finances"].includes(String(query.view))?String(query.view):(query.project?"projects":"overview");
  const [projectRows,refs,contractExecutionRaw,contractFinanceRaw,accountingProfilesRaw,expenseIntelligenceRaw,financeExceptionsRaw,cashEnvelopesRaw]=await Promise.all([
   safeLoad(listOperationsProjects(access.identity.auth_user_id,access.isGlobal),[] as any[]),
   safeLoad(getOperationsReferenceData(access.identity.auth_user_id,access.isGlobal),{users:[],brands:[]} as any),
@@ -49,7 +50,7 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
  const expenseIntelligence:any=selectedBrand?{...expenseIntelligenceRaw,brands:expenseIntelligenceRaw.brands.filter((x:any)=>x.id===selectedBrand),claims:expenseIntelligenceRaw.claims.filter((x:any)=>x.brand_id===selectedBrand),mileage:expenseIntelligenceRaw.mileage.filter((x:any)=>x.brand_id===selectedBrand),budgets:expenseIntelligenceRaw.budgets.filter((x:any)=>x.brand_id===selectedBrand),rules:expenseIntelligenceRaw.rules.filter((x:any)=>x.brand_id===selectedBrand),forecast:expenseIntelligenceRaw.forecast.filter((x:any)=>x.brand_id===selectedBrand),bankInbox:expenseIntelligenceRaw.bankInbox.filter((x:any)=>x.brand_id===selectedBrand),contracts:expenseIntelligenceRaw.contracts.filter((x:any)=>x.brand_id===selectedBrand),projects:expenseIntelligenceRaw.projects.filter((x:any)=>x.brand_id===selectedBrand)}:expenseIntelligenceRaw;
  const financeExceptions:any=selectedBrand?{...financeExceptionsRaw,brands:financeExceptionsRaw.brands.filter((x:any)=>x.id===selectedBrand),alerts:financeExceptionsRaw.alerts.filter((x:any)=>x.brand_id===selectedBrand),transactions:financeExceptionsRaw.transactions.filter((x:any)=>x.brand_id===selectedBrand),suggestions:financeExceptionsRaw.suggestions.filter((x:any)=>x.brand_id===selectedBrand)}:financeExceptionsRaw;
  const cashEnvelopes:any=selectedBrand?{...cashEnvelopesRaw,brands:cashEnvelopesRaw.brands.filter((x:any)=>x.id===selectedBrand),policies:cashEnvelopesRaw.policies.filter((x:any)=>x.brand_id===selectedBrand),summary:cashEnvelopesRaw.summary.filter((x:any)=>x.brand_id===selectedBrand),allocations:cashEnvelopesRaw.allocations.filter((x:any)=>x.brand_id===selectedBrand)}:cashEnvelopesRaw;
- let selectedId=query.project||projects[0]?.id||"";
+ let selectedId=projects.some((p:any)=>String(p.id)===String(query.project))?String(query.project):String(projects[0]?.id||"");
  const totalTasks=projects.reduce((n:number,p:any)=>n+Number(p.task_count||0),0);
  const doneTasks=projects.reduce((n:number,p:any)=>n+Number(p.done_count||0),0);
  const blockedTasks=projects.reduce((n:number,p:any)=>n+Number(p.blocked_count||0),0);
@@ -64,27 +65,28 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
 
  return <main className="admin">
   <AdminNav active="work" brands={brands} brand={selectedBrand}/>
-  <header className="adminHead commandHero">
-   <div><p className="eyebrow">WGOS · OPERATIONS</p><h1>Delivery Command</h1><p>Projects, deliverables, dependencies, ownership, approvals and deadlines in one native workspace.</p><div className="heroSignals"><span>● {projects.length} PROJECTS</span><span>◈ {blockedTasks} BLOCKED</span><span>↗ {portfolioProgress}% COMPLETE</span></div></div>
-   <div className="adminActions" id="new-project"><Link href={selectedBrand?"/admin?brand="+encodeURIComponent(selectedBrand):"/admin"}>Commercial Command →</Link><NewProjectForm brands={brands} users={users}/></div>
+  <header className="adminHead commandHero" style={{maxWidth:"100%",minWidth:0}}>
+   <div><p className="eyebrow">WGOS · OPERATIONS</p><h1>{view==="overview"?"Delivery Command":view==="projects"?"Projects":view==="contracts"?"Contracts":view==="expenses"?"Expenses":"Finances"}</h1>{view==="overview"&&<p>Projects, deliverables, dependencies, ownership, approvals and deadlines in one native workspace.</p>}{view==="overview"&&<div className="heroSignals"><span>● {projects.length} PROJECTS</span><span>◈ {blockedTasks} BLOCKED</span><span>↗ {portfolioProgress}% COMPLETE</span></div>}</div>
+   <div className="adminActions" id="new-project"><Link href={selectedBrand?"/admin?brand="+encodeURIComponent(selectedBrand):"/admin"}>Commercial Command →</Link>{view==="projects"&&<NewProjectForm brands={selectedBrand?brands.filter((b:any)=>String(b.id)===selectedBrand):brands} users={users}/>}</div>
   </header>
 
-  <section className="opsPulse"><article><small>ACTIVE PROJECTS</small><strong>{projects.length}</strong><span>current portfolio</span></article><article><small>PORTFOLIO PROGRESS</small><strong>{portfolioProgress}%</strong><span>{doneTasks} of {totalTasks} tasks complete</span></article><article><small>BLOCKED</small><strong>{blockedTasks}</strong><span>{blockedTasks?"needs intervention":"clear"}</span></article><article><small>OVERDUE</small><strong>{overdueTasks}</strong><span>{overdueTasks?"needs movement":"on schedule"}</span></article></section>
+  <nav aria-label="Operations workspaces" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(145px,1fr))",gap:12,margin:"20px 0"}}>
+   {([{id:"overview",label:"Overview"},{id:"projects",label:"Projects"},{id:"contracts",label:"Contracts"},{id:"expenses",label:"Expenses"},{id:"finances",label:"Finances"}] as const).map(item=><Link key={item.id} href={"/admin/operations?view="+item.id+(selectedBrand?"&brand="+encodeURIComponent(selectedBrand):"")} aria-current={view===item.id?"page":undefined} style={{fontSize:18,padding:"16px",borderRadius:12,border:"1px solid #7778",background:view===item.id?"#243f72":"#131b2b",color:"white",textDecoration:"none",textAlign:"center",minHeight:56}}>{item.label}</Link>)}
+  </nav>
+  {view==="overview"&&<><section className="opsPulse"><article><small>ACTIVE PROJECTS</small><strong>{projects.length}</strong><span>current portfolio</span></article><article><small>PORTFOLIO PROGRESS</small><strong>{portfolioProgress}%</strong><span>{doneTasks} of {totalTasks} tasks complete</span></article><article><small>BLOCKED</small><strong>{blockedTasks}</strong><span>{blockedTasks?"needs intervention":"clear"}</span></article><article><small>OVERDUE</small><strong>{overdueTasks}</strong><span>{overdueTasks?"needs movement":"on schedule"}</span></article></section>
 
   <section className="adminPanel deliveryDecisionQueue"><div className="attentionIntro"><p className="eyebrow">DELIVERY AUTOPILOT · EXCEPTIONS</p><h2>{deliveryDecisions.length?deliveryDecisions.length+" project"+(deliveryDecisions.length===1?"":"s")+" need intervention":"Delivery is operating cleanly"}</h2><p>{deliveryDecisions.length?"WGOS is suppressing routine delivery noise and surfacing the projects with blocked or overdue work.":"No blocked or overdue project work is currently competing for executive attention."}</p></div><div className="deliveryDecisionList">{deliveryDecisions.slice(0,5).map((p:any)=><Link key={"decision-"+p.id} href={"/admin/operations?project="+encodeURIComponent(p.id)+(selectedBrand?"&brand="+encodeURIComponent(selectedBrand):"")} className="deliveryDecisionItem"><span>{p.brand_name}</span><strong>{p.title}</strong><small>{Number(p.blocked_count||0)} blocked · {Number(p.overdue_count||0)} overdue</small><b>Resolve →</b></Link>)}</div></section>
 
-  <ContractControlCenter data={contractExecution} users={users}/>
-  <ContractFinanceCenter data={contractFinance}/>
-  <AccountingActivationCenter profiles={accountingProfiles}/>
-  <ExpenseIntelligenceCenter data={expenseIntelligence}/>
-  <FinanceExceptionCenter data={financeExceptions}/>
-  <CashEnvelopeCenter data={cashEnvelopes}/>
+  </>}
+  {view==="contracts"&&<><ContractControlCenter data={contractExecution} users={users}/><ContractFinanceCenter data={contractFinance}/></>}
+  {view==="expenses"&&<ExpenseIntelligenceCenter data={expenseIntelligence}/>}
+  {view==="finances"&&<><AccountingActivationCenter profiles={accountingProfiles}/><FinanceExceptionCenter data={financeExceptions}/><CashEnvelopeCenter data={cashEnvelopes}/></>}
 
-  <section className="principle">
+  {view==="projects"&&<section className="principle">
    <strong>Operating rule:</strong> routine work moves here. Executive attention is reserved for approvals, exceptions, blocked dependencies and consequential decisions.
-  </section>
+  </section>}
 
-  <section className="projectShowcase"><div className="workspaceTitle"><div><p className="eyebrow">ACTIVE DELIVERY</p><h2>Project Portfolio</h2><p className="muted">Visual health across current work. Open a project below for full delivery control.</p></div></div><div className="projectGallery">{projects.slice(0,6).map((p:any)=>{const total=Number(p.task_count||0),done=Number(p.done_count||0),progress=total?Math.round(done/total*100):0,risk=Number(p.blocked_count||0)+Number(p.overdue_count||0);return <Link key={"gallery-"+p.id} href={"/admin/operations?project="+encodeURIComponent(p.id)+(selectedBrand?"&brand="+encodeURIComponent(selectedBrand):"")} className={"projectVisual "+(String(p.id)===String(selectedId)?"active":"")}><div className="projectGlow"/><div className="projectVisualTop"><span>{p.brand_name}</span><em>{p.status}</em></div><div className="projectVisualBody"><small>{risk?risk+" ATTENTION":"ON TRACK"}</small><h3>{p.title}</h3><p>{total} tasks · {done} complete</p></div><div className="projectProgress"><i style={{width:progress+"%"}}/><span>{progress}%</span></div></Link>})}</div></section><div className="operationsLayout">
+  {view==="projects"&&<><section className="projectShowcase"><div className="workspaceTitle"><div><p className="eyebrow">ACTIVE DELIVERY</p><h2>Project Portfolio</h2><p className="muted">Visual health across current work. Open a project below for full delivery control.</p></div></div><div className="projectGallery">{projects.slice(0,6).map((p:any)=>{const total=Number(p.task_count||0),done=Number(p.done_count||0),progress=total?Math.round(done/total*100):0,risk=Number(p.blocked_count||0)+Number(p.overdue_count||0);return <Link key={"gallery-"+p.id} href={"/admin/operations?project="+encodeURIComponent(p.id)+(selectedBrand?"&brand="+encodeURIComponent(selectedBrand):"")} className={"projectVisual "+(String(p.id)===String(selectedId)?"active":"")}><div className="projectGlow"/><div className="projectVisualTop"><span>{p.brand_name}</span><em>{p.status}</em></div><div className="projectVisualBody"><small>{risk?risk+" ATTENTION":"ON TRACK"}</small><h3>{p.title}</h3><p>{total} tasks · {done} complete</p></div><div className="projectProgress"><i style={{width:progress+"%"}}/><span>{progress}%</span></div></Link>})}</div></section><div className="operationsLayout">
    <aside className="adminPanel projectRail">
     <p className="eyebrow">PROJECTS</p>
     <div style={{display:"grid",gap:8}}>
@@ -111,6 +113,6 @@ export default async function OperationsPage({searchParams}:{searchParams:Promis
       <RecurringRules projectId={String(board.project.id)} users={board.users as any[]} initial={board.recurringRules as any[]}/>
      </div>}
    </section>
-  </div>
+  </div></>}
  </main>;
 }

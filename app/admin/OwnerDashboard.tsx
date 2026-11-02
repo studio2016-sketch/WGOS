@@ -1,3 +1,4 @@
+import {businessBranches} from "../../lib/business-branches";
 import Link from "next/link";
 import TimeAwareOwnerHero from "./TimeAwareOwnerHero";
 
@@ -124,6 +125,33 @@ export default function OwnerDashboard({
     {label:"Signed",count:signedAgreements.length,value:0},
     {label:"Delivery",count:activeProjects.length,value:0}
   ];
+
+  // A selected business opens a focused command surface; portfolio sections remain for global view.
+  if(selectedBrand){
+    const selected=brands.find((b:any)=>String(b.id)===String(selectedBrand));
+    const brandName=String(selected?.name||selected?.display_name||"Selected business");
+    const primary=businessBranches(brandName).map(item=>({label:item.label,detail:item.description,href:item.path+query,icon:"◇"}));
+    return <section className="ownerExperience" aria-label="Selected business command">
+      <div className="ownerHero"><div style={{padding:"24px 0"}}><p className="eyebrow">WGOS · BUSINESS COMMAND</p><h1 style={{fontSize:"clamp(28px,4vw,44px)",margin:"8px 0"}}>{brandName}</h1><p>Only the work and decisions relevant to this business.</p></div></div>
+      <article className="ownerPanel ownerAttention">
+        <div className="ownerPanelHead"><div><p>NEEDS YOUR ATTENTION</p><h2>{attention.length&&attention[0].eyebrow!=="CLEAR"?attention.length+" priority items":"No urgent decisions"}</h2></div></div>
+        <div className="ownerAttentionList">{attention.map((a:any,i:number)=><Link key={i} href={a.href} className={"ownerAttentionItem "+a.tone}><div><small>{a.eyebrow}</small><strong>{a.title}</strong><span>{a.detail}</span></div><b>Open →</b></Link>)}</div>
+      </article>
+      <article className="ownerStart ownerPanel" id="start-here"><div className="ownerStartHead"><div><p>MANAGE NOW</p><h2>What needs doing?</h2></div></div>
+        <div className="ownerStartGrid">{primary.map(a=><Link key={a.label} href={a.href} className="ownerStartAction"><b>{a.icon}</b><span><strong>{a.label}</strong><small>{a.detail}</small></span><i>→</i></Link>)}</div>
+      </article>
+      <article className="ownerPanel" style={{padding:24,marginTop:16}}>
+        <p className="eyebrow">BUSINESS SNAPSHOT</p>
+        <div style={{display:"flex",flexWrap:"wrap",gap:28,fontSize:18}}>
+          <span><strong>{waitingThreads.length}</strong> client replies</span>
+          <span><strong>{activeProjects.length}</strong> active projects</span>
+          <span><strong>{ownerReviewProposals.length}</strong> approvals</span>
+          <span><strong>{money(pipelineValue)}</strong> pipeline (estimated)</span>
+        </div>
+      </article>
+
+    </section>;
+  }
 
   return <section className="ownerExperience" aria-label="WGOS owner command">
     <div className="ownerHero">
