@@ -60,14 +60,25 @@ export function evaluateContinuity(manifest, now = new Date()) {
       continue;
     }
     const start = time(r.started_at_utc), end = time(r.completed_at_utc), source = time(r.source_snapshot_at_utc);
-    const validUntil = time(r.review_valid_until_utc);
-    if (![start,end,source,validUntil].every(Number.isFinite) || source > start || start > end ||
-        end > clock + FUTURE_SKEW_MS || validUntil < end || validUntil > end + MAX_RESTORE_VALIDITY_MS ||
-        clock > validUntil) reasons.push(`${name}:RESTORE_TIMELINE_INVALID_OR_STALE`);
-    // RTO includes the restoration interval; a reported RTO shorter than the observed restore cannot be valid.
-    // Allow 1 second for measurement rounding; this checks consistency, not independent certification.
-    if (Number.isFinite(start) && Number.isFinite(end) && end >= start &&
-        r.rto_minutes * 60_000 + 1_000 < end - start) reasons.push(`${name}:RECOVERY_METRIC_INCONSISTENT`);
+    const incident = time(r.incident_at_utc), recovered = time(r.recovered_data_at_utc);
+    const firstApp = time(r.first_authenticated_operation_at_utc), validUntil = time(r.review_valid_until_utc);
+    if (![start,end,source,incident,recovered,firstApp,validUntil].every(Number.isFinite) ||
+        source > start || recovered > incident || incident > start || start > end || end > firstApp ||
+        firstApp > clock + FUTURE_SKEW_MS || validUntil < end ||
+        validUntil > end + MAX_RESTORE_VALIDITY_MS || clock > validUntil) {
+      reasons.push(`${name}:RESTORE_TIMELINE_INVALID_OR_STALE`);
+    }
+    // RPO measures lost data from the incident to the last recovered data; RTO measures
+    // the incident to the first authenticated application operation, not just DB restoration.
+    // One second of rounding tolerance; timestamps and manifest assertions still require review.
+    if (Number.isFinite(incident) && Number.isFinite(recovered) && recovered <= incident &&
+        r.rpo_minutes * 60_000 + 1_000 < incident - recovered) {
+      reasons.push(`${name}:RECOVERY_METRIC_INCONSISTENT`);
+    }
+    if (Number.isFinite(incident) && Number.isFinite(firstApp) && firstApp >= incident &&
+        r.rto_minutes * 60_000 + 1_000 < firstApp - incident) {
+      reasons.push(`${name}:RECOVERY_METRIC_INCONSISTENT`);
+    }
     if (r.rpo_minutes > r.target_rpo_minutes || r.rto_minutes > r.target_rto_minutes) reasons.push(`${name}:RECOVERY_TARGET_EXCEEDED`);
   }
   if (manifest.databases.length !== REQUIRED_SYSTEMS.length) reasons.push('DATABASE_COVERAGE_INCOMPLETE');
