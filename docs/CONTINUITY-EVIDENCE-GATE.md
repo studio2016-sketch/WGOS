@@ -25,6 +25,12 @@ The command exits with status 1 and `BLOCKED` if required evidence is missing, s
 
 Do not commit a live evidence manifest containing customer information, tokens, connection strings, recipient addresses, security internals or private provider identifiers. Keep live evidence in a restricted evidence store.
 
+## Evidence-sharing and repository-visibility preflight
+
+Before publishing an audit result, independently verify the repository's current visibility and the intended audience. Treat issue comments, pull requests, CI logs and code as potentially public. Never publish raw production telemetry, customer or recipient identifiers, internal security details, credentials, live evidence manifests, private restore receipts, or unredacted provider identifiers to these surfaces. Record only sanitized status, counts, timestamps and reviewable non-sensitive references.
+
+Keep detailed recovery receipts in an independently access-controlled evidence store with explicit per-entity permissions. Verify that a reviewer can inspect them without cross-business access. Repository visibility alone does not establish application access or prove credential exposure. Changing repository visibility, access permissions or production settings requires separate owner approval.
+
 ## Release boundaries
 
 This tool is not wired to Vercel, Neon, GitHub Actions or production. Do not merge, schedule, deploy or promote it automatically. In particular, the tool does not create a backup, perform a restore, verify a provider receipt, establish a legal entity's access rights, or authorize costs. Those require independent tests and owner approvals under the canonical WGOS directive.
