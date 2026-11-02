@@ -30,3 +30,25 @@ Do not commit a live evidence manifest containing customer information, tokens, 
 This tool is not wired to Vercel, Neon, GitHub Actions or production. Do not merge, schedule, deploy or promote it automatically. In particular, the tool does not create a backup, perform a restore, verify a provider receipt, establish a legal entity's access rights, or authorize costs. Those require independent tests and owner approvals under the canonical WGOS directive.
 
 Existing production code and all business records remain unchanged by this draft.
+
+## Isolated recovery rehearsal — operator checklist
+
+**Status:** Preparation only. This is not authorization to provision resources, alter production, send customer communications, or incur charges. A successful offline manifest classification is not an application failover certificate.
+
+1. **Approve scope and budget separately for each legal/business system.** Record owner authorization, provider cost estimate, maximum permitted spend, expiry/teardown deadline, rollback contact, and acceptable RTO/RPO. If approval or cost visibility is missing, stop before creating snapshots, branches, computes, or deployments.
+2. **Record current provider evidence.** Capture timestamped project/branch identity, available recovery window, actual provider snapshots/schedules, protection status, source deployment commit, and read-only SQL results. Neon point-in-time history metadata is not a durable independent backup. Historical `restored_from` branch metadata does not establish that a snapshot is currently available.
+3. **Keep rehearsal isolated.** Use an approved temporary recovery branch and separately protected nonproduction application environment, never production credentials, domains, customer notification routes, or live payment/trade execution. Disable scheduled jobs, external sends, billing/webhooks, and other side effects in the rehearsal environment before connecting it to restored data. Do not cross-connect WGOS, TradeOS and Dionne's Boutique data.
+4. **Measure restoration, not just connection.** Record incident simulation time, recoverable data timestamp, restore start/end, first successful authenticated application operation, and the formula/clock source for measured RPO and RTO. Verify critical table counts and schema fingerprints against the approved source. Record provider receipts and independent reviewer evidence without secrets or customer data.
+5. **Prove authenticated entity boundaries.** Exercise owner, authorized business member, wrong-business member and unauthenticated sessions against permitted and forbidden resources. Verify that denied access produces no data disclosure or side effect. Database connectivity or an empty RLS inventory alone is not a substitute for application-level authorization testing.
+6. **Verify business continuity end to end.** Test sign-in, entity selection, read-only customer/inventory/operations views, error reporting and degraded-mode behavior on the isolated environment. Validate notification idempotency and sender scope with mocks, not real recipients. Verify that no live provider requests or customer messages occurred.
+7. **Teardown and independent attestation.** Record resource termination, cost review, retained evidence location, RPO/RTO results, exceptions and reviewer sign-off. Do not promote a restore, change DNS, rotate credentials, merge a PR, or certify failover without separate owner approval and real-world verification.
+
+### Fail-closed evidence classification
+
+- **PLANNED:** rehearsal plan and approvals prepared, no restore attempted.
+- **CODED:** offline gate/runbook changed in a feature branch; not a production safeguard.
+- **TESTED:** isolated synthetic tests and/or approved restore rehearsal, explicitly named.
+- **DEPLOYED:** separately approved production recovery controls actually enabled.
+- **VERIFIED:** authenticated end-to-end restoration/failover, measured RPO/RTO, entity isolation and provider receipts independently reviewed. Never infer this stage from a successful preview build, SQL ping, or branch existence.
+
+**November 2, 2026 evidence boundary:** Read-only inspection showed three responding databases, no listed snapshots or automatic snapshot schedules, unprotected primary branches and no certified application failover. These observations are time-limited and must be refreshed before any rehearsal or release decision.
