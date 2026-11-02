@@ -57,6 +57,10 @@ export function evaluateContinuity(manifest, now = new Date()) {
     if (![start,end,source,validUntil].every(Number.isFinite) || source > start || start > end ||
         end > clock + FUTURE_SKEW_MS || validUntil < end || validUntil > end + MAX_RESTORE_VALIDITY_MS ||
         clock > validUntil) reasons.push(`${name}:RESTORE_TIMELINE_INVALID_OR_STALE`);
+    // RTO includes the restoration interval; a reported RTO shorter than the observed restore cannot be valid.
+    // Allow 1 second for measurement rounding; this checks consistency, not independent certification.
+    if (Number.isFinite(start) && Number.isFinite(end) && end >= start &&
+        r.rto_minutes * 60_000 + 1_000 < end - start) reasons.push(`${name}:RECOVERY_METRIC_INCONSISTENT`);
     if (r.rpo_minutes > r.target_rpo_minutes || r.rto_minutes > r.target_rto_minutes) reasons.push(`${name}:RECOVERY_TARGET_EXCEEDED`);
   }
   if (manifest.databases.length !== REQUIRED_SYSTEMS.length) reasons.push('DATABASE_COVERAGE_INCOMPLETE');
