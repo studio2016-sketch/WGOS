@@ -51,6 +51,8 @@ test('restore review cannot exceed draft thirty-day ceiling', () => { const m=go
 test('missing restore review expiry blocks', () => { const m=good(); delete m.databases[0].restore.review_valid_until_utc; blocked(m,'WGOS:RESTORE_TIMELINE_INVALID_OR_STALE'); });
 test('RPO over target blocks', () => { const m=good(); m.databases[0].restore.rpo_minutes=6; blocked(m,'WGOS:RECOVERY_TARGET_EXCEEDED'); });
 test('RTO over target blocks', () => { const m=good(); m.databases[0].restore.rto_minutes=11; blocked(m,'WGOS:RECOVERY_TARGET_EXCEEDED'); });
+test('reported RTO shorter than observed restore duration blocks', () => { const m=good(); m.databases[0].restore.rto_minutes=0; blocked(m,'WGOS:RECOVERY_METRIC_INCONSISTENT'); });
+test('reported RTO equal to observed restore duration is accepted', () => { const m=good(); m.databases[0].restore.rto_minutes=2; assert.equal(result(m).status,'EVIDENCE_COMPLETE_HUMAN_REVIEW_REQUIRED'); });
 test('non-numeric RTO blocks', () => { const m=good(); m.databases[0].restore.rto_minutes='2'; blocked(m,'WGOS:RESTORE_CERTIFICATION_MISSING'); });
 test('missing authenticated isolation blocks', () => { const m=good(); m.identity.authenticated_cross_entity_test_passed=false; blocked(m,'ENTITY_ISOLATION_UNVERIFIED'); });
 test('delivery provider error blocks', () => { const m=good(); m.delivery.recipient_error_count=1; blocked(m,'DELIVERY_UNVERIFIED'); });
