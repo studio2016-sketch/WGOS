@@ -63,3 +63,9 @@ test('unverified business hours blocks', () => { const m=good(); m.delivery.busi
 test('unverified sender scope blocks', () => { const m=good(); m.delivery.brand_sender_scope_test_passed=false; blocked(m,'DELIVERY_UNVERIFIED'); });
 test('missing owner approval blocks', () => { const m=good(); m.release.owner_approval_for_production=false; blocked(m,'PRODUCTION_APPROVAL_MISSING'); });
 test('invalid clock blocks', () => assert.ok(evaluateContinuity(good(), new Date('invalid')).reasons.includes('INVALID_EVALUATION_CLOCK')));
+
+test('manifest without explicit UTC zone blocks', () => { const m=good(); m.observed_at_utc='2026-10-31T15:48:00'; blocked(m,'EVIDENCE_STALE_OR_INVALID'); });
+test('SQL timestamp with offset instead of UTC Z blocks', () => { const m=good(); m.databases[0].sql_checked_at_utc='2026-10-31T15:48:00+00:00'; blocked(m,'WGOS:SQL_STALE'); });
+test('invalid calendar date cannot silently normalize', () => { const m=good(); m.databases[0].restore.completed_at_utc='2026-02-30T12:00:00.000Z'; blocked(m,'WGOS:RESTORE_TIMELINE_INVALID_OR_STALE'); });
+test('restore timestamp missing UTC zone blocks', () => { const m=good(); m.databases[0].restore.started_at_utc='2026-10-31T15:43:00'; blocked(m,'WGOS:RESTORE_TIMELINE_INVALID_OR_STALE'); });
+test('explicit UTC seconds precision is accepted', () => { const m=good(); m.observed_at_utc='2026-10-31T15:48:00Z'; assert.equal(result(m).status,'EVIDENCE_COMPLETE_HUMAN_REVIEW_REQUIRED'); });
