@@ -8,6 +8,8 @@ const good = () => ({
   observed_at_utc: at(-2),
   databases: REQUIRED_SYSTEMS.map(name => ({
     name, sql_responded: true, sql_query_evidence_ref: 'sql-evidence-1234', sql_checked_at_utc: at(-2), default_branch_protected: true,
+    recovery_source_type: 'scheduled_snapshot', durable_recovery_source_verified: true,
+    recovery_source_retention_reviewed: true, recovery_source_evidence_ref: 'backup-evidence-1234', recovery_source_checked_at_utc: at(-2),
     restore: {isolated: true, production_unchanged: true, schema_fingerprint_match: true, critical_records_match: true,
       authenticated_isolation_passed: true, operator_approval_ref: 'approval-1234', cost_review_ref: 'cost-review-1234',
       independent_review_ref: 'review-1234', restore_receipt_ref: 'receipt-1234', source_snapshot_ref: 'snapshot-1234',
@@ -97,3 +99,28 @@ test('SQL timestamp with offset instead of UTC Z blocks', () => { const m=good()
 test('invalid calendar date cannot silently normalize', () => { const m=good(); m.databases[0].restore.completed_at_utc='2026-02-30T12:00:00.000Z'; blocked(m,'WGOS:RESTORE_TIMELINE_INVALID_OR_STALE'); });
 test('restore timestamp missing UTC zone blocks', () => { const m=good(); m.databases[0].restore.started_at_utc='2026-10-31T15:43:00'; blocked(m,'WGOS:RESTORE_TIMELINE_INVALID_OR_STALE'); });
 test('explicit UTC seconds precision is accepted', () => { const m=good(); m.observed_at_utc='2026-10-31T15:48:00Z'; assert.equal(result(m).status,'EVIDENCE_COMPLETE_HUMAN_REVIEW_REQUIRED'); });
+
+test('SQL response and PITR history alone cannot establish durable backup', () => {
+  const m=good(); m.databases[0].durable_recovery_source_verified=false;
+  blocked(m,'WGOS:DURABLE_RECOVERY_SOURCE_UNVERIFIED');
+});
+test('missing durable backup evidence reference blocks', () => {
+  const m=good(); m.databases[1].recovery_source_evidence_ref='';
+  blocked(m,'TradeOS:DURABLE_RECOVERY_SOURCE_UNVERIFIED');
+});
+test('stale backup inventory blocks', () => {
+  const m=good(); m.databases[2].recovery_source_checked_at_utc=at(-130);
+  blocked(m,'DionnesBoutique:DURABLE_RECOVERY_SOURCE_UNVERIFIED');
+});
+test('PITR-only is not an accepted durable source type', () => {
+  const m=good(); m.databases[0].recovery_source_type='pitr_history_only';
+  blocked(m,'WGOS:DURABLE_RECOVERY_SOURCE_UNVERIFIED');
+});
+test('independent backup with verified retention is an acceptable source type', () => {
+  const m=good(); m.databases[0].recovery_source_type='independent_backup';
+  assert.equal(result(m).status,'EVIDENCE_COMPLETE_HUMAN_REVIEW_REQUIRED');
+});
+test('unreviewed backup retention blocks', () => {
+  const m=good(); m.databases[0].recovery_source_retention_reviewed=false;
+  blocked(m,'WGOS:DURABLE_RECOVERY_SOURCE_UNVERIFIED');
+});
