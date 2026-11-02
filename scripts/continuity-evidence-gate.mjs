@@ -14,7 +14,14 @@ const MAX_RESTORE_VALIDITY_MS = 30 * 24 * 60 * 60 * 1000;
 const FUTURE_SKEW_MS = 5 * 60 * 1000;
 const ref = v => typeof v === 'string' && v.trim().length >= 8 && !/^(none|unknown|pending|n\/a|unverified)$/i.test(v.trim());
 const finiteNonnegative = v => typeof v === 'number' && Number.isFinite(v) && v >= 0;
-const time = v => typeof v === 'string' && Number.isFinite(Date.parse(v)) ? Date.parse(v) : NaN;
+// Accept only explicit UTC ISO-8601 timestamps; reject local-time ambiguity and normalized invalid dates.
+const time = v => {
+  if (typeof v !== 'string') return NaN;
+  const m = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d{1,3}))?Z$/.exec(v);
+  if (!m) return NaN;
+  const parsed = Date.parse(v);
+  return Number.isFinite(parsed) && new Date(parsed).toISOString() === `${m[1]}.${(m[2] || '').padEnd(3, '0')}Z` ? parsed : NaN;
+};
 
 export function evaluateContinuity(manifest, now = new Date()) {
   const reasons = [];
