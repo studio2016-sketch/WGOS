@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useRef,useState} from "react";import {useRouter} from "next/navigation";
 export default function GlobalSearch({brand}:{brand?:string}){const router=useRouter(),[q,setQ]=useState(""),[rows,setRows]=useState<any[]>([]),[open,setOpen]=useState(false),[active,setActive]=useState(0),[loading,setLoading]=useState(false),[failed,setFailed]=useState(false),input=useRef<HTMLInputElement>(null);
- useEffect(()=>{const key=(e:KeyboardEvent)=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();input.current?.focus();setOpen(true)}if(e.key==="Escape"){setOpen(false);input.current?.blur()}};window.addEventListener("keydown",key);return()=>window.removeEventListener("keydown",key)},[]);
+ useEffect(()=>{const key=(e:KeyboardEvent)=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){if(!input.current?.checkVisibility()||input.current.closest(".workspaceSection"))return;e.preventDefault();input.current.focus();setOpen(true)}if(e.key==="Escape"){setOpen(false);input.current?.blur()}};window.addEventListener("keydown",key);return()=>window.removeEventListener("keydown",key)},[]);
  useEffect(()=>{
   setRows([]);setActive(0);setFailed(false);
   if(q.trim().length<2){setLoading(false);return}

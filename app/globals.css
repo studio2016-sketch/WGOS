@@ -1328,7 +1328,7 @@ body{font-size:16px;line-height:1.55}
 .admin .recordsWarning{margin:20px 26px 0 114px;border:1px solid #907040;background:#2c2416;color:#f6dba3;padding:16px;border-radius:8px;line-height:1.5}
 .admin .ownerTopNav{display:flex!important;flex-wrap:wrap;align-items:center;gap:16px;padding:14px 24px!important}
 .admin .ownerTopNav>.navContext{width:auto!important;flex:0 1 250px;margin:0!important;min-width:0}
-.admin .ownerTopNav>.ownerTopSearch{flex:1;min-width:180px}.admin .ownerTopNav .globalCommand{max-width:none}
+.admin .ownerTopNav>.ownerTopSearch{flex:1;min-width:180px}.admin .ownerTopNav .globalCommand{max-width:none;display:flex!important;width:100%;min-height:44px;align-items:center;gap:8px;padding:0 10px;border:1px solid #35444f;border-radius:8px;background:#101920}
 .efficientBrandSwitcher{display:flex;align-items:center;gap:10px;font-size:12px;color:#b8c5ce;min-width:0}
 .efficientBrandSwitcher select{margin:0;min-height:44px;font-size:14px;min-width:0;width:100%;background:#141e26;border:1px solid #455563;padding:10px;color:#f1eee7}
 .admin .ownerRailNav{overflow-y:auto;min-height:0;flex:1}.admin .ownerRailMotto{display:none!important}
