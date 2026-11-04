@@ -32,8 +32,14 @@ export async function listThreadMessages(threadId:string){
 
 export async function createCommunicationThread(input:{brandId:string;channel:string;subject?:string;organizationId?:string|null;contactId?:string|null;actor:string}){
  if(!channels.has(input.channel))throw new Error("Unsupported communication channel.");
- const sql=db();if(input.contactId){const contact:any[]=await sql`SELECT id,organization_id FROM wgos.contacts WHERE id=${input.contactId}::uuid LIMIT 1`;if(!contact[0])throw new Error("Contact not found.");if(input.organizationId&&String(contact[0].organization_id||"")!==String(input.organizationId))throw new Error("Contact is outside the selected organization.");}const rows=await sql`INSERT INTO wgos.communication_threads(brand_id,organization_id,contact_id,channel,subject,status) VALUES(${input.brandId},${input.organizationId||null}::uuid,${input.contactId||null}::uuid,${input.channel},${input.subject?.trim()||null},'OPEN') RETURNING *`;
- const thread:any=rows[0];await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata) VALUES(${input.actor},'COMMUNICATION_THREAD_CREATED','communication_thread',${String(thread.id)},jsonb_build_object('brandId',${input.brandId},'channel',${input.channel}))`;return thread;
+ const sql=db();if(input.contactId){const contact:any[]=await sql`SELECT id,organization_id FROM wgos.contacts WHERE id=${input.contactId}::uuid LIMIT 1`;if(!contact[0])throw new Error("Contact not found.");if(input.organizationId&&String(contact[0].organization_id||"")!==String(input.organizationId))throw new Error("Contact is outside the selected organization.");}const rows=await sql`WITH created AS (
+ INSERT INTO wgos.communication_threads(brand_id,organization_id,contact_id,channel,subject,status)
+ VALUES(${input.brandId},${input.organizationId||null}::uuid,${input.contactId||null}::uuid,${input.channel},${input.subject?.trim()||null},'OPEN') RETURNING *
+ ), logged AS (
+ INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata)
+ SELECT ${input.actor},'COMMUNICATION_THREAD_CREATED','communication_thread',id::text,jsonb_build_object('brandId',brand_id,'channel',channel) FROM created RETURNING id
+ ) SELECT * FROM created`;
+ return rows[0];
 }
 
 export async function addCommunicationMessage(input:{threadId:string;direction:string;body:string;actor:string}){
