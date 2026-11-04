@@ -1,5 +1,4 @@
 import Link from "next/link";
-import TimeAwareOwnerHero from "./TimeAwareOwnerHero";
 
 type OwnerDashboardProps = {
   identity:any;
@@ -31,9 +30,6 @@ export default function OwnerDashboard({
   const waitingThreads=threads.filter((t:any)=>String(t.recent_direction)==="INBOUND");
   const ownerReviewProposals=proposals.filter((p:any)=>["DRAFT","OWNER_REVIEW","REVIEW_REQUIRED"].includes(String(p.status)));
   const clientProposals=proposals.filter((p:any)=>["APPROVED","SENT"].includes(String(p.status)));
-  const pendingProposals=[...ownerReviewProposals,...clientProposals];
-  const signedAgreements=agreements.filter((a:any)=>["SIGNED","ACTIVE","EXECUTED"].includes(String(a.status)));
-  const firstName=String(identity?.role)==="OWNER"?"Mr Williams":(String(identity?.display_name||identity?.email||"Owner").split(/[ @]/)[0]||"Owner");
   const query=q(selectedBrand);
 
   const attention=[
@@ -55,14 +51,14 @@ export default function OwnerDashboard({
       eyebrow:"CLIENT",
       title:"Respond to waiting client",
       detail:t.subject||t.title||"Inbound conversation waiting",
-      href:"/admin/comms"+query,
+      href:"/admin/communications?thread="+encodeURIComponent(t.id)+(selectedBrand?"&brand="+encodeURIComponent(selectedBrand):""),
       tone:"violet"
     })),
     ...decisionSignals.slice(0,1).map((s:any)=>({
       eyebrow:"DECISION",
       title:s.title||"Owner decision required",
       detail:s.summary||s.reason||"Review the surfaced decision.",
-      href:"/admin"+query,
+      href:"/admin"+query+"#decision-signals",
       tone:"violet"
     }))
   ].slice(0,3);
@@ -70,9 +66,9 @@ export default function OwnerDashboard({
   if(!attention.length){
     attention.push({
       eyebrow:"CLEAR",
-      title:"No owner-only decisions waiting",
-      detail:"WGOS is suppressing routine movement and keeping the portfolio clear.",
-      href:"/admin"+query,
+      title:"No attention items in loaded records",
+      detail:"Open the detailed workspaces to review records and setup status.",
+      href:"/admin"+query+"#owner-detail-workspaces",
       tone:"green"
     });
   }
@@ -88,114 +84,28 @@ export default function OwnerDashboard({
     {label:"Marketing",detail:"Campaigns, content, growth",icon:"◎",href:"/admin/marketing"+query}
   ];
 
-  const domains=[
-    {label:"Artists",meta:(openOpportunities.length||0)+" opportunities",sub:"bookings · releases · audience",href:"/admin/marketing"+query,visual:"artist",image:"/owner-domains/artists.webp",position:"center 38%"},
-    {label:"Live Productions",meta:activeProjects.length+" active",sub:blockedProjects.length?blockedProjects.length+" delivery exception"+(blockedProjects.length===1?"":"s"):"all delivery on track",href:"/admin/operations"+query,visual:"live",image:"/owner-domains/live-production.webp",position:"center 48%"},
-    {label:"Music School",meta:"Education",sub:"programs · enrollment · curriculum",href:"/admin/purpose"+query,visual:"school",image:"/owner-domains/music-school.webp",position:"center 48%"},
-    {label:"Premium Instruments",meta:"Bass One",sub:"commissions · clients · production",href:"/admin/equipment"+query,visual:"instrument",image:"/owner-domains/premium-instruments.jpg",position:"center 50%"},
-    {label:"Finance",meta:money(pipelineValue),sub:openOpportunities.length+" open revenue opportunit"+(openOpportunities.length===1?"y":"ies"),href:"/admin/operations"+query+"#finance",visual:"finance",image:"/owner-domains/finance.webp",position:"center center"},
-    {label:"Contracts",meta:signedAgreements.length+" active",sub:ownerReviewProposals.length?ownerReviewProposals.length+" proposal approval"+(ownerReviewProposals.length===1?"":"s")+" waiting":clientProposals.length+" client proposal"+(clientProposals.length===1?"":"s")+" moving",href:"/admin"+query+"#contracting",visual:"contracts",image:"/owner-domains/contracts.webp",position:"58% center"},
-    {label:"Clients",meta:waitingThreads.length+" waiting",sub:waitingThreads.length?"responses need attention":"relationships moving",href:"/admin"+query+"#relationships",visual:"clients",image:"/owner-domains/clients.webp",position:"center center"},
-    {label:"Projects",meta:activeProjects.length+" active",sub:blockedProjects.length?blockedProjects.length+" blocked":"portfolio healthy",href:"/admin/operations"+query,visual:"projects",image:"/owner-domains/projects.webp",position:"58% 48%"}
+  const totalAttention=ownerReviewProposals.length+blockedProjects.length+waitingThreads.length+decisionSignals.length;
+  const unvalued=openOpportunities.filter((o:any)=>!Number(o.estimated_value)).length;
+  const shortcuts=[
+    ...startActions,
+    {label:"New lead or contact",detail:"Capture the next opportunity",icon:"＋",href:"/admin"+query+"#commercial-forms"},
+    {label:"Inventory",detail:"Stock, products, replenishment",icon:"▦",href:"/admin/inventory"+query},
+    {label:"Equipment",detail:"Assets, availability, readiness",icon:"♢",href:"/admin/equipment"+query},
+    {label:"Websites & search",detail:"Search performance & sales",icon:"↗",href:"/admin/seo"+query}
   ];
-
-  const systems=[
-    {label:"Artists",text:openOpportunities.length?"Opportunities and audience movement visible":"No exceptions surfaced"},
-    {label:"Live Productions",text:blockedProjects.length?blockedProjects.length+" delivery exception"+(blockedProjects.length===1?"":"s"):"Builds and timelines moving"},
-    {label:"Music School",text:"Purpose, program and growth workspace available"},
-    {label:"Instruments",text:"Assets and product operations available"},
-    {label:"Finance",text:pipelineValue?money(pipelineValue)+" visible in open opportunity value":"No finance exception surfaced"},
-    {label:"Clients & Projects",text:waitingThreads.length?waitingThreads.length+" inbound response"+(waitingThreads.length===1?"":"s")+" waiting":"Relationships and delivery synchronized"}
-  ];
-
-  const upcoming=activeProjects.slice(0,3);
-  const highlights=[
-    {label:"Open pipeline",value:money(pipelineValue),detail:openOpportunities.length+" live opportunities"},
-    {label:"Signed work",value:String(signedAgreements.length),detail:"active / executed agreements"},
-    {label:"Client motion",value:String(waitingThreads.length),detail:"inbound conversations waiting"},
-    {label:"Signals",value:String(notifications.length),detail:"current system notices"}
-  ];
-
-  const funnelStages=[
-    {label:"Inquiry",count:openOpportunities.filter((o:any)=>["NEW","QUALIFYING"].includes(String(o.stage))).length,value:openOpportunities.filter((o:any)=>["NEW","QUALIFYING"].includes(String(o.stage))).reduce((n:number,o:any)=>n+Number(o.estimated_value||0),0)},
-    {label:"Discovery",count:openOpportunities.filter((o:any)=>String(o.stage)==="DISCOVERY").length,value:openOpportunities.filter((o:any)=>String(o.stage)==="DISCOVERY").reduce((n:number,o:any)=>n+Number(o.estimated_value||0),0)},
-    {label:"Proposal",count:openOpportunities.filter((o:any)=>String(o.stage)==="PROPOSAL").length,value:openOpportunities.filter((o:any)=>String(o.stage)==="PROPOSAL").reduce((n:number,o:any)=>n+Number(o.estimated_value||0),0)},
-    {label:"Terms",count:openOpportunities.filter((o:any)=>String(o.stage)==="NEGOTIATION").length,value:openOpportunities.filter((o:any)=>String(o.stage)==="NEGOTIATION").reduce((n:number,o:any)=>n+Number(o.estimated_value||0),0)},
-    {label:"Signed",count:signedAgreements.length,value:0},
-    {label:"Delivery",count:activeProjects.length,value:0}
-  ];
-
-  return <section className="ownerExperience" aria-label="WGOS owner command">
-    <div className="ownerHero">
-      <TimeAwareOwnerHero name={firstName} selectedBrand={Boolean(selectedBrand)}/>
+  return <section className="ownerExperience efficientHome" aria-label="WGOS owner command">
+    <div className="efficientHeading"><div><p className="eyebrow">WGOS · {selectedBrand?brands.find(b=>b.id===selectedBrand)?.name||"BUSINESS COMMAND":"EXECUTIVE COMMAND"}</p><h1>Your business, in focus.</h1><p>Review what needs attention. Move directly into the work.</p></div><Link href={"/admin"+query+"#commercial-forms"} className="newAction">＋ New lead</Link></div>
+    <div className="efficientMetrics" aria-label="Current business records">
+      <Link href={"/admin"+query+"#commercial"}><small>OPEN PIPELINE · ESTIMATE</small><strong>{money(pipelineValue)}</strong><span>{openOpportunities.length} opportunities{unvalued?" · "+unvalued+" without a value":""}</span></Link>
+      <Link href={"/admin/operations"+query}><small>ACTIVE DELIVERY</small><strong>{activeProjects.length}</strong><span>{blockedProjects.length} blocked projects</span></Link>
+      <Link href={"/admin/communications"+query}><small>CLIENT FOLLOW-UP</small><strong>{waitingThreads.length}</strong><span>conversations with latest reply inbound</span></Link>
+      <Link href={"/admin"+query+"#commercial-lifecycle"}><small>PROPOSAL REVIEW</small><strong>{ownerReviewProposals.length}</strong><span>{clientProposals.length} proposals with clients</span></Link>
     </div>
-
-    <article className="ownerStart ownerPanel" id="start-here">
-      <div className="ownerStartHead"><div><p>START HERE</p><h2>What do you want to do?</h2><span>WGOS will take you to the right record. You do not need to know where the underlying system stores it.</span></div></div>
-      <div className="ownerStartGrid">{startActions.map((a:any)=><Link key={a.label} href={a.href} className="ownerStartAction"><b>{a.icon}</b><span><strong>{a.label}</strong><small>{a.detail}</small></span><i>→</i></Link>)}</div>
+    <article className="efficientAttention" aria-label="Priority actions"><div className="efficientSectionHead"><div><p className="eyebrow">ATTENTION FIRST</p><h2>{totalAttention?"Your next moves":"No attention items in loaded records"}</h2></div><span>{totalAttention} attention items</span></div>
+      <div className="efficientAttentionList">{attention.map((a:any,i:number)=><Link key={i} href={a.href}><span className={"attentionBadge "+a.tone}>{a.eyebrow}</span><span><strong>{a.title}</strong><small>{a.detail}</small></span><b aria-hidden="true">→</b></Link>)}</div>
+      {totalAttention>attention.length&&<p className="efficientNote">Showing {attention.length} priorities. Use the counts above to review each queue.</p>}
     </article>
-
-    <div className="ownerSectionLabel"><div><p>BUSINESS AREAS</p><h2>One operating system, multiple businesses and functions</h2></div><span>Use the business switcher above to focus every workspace.</span></div>
-    <div className="ownerDomainGrid">
-      {domains.map((d:any)=><Link key={d.label} href={d.href} className="ownerDomainCard">
-        <div className={"ownerVisual "+d.visual}>
-          {d.visual==="instrument"&&<div aria-hidden="true" style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"radial-gradient(ellipse at 50% 45%,#42300f 0%,#0d0b09 65%,#050505 100%)",color:"#d8b76b",fontSize:"clamp(20px,3vw,40px)",fontWeight:800,letterSpacing:".14em",textShadow:"0 1px 12px #94723d",zIndex:0}}>BASSONE</div>}<img src={d.image} alt="" style={{objectPosition:d.position,position:"relative",zIndex:1}} loading="lazy" onError={undefined}/>
-          <span className="ownerVisualShade" aria-hidden="true"/>
-        </div>
-        <div className="ownerDomainBody"><h2>{d.label}</h2><strong>{d.meta}</strong><span>{d.sub}</span></div>
-      </Link>)}
-    </div>
-
-    <div className="ownerMidGrid">
-      <article className="ownerPanel ownerAttention">
-        <div className="ownerPanelHead"><div><p>WHAT NEEDS ONLY YOU</p><h2>{attention.length} owner decision{attention.length===1?"":"s"}</h2></div><Link href={"/admin"+query}>→</Link></div>
-        <div className="ownerAttentionList">{attention.map((a:any,i:number)=><Link key={i} href={a.href} className={"ownerAttentionItem "+a.tone}>
-          <div className="ownerAttentionThumb"><span>{a.eyebrow.slice(0,1)}</span></div>
-          <div><small>{a.eyebrow}</small><strong>{a.title}</strong><span>{a.detail}</span></div>
-          <b>Today</b>
-        </Link>)}</div>
-      </article>
-
-      <article className="ownerPanel ownerSystems">
-        <div className="ownerStatusMark">✓</div>
-        <div><p>ALL SYSTEMS QUIETLY MOVING</p><h2>{blockedProjects.length?"Exceptions are contained and visible.":"Operations, teams and timelines are on track."}</h2></div>
-        <div className="ownerSystemList">{systems.map((s:any)=><div key={s.label}><i>◉</i><span><strong>{s.label}</strong><small>{s.text}</small></span></div>)}</div>
-      </article>
-    </div>
-
-    <article className="ownerPanel ownerFunnel" aria-label="Commercial lifecycle">
-      <div className="ownerPanelHead"><div><p>COMMERCIAL LIFECYCLE</p><h2>From inquiry to delivery</h2></div><Link href={"/admin"+query+"#commercial-lifecycle"}>Open commercial →</Link></div>
-      <div className="ownerFunnelRail">{funnelStages.map((s:any,i:number)=><Link key={s.label} href={"/admin"+query+"#commercial-lifecycle"} className={"ownerFunnelStage stage"+i}>
-        <small>{s.label}</small><strong>{s.count}</strong>{i<4&&<span>{money(s.value)}</span>}<i aria-hidden="true">→</i>
-      </Link>)}</div>
-    </article>
-
-    <div className="ownerLowerGrid">
-      <article className="ownerPanel ownerOutlook">
-        <div className="ownerPanelHead"><div><p>COMMERCIAL OUTLOOK</p><h2>{money(pipelineValue)}</h2></div><span>Open pipeline</span></div>
-        <div className="ownerBars">{[22,30,27,36,40,48,52,61,58,72,80,92].map((h,i)=><i key={i} style={{height:h+"%"}}/>)}</div>
-        <div className="ownerOutlookLegend"><span><b>{money(pipelineValue)}</b> opportunity value</span><span><b>{openOpportunities.length}</b> live opportunities</span><span><b>{signedAgreements.length}</b> active agreements</span></div>
-      </article>
-
-      <article className="ownerPanel ownerUpcoming">
-        <div className="ownerPanelHead"><div><p>UPCOMING DELIVERY</p><h2>Live movement</h2></div><Link href={"/admin/operations"+query}>→</Link></div>
-        <div className="ownerTimeline">{upcoming.length?upcoming.map((p:any,i:number)=><Link key={p.id} href={"/admin/operations?project="+encodeURIComponent(p.id)+(selectedBrand?"&brand="+encodeURIComponent(selectedBrand):"")}><i/><span><small>{i===0?"NOW":i===1?"NEXT":"AFTER"}</small><strong>{p.title}</strong><em>{p.status}</em></span></Link>):<div className="ownerEmpty">No active delivery projects yet.</div>}</div>
-      </article>
-    </div>
-
-    <div className="ownerBottomGrid">
-      <article className="ownerPanel ownerHighlights">
-        <div className="ownerPanelHead"><div><p>RECENT HIGHLIGHTS</p><h2>Portfolio pulse</h2></div><Link href={"/admin"+query}>→</Link></div>
-        <div className="ownerHighlightGrid">{highlights.map((h:any,i:number)=><div key={h.label}><div className={"ownerMiniVisual v"+i}/><small>{h.label}</small><strong>{h.value}</strong><span>{h.detail}</span></div>)}</div>
-      </article>
-      <article className="ownerPanel ownerIdeas">
-        <div className="ownerPanelHead"><div><p>IDEAS FOR WHAT'S NEXT</p><h2>Forward motion</h2></div><span>→</span></div>
-        <Link href={"/admin/marketing"+query}><i>◌</i><span><strong>Strengthen direct audience</strong><small>Turn current attention into owned relationships.</small></span></Link>
-        <Link href={"/admin/operations"+query}><i>⌂</i><span><strong>Productize repeatable delivery</strong><small>Make the best process easier to repeat across brands.</small></span></Link>
-        <Link href={"/admin/purpose"+query}><i>◎</i><span><strong>Greenlight the next purpose-aligned move</strong><small>Use purpose as the filter before scale.</small></span></Link>
-      </article>
-    </div>
-
-    <div className="ownerDeepLink"><span>Need the full operating detail?</span><a href="#owner-detail-workspaces">Open deep workspaces ↓</a></div>
+    <article id="start-here" className="efficientActions"><div className="efficientSectionHead"><div><p className="eyebrow">YOUR WORKSPACES</p><h2>What do you need to do?</h2></div><span>Every action keeps your selected business in view.</span></div><div className="efficientActionGrid">{shortcuts.map(a=><Link key={a.label} href={a.href}><b aria-hidden="true">{a.icon}</b><span><strong>{a.label}</strong><small>{a.detail}</small></span><i aria-hidden="true">↗</i></Link>)}</div></article>
+    <p className="efficientNote">Pipeline is estimated opportunity value. Review actual payments and expenses in <Link href={"/admin/operations"+query+"#finance"}>Money</Link>.</p>
   </section>;
 }
