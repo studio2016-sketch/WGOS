@@ -1358,3 +1358,15 @@ body{font-size:16px;line-height:1.55}
  .workspaceSectionBody{padding:0 12px 18px}.workspaceSection>summary{padding:18px}.efficientMetrics strong{font-size:29px}
 }
 @media(prefers-reduced-motion:reduce){.workspaceSection *{scroll-behavior:auto!important}}
+
+.conversationViews{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:14px;border:1px solid #344149;border-radius:10px;background:#10191f}
+.conversationViews a{padding:10px 18px;border:1px solid #42515c;border-radius:7px;color:#d8e1e7;text-decoration:none;min-height:44px}
+.conversationViews a[aria-current=page]{background:#30291b;border-color:#b39b62;color:#f1dba8}
+.conversationViews span{color:#acbdc8;font-size:13px;line-height:1.5}
+.conversationControls{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.conversationControls button,.deleteConfirmation button{min-height:44px;padding:10px 15px;border:1px solid #647580;background:#19252e;color:#f1eee7;border-radius:8px;cursor:pointer}
+.admin button.deleteConversation{border:1px solid #af6666!important;background:#341d20!important;color:#ffd4d4!important}
+.deleteConfirmation{padding:18px;margin:18px 0;border:1px solid #ae7272;border-radius:10px;background:#261c20;color:#f5dedb}
+.deleteConfirmation p{font-size:14px;line-height:1.6;color:#dcc4c4}
+.deleteConfirmation>div{display:flex;gap:12px;flex-wrap:wrap}
+@media(max-width:760px){.conversationHead{align-items:flex-start;flex-direction:column}.conversationControls{width:100%;justify-content:space-between}.conversationViews span{flex-basis:100%}}
