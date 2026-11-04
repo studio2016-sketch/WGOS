@@ -1,4 +1,5 @@
 import "server-only";
+import {validateContact} from "./contact-validation";
 import {db} from "./db";
 import {createHash} from "crypto";
 import {searchAttribution} from "./search-attribution";
@@ -8,14 +9,16 @@ const emailOk=(v:string)=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 const dateOk=(v:string)=>/^\d{4}-\d{2}-\d{2}$/.test(v);
 
 export async function submitPublicInquiry(input:{
- brandId:string;name:string;email:string;phone?:string;organizationName?:string;
+ brandId:string;name:string;email:string;firstName?:string;lastName?:string;phone?:string;organizationName?:string;
  title?:string;message?:string;details?:Record<string,unknown>;honeypot?:string;
 }){
  const sql=db();
  const brandId=clean(input.brandId,80),name=clean(input.name,160),email=clean(input.email,240).toLowerCase();
  const phone=clean(input.phone,80),organizationName=clean(input.organizationName,180),message=clean(input.message,6000);
  if(clean(input.honeypot,200))return {received:true,discarded:true};
- if(!brandId||!name||!emailOk(email))throw new Error("Name and a valid email are required.");
+ if(!brandId)throw new Error("A business is required.");
+ const parts=name.split(/\s+/).filter(Boolean);
+ const identity=validateContact(input.firstName??parts[0],input.lastName??parts.slice(1).join(" "),email);
 
  const detailsForHash=input.details&&typeof input.details==="object"?input.details:{};
  const fingerprint=createHash("sha256").update(JSON.stringify({brandId,name,email,phone,organizationName,title:clean(input.title,220),message,details:detailsForHash})).digest("hex");
@@ -51,7 +54,7 @@ export async function submitPublicInquiry(input:{
  }
 
  let contactId:string;
- const contacts:any[]=await sql`SELECT id,organization_id,phone FROM wgos.contacts WHERE lower(email)=lower(${email}) ORDER BY updated_at DESC LIMIT 1`;
+ const contacts:any[]=await sql`SELECT id,organization_id,phone FROM wgos.contacts WHERE archived_at IS NULL AND lower(email)=lower(${email}) ORDER BY updated_at DESC LIMIT 1`;
  if(contacts[0]){
   contactId=String(contacts[0].id);
   await sql`INSERT INTO wgos.contact_brands(contact_id,brand_id) VALUES(${contactId}::uuid,${brandId}) ON CONFLICT DO NOTHING`;
@@ -60,7 +63,7 @@ export async function submitPublicInquiry(input:{
    phone=CASE WHEN COALESCE(phone,'')='' AND ${phone}<>'' THEN ${phone} ELSE phone END,
    updated_at=now() WHERE id=${contactId}::uuid`;
  }else{
-  const parts=name.split(/\s+/).filter(Boolean),first=parts.shift()||name,last=parts.join(" ")||"";
+  const {first,last}=identity;
   const created:any[]=await sql`INSERT INTO wgos.contacts(organization_id,first_name,last_name,email,phone,role)
    VALUES(${organizationId}::uuid,${first},${last},${email},${phone||null},'PROSPECT') RETURNING id`;
   contactId=String(created[0].id);

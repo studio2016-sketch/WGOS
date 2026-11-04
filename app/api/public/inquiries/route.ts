@@ -7,7 +7,7 @@ export async function POST(req:Request){
   const length=Number(req.headers.get("content-length")||0);if(length>65536)return NextResponse.json({ok:false,error:"REQUEST_TOO_LARGE"},{status:413,headers});
   const body=await req.json();
   const result=await submitPublicInquiry({
-   brandId:String(body?.brandId||""),name:String(body?.name||""),email:String(body?.email||""),
+   firstName:body?.firstName===undefined?undefined:String(body.firstName),lastName:body?.lastName===undefined?undefined:String(body.lastName),brandId:String(body?.brandId||""),name:String(body?.name||""),email:String(body?.email||""),
    phone:body?.phone?String(body.phone):"",organizationName:body?.organizationName?String(body.organizationName):"",
    title:body?.title?String(body.title):"",message:body?.message?String(body.message):"",
    details:body?.details&&typeof body.details==="object"?body.details:{},
