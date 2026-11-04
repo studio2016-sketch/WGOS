@@ -99,11 +99,11 @@ export default function OwnerDashboard({
       <Link href={"/admin"+query+"#commercial"}><small>OPEN PIPELINE · ESTIMATE</small><strong>{money(pipelineValue)}</strong><span>{openOpportunities.length} opportunities{unvalued?" · "+unvalued+" without a value":""}</span></Link>
       <Link href={"/admin/operations"+query}><small>ACTIVE DELIVERY</small><strong>{activeProjects.length}</strong><span>{blockedProjects.length} blocked projects</span></Link>
       <Link href={"/admin/communications"+query}><small>CLIENT FOLLOW-UP</small><strong>{waitingThreads.length}</strong><span>conversations with latest reply inbound</span></Link>
-      <Link href={"/admin"+query+"#commercial-lifecycle"}><small>PROPOSAL REVIEW</small><strong>{ownerReviewProposals.length}</strong><span>{clientProposals.length} proposals with clients</span></Link>
+      <Link href={"/admin"+query+"#commercial-lifecycle"}><small>PROPOSAL REVIEW</small><strong>{ownerReviewProposals.length}</strong><span>{clientProposals.length} proposal{clientProposals.length===1?"":"s"} with clients</span></Link>
     </div>
     <article className="efficientAttention" aria-label="Priority actions"><div className="efficientSectionHead"><div><p className="eyebrow">ATTENTION FIRST</p><h2>{totalAttention?"Your next moves":"No attention items in loaded records"}</h2></div><span>{totalAttention} attention items</span></div>
       <div className="efficientAttentionList">{attention.map((a:any,i:number)=><Link key={i} href={a.href}><span className={"attentionBadge "+a.tone}>{a.eyebrow}</span><span><strong>{a.title}</strong><small>{a.detail}</small></span><b aria-hidden="true">→</b></Link>)}</div>
-      {totalAttention>attention.length&&<p className="efficientNote">Showing {attention.length} priorities. Use the counts above to review each queue.</p>}
+      {totalAttention>attention.length&&<p className="efficientNote">Showing {attention.length} priorit{attention.length===1?"y":"ies"}. Use the counts above to review each queue.</p>}
     </article>
     <article id="start-here" className="efficientActions"><div className="efficientSectionHead"><div><p className="eyebrow">YOUR WORKSPACES</p><h2>What do you need to do?</h2></div><span>Every action keeps your selected business in view.</span></div><div className="efficientActionGrid">{shortcuts.map(a=><Link key={a.label} href={a.href}><b aria-hidden="true">{a.icon}</b><span><strong>{a.label}</strong><small>{a.detail}</small></span><i aria-hidden="true">↗</i></Link>)}</div></article>
     <p className="efficientNote">Pipeline is estimated opportunity value. Review actual payments and expenses in <Link href={"/admin/operations"+query+"#finance"}>Money</Link>.</p>
