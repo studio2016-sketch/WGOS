@@ -1370,3 +1370,82 @@ body{font-size:16px;line-height:1.55}
 .deleteConfirmation p{font-size:14px;line-height:1.6;color:#dcc4c4}
 .deleteConfirmation>div{display:flex;gap:12px;flex-wrap:wrap}
 @media(max-width:760px){.conversationHead{align-items:flex-start;flex-direction:column}.conversationControls{width:100%;justify-content:space-between}.conversationViews span{flex-basis:100%}}
+
+/* Readable, colorful, flowing executive interface. */
+body:has(.admin){background:#080e1b;color:#f5f8ff}
+.admin{--text:#f5f8ff;--muted:#c0cfdf;--gold:#ffda83;background:radial-gradient(ellipse at 85% 0%,#20356a80,transparent 42%),radial-gradient(ellipse at 0% 40%,#432d6940,transparent 45%),#080e1b!important}
+.admin .efficientHome{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;padding:20px 0!important}
+.admin .efficientHeading h1{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-weight:650;letter-spacing:-.04em;font-size:clamp(32px,3.5vw,48px);color:#fff}
+.admin .efficientHeading p:not(.eyebrow){font-size:16px;color:#c4d3e8;line-height:1.6}
+.admin .eyebrow{font-size:12px!important;letter-spacing:.12em;color:#88ddff!important}
+.admin .efficientSectionHead h2{font-family:system-ui,-apple-system,sans-serif;font-weight:600;font-size:26px;letter-spacing:-.025em;color:#f5f8ff}
+.admin .efficientSectionHead>span{font-size:14px;line-height:1.6;color:#bdcde3}
+.admin .efficientMetrics{border:0;background:none;gap:14px;overflow:visible;border-radius:0}
+.admin .efficientMetrics>a{--accent:#80dfff;border:0!important;border-radius:24px;padding:24px;background:linear-gradient(140deg,#152d44,#101d30);box-shadow:inset 0 1px #9fdcff25;gap:10px}
+.admin .efficientMetrics>a:nth-child(2){--accent:#baacff;background:linear-gradient(140deg,#302447,#171c35)}
+.admin .efficientMetrics>a:nth-child(3){--accent:#78f0c8;background:linear-gradient(140deg,#143b3b,#102333)}
+.admin .efficientMetrics>a:nth-child(4){--accent:#ffcf88;background:linear-gradient(140deg,#3b2d2a,#211d31)}
+.admin .efficientMetrics small{color:var(--accent);font-size:13px;letter-spacing:.045em;font-weight:650;line-height:1.5}
+.admin .efficientMetrics strong{font:600 36px/1.2 system-ui,sans-serif;color:#fff;letter-spacing:-.03em}
+.admin .efficientMetrics span{font-size:15px;color:#d3dfef;line-height:1.6}
+.admin .efficientAttention{border:0;background:linear-gradient(120deg,#20335c,#26223f);border-radius:28px;padding:26px;box-shadow:inset 0 1px #b9c8ff30;margin-top:28px}
+.admin .efficientAttentionList>a{border:0;border-radius:18px;background:#101a30aa;padding:20px;gap:18px}
+.admin .efficientAttentionList strong{font-size:17px;line-height:1.5}
+.admin .efficientAttentionList small{font-size:15px;color:#d1dcef;line-height:1.65}
+.admin .attentionBadge{font-size:12px;font-weight:700;letter-spacing:.04em;color:#dbc4ff;min-width:68px}
+.admin .efficientActionGrid{gap:0 28px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.admin .efficientActionGrid>a{--action:#80dfff;border:0;border-bottom:1px solid #b5d6ff1c;border-radius:0;background:transparent;box-shadow:none;min-height:108px;padding:20px 4px;gap:16px}
+.admin .efficientActionGrid>a:nth-child(4n+2){--action:#c3a9ff}.admin .efficientActionGrid>a:nth-child(4n+3){--action:#7ee9be}.admin .efficientActionGrid>a:nth-child(4n+4){--action:#ffd78c}
+.admin .efficientActionGrid>a>b{display:grid;place-items:center;flex:none;width:48px;height:48px;border-radius:17px;color:var(--action);background:color-mix(in srgb,var(--action) 15%,#111c2c);font:24px/1 system-ui,sans-serif}
+.admin .efficientActionGrid strong{font-size:17px!important;font-weight:600;line-height:1.5;color:#f5f8ff}
+.admin .efficientActionGrid small{font-size:15px;color:#c1d0e5;line-height:1.6}
+.admin .efficientActionGrid i{display:block;color:var(--action);font-size:20px}
+.admin .efficientActionGrid>a:hover{background:#7aaeff0c;border-color:#9ac5ff75}
+.admin .efficientNote{font-size:15px!important;color:#bdcde3!important;line-height:1.7}
+.admin .workspaceSection{border:0;border-radius:24px;background:linear-gradient(110deg,#15263c,#152036);box-shadow:inset 0 1px #9cc8ff25}
+.admin .workspaceSection>summary{padding:24px;min-height:96px}
+.admin .workspaceSection>summary strong{font-size:18px;line-height:1.5;color:#fff}
+.admin .workspaceSection>summary small{font-size:15px;color:#c4d2e8;line-height:1.6}
+.admin .workspaceSection>summary>b{color:#88ddff}
+.admin .ownerTopNav{background:#0b1424ed!important;border:0!important;border-radius:0 0 22px 22px!important;box-shadow:0 8px 35px #0002}
+.admin .ownerTopNav .globalCommand input{font-size:16px!important;color:#eff6ff!important;min-width:0}
+.admin .ownerTopNav .globalCommand input::placeholder{color:#b9cbe0}
+.admin .ownerTopNav .globalCommand{min-height:48px;border-radius:24px;background:#142239;border-color:#a4caff35}
+.admin .efficientBrandSwitcher select{font-size:16px;border-radius:24px;background:#18263c;color:#f7faff;border-color:#92b4dd45;padding:12px}
+.admin .ownerRailNav a span{font-size:12px!important;color:#d7e4f5!important;line-height:1.3!important}
+.admin .ownerRailNav a b{font-size:24px!important;color:#91dfff!important}
+.admin .ownerRailNav a{min-height:64px!important;border:0!important;border-radius:18px!important}
+.admin .ownerRailNav a.active{background:linear-gradient(140deg,#3278d6,#7754d4)!important;color:white!important;box-shadow:0 6px 22px #397fff35}
+.admin .ownerRailNav a.active b{color:#fff!important}
+@media(max-width:1100px){.admin .efficientActionGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:900px){
+ .admin{padding-left:0!important;padding-right:0!important;padding-bottom:110px!important}
+ .admin .efficientHome{margin:18px 20px 20px!important;width:auto!important;padding-bottom:12px!important}
+ .admin .efficientHeading{margin-bottom:24px}
+ .admin .efficientMetrics{gap:12px}.admin .efficientMetrics>a{padding:20px;border-radius:22px}
+ .admin .efficientSectionHead{align-items:flex-start}.admin .efficientSectionHead>span{max-width:130px;text-align:right}
+ .admin .ownerRail{left:10px!important;right:10px!important;bottom:max(10px,env(safe-area-inset-bottom))!important;top:auto!important;height:80px!important;width:auto!important;padding:5px!important;border-radius:28px!important;background:#101d32f5!important;border:1px solid #9cc7ff40!important;box-shadow:0 10px 40px #0009!important;overflow:visible!important}
+ .admin .ownerRail>.ownerRailNav,.admin .ownerRail>.ownerRailMark{display:none!important}
+ .admin .ownerRail>.mobileNav{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;height:100%;gap:4px}
+ .admin .mobileNav>a{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:6px!important;min-height:64px!important;border-radius:22px!important;padding:5px 2px!important;color:#dbe8fb!important;text-decoration:none}
+ .admin .mobileNav a span,.admin .mobileMore>summary span{font-size:13px!important;font-weight:600!important;line-height:1.3!important;color:#e3edfc!important;white-space:nowrap;letter-spacing:0!important}
+ .admin .mobileNav a b,.admin .mobileMore>summary>b{font-size:25px!important;font-weight:500;color:#9ddfff!important;line-height:1!important}
+ .admin .mobileNav a.active{background:linear-gradient(135deg,#257be4,#8557dc)!important;box-shadow:0 4px 16px #4680ff40!important;color:#fff!important}
+ .admin .mobileNav a.active b{color:#fff!important}
+ .admin .mobileMore>summary{min-height:64px;gap:6px;border-radius:22px}
+ .admin .mobileMore[open]>summary{background:#29436a}
+ .admin .mobileMore>nav{bottom:85px;border-radius:24px;background:#14243b;border-color:#96c7ff60;width:240px;padding:12px}
+ .admin .mobileMore>nav>a{font-size:17px!important;min-height:50px;border-radius:12px}
+ .admin .workspaceSection{margin:16px 20px!important}.admin .workspaceSection:last-child{margin-bottom:24px!important}
+}
+@media(max-width:540px){
+ .admin .efficientHeading h1{font-size:34px;line-height:1.15}
+ .admin .efficientActionGrid{grid-template-columns:1fr;gap:0}
+ .admin .efficientActionGrid>a{padding:18px 2px;min-height:94px;gap:16px}
+ .admin .efficientActionGrid small{font-size:15px}.admin .efficientActionGrid strong{font-size:17px!important}
+ .admin .efficientMetrics small{font-size:12px}.admin .efficientMetrics span{font-size:14px}
+ .admin .efficientMetrics strong{font-size:32px}
+ .admin .efficientAttention{padding:22px 16px}.admin .efficientAttentionList>a{flex-wrap:wrap;padding:18px}
+ .admin .attentionBadge{min-width:0;flex-basis:100%;font-size:12px}
+ .admin .efficientSectionHead>span{font-size:13px;max-width:115px}
+}
