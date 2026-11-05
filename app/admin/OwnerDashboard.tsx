@@ -87,6 +87,12 @@ export default function OwnerDashboard({
   const totalAttention=ownerReviewProposals.length+blockedProjects.length+waitingThreads.length+decisionSignals.length;
   const unvalued=openOpportunities.filter((o:any)=>!Number(o.estimated_value)).length;
   const shortcuts=[
+    ...(identity?.role === "OWNER" ? [{
+      label:"Open TradeOS",
+      detail:"Personal trading operations",
+      icon:"↗",
+      href:"https://tradeos-lac.vercel.app/operations"
+    }] : []),
     ...startActions,
     {label:"New lead or contact",detail:"Capture the next opportunity",icon:"＋",href:"/admin"+query+"#commercial-forms"},
     {label:"Inventory",detail:"Stock, products, replenishment",icon:"▦",href:"/admin/inventory"+query},
