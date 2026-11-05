@@ -44,7 +44,7 @@ export async function submitPublicInquiry(input:{
  if(organizationName){
   const orgRows:any[]=await sql`SELECT o.id FROM wgos.organizations o
    JOIN wgos.organization_brands ob ON ob.organization_id=o.id
-   WHERE ob.brand_id=${brandId} AND lower(o.name)=lower(${organizationName}) LIMIT 1`;
+   WHERE o.archived_at IS NULL AND ob.brand_id=${brandId} AND lower(o.name)=lower(${organizationName}) LIMIT 1`;
   if(orgRows[0])organizationId=String(orgRows[0].id);
   else{
    const created:any[]=await sql`INSERT INTO wgos.organizations(name,type) VALUES(${organizationName},'PROSPECT') RETURNING id`;
