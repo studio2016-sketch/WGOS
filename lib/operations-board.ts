@@ -65,7 +65,7 @@ export async function getOperationsBoard(projectId:string,authUserId?:string|nul
    FROM wgos.task_dependencies d
    JOIN wgos.tasks t ON t.id=d.task_id
    WHERE t.project_id=${projectId}::uuid`,
-  authUserId&&!isGlobal?sql`SELECT DISTINCT u.auth_user_id,u.email,u.display_name,u.role FROM wgos.app_users u JOIN wgos.brand_memberships bm ON bm.auth_user_id=u.auth_user_id AND bm.brand_id=${String(project.brand_id)} AND bm.active=true WHERE u.active=true ORDER BY COALESCE(u.display_name,u.email),u.email`:sql`SELECT auth_user_id,email,display_name,role FROM wgos.app_users WHERE active=true ORDER BY COALESCE(display_name,email),email`,
+  authUserId&&!isGlobal?sql`SELECT DISTINCT u.auth_user_id,u.email,u.display_name,u.role FROM wgos.app_users u JOIN wgos.brand_memberships bm ON bm.auth_user_id=u.auth_user_id AND bm.brand_id=${String(project.brand_id)} AND bm.active=true WHERE u.active=true ORDER BY u.display_name,u.email`:sql`SELECT auth_user_id,email,display_name,role FROM wgos.app_users WHERE active=true ORDER BY COALESCE(display_name,email),email`,
   authUserId&&!isGlobal?sql`SELECT b.id,b.name,bg.relationship_type FROM wgos.brands b JOIN wgos.brand_memberships bm ON bm.brand_id=b.id AND bm.auth_user_id=${authUserId} AND bm.active=true LEFT JOIN wgos.brand_governance bg ON bg.brand_id=b.id ORDER BY b.name`:sql`SELECT b.id,b.name,bg.relationship_type FROM wgos.brands b LEFT JOIN wgos.brand_governance bg ON bg.brand_id=b.id ORDER BY b.name`,
   sql`SELECT c.id,c.task_id,c.author_subject,c.body,c.created_at,c.updated_at,
     u.display_name AS author_name,u.email AS author_email
@@ -86,7 +86,7 @@ export async function getOperationsBoard(projectId:string,authUserId?:string|nul
 export async function getOperationsReferenceData(authUserId?:string|null,isGlobal=false){
  const sql=db();
  const [users,brands]=await Promise.all([
-  authUserId&&!isGlobal?sql`SELECT DISTINCT u.auth_user_id,u.email,u.display_name,u.role FROM wgos.app_users u JOIN wgos.brand_memberships mine ON mine.brand_id IN (SELECT brand_id FROM wgos.brand_memberships WHERE auth_user_id=${authUserId} AND active=true) AND mine.auth_user_id=u.auth_user_id AND mine.active=true WHERE u.active=true ORDER BY COALESCE(u.display_name,u.email),u.email`:sql`SELECT auth_user_id,email,display_name,role FROM wgos.app_users WHERE active=true ORDER BY COALESCE(display_name,email),email`,
+  authUserId&&!isGlobal?sql`SELECT DISTINCT u.auth_user_id,u.email,u.display_name,u.role FROM wgos.app_users u JOIN wgos.brand_memberships mine ON mine.brand_id IN (SELECT brand_id FROM wgos.brand_memberships WHERE auth_user_id=${authUserId} AND active=true) AND mine.auth_user_id=u.auth_user_id AND mine.active=true WHERE u.active=true ORDER BY u.display_name,u.email`:sql`SELECT auth_user_id,email,display_name,role FROM wgos.app_users WHERE active=true ORDER BY COALESCE(display_name,email),email`,
   authUserId&&!isGlobal?sql`SELECT b.id,b.name,bg.relationship_type FROM wgos.brands b LEFT JOIN wgos.brand_governance bg ON bg.brand_id=b.id JOIN wgos.brand_memberships mine ON mine.brand_id=b.id AND mine.auth_user_id=${authUserId} AND mine.active=true ORDER BY b.name`:sql`SELECT b.id,b.name,bg.relationship_type FROM wgos.brands b LEFT JOIN wgos.brand_governance bg ON bg.brand_id=b.id ORDER BY b.name`
  ]);
  return {users,brands};
