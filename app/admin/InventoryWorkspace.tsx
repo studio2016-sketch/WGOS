@@ -70,7 +70,7 @@ export default function InventoryWorkspace({brandId,brandName,snapshot,canManage
     <div><small>PRICE</small><strong>{"$"+(Number(p.price_cents||0)/100).toFixed(2)}</strong></div>
     <div><small>ON HAND</small><strong>{Number(p.on_hand||0)}</strong><span>{Number(p.available||0)} available</span></div>
     <div className="inventoryActions"><button disabled={!canManage||Boolean(busy)||!location} onClick={()=>adjust(p.product_id,1,"RECEIPT")}>＋ Receive</button><button disabled={!canManage||Boolean(busy)||!location||Number(p.on_hand||0)<=0} onClick={()=>adjust(p.product_id,-1,"ADJUSTMENT")}>− Adjust</button></div>
-    {canManage&&<InventoryReviewForm key={p.product_id+String(p.review_revision)} brandId={brandId} product={p} locations={locations} stockLevels={snapshot.stockLevels||[]}/>}
+    {canManage&&<InventoryReviewForm key={p.product_id+String(p.review_revision)+JSON.stringify((snapshot.stockLevels||[]).filter((stock:any)=>stock.product_id===p.product_id).map((stock:any)=>stock.review_revision))} brandId={brandId} product={p} locations={locations} stockLevels={snapshot.stockLevels||[]}/>}
    </article>)}</div>}
   </section>
   <section className="principle"><strong>Cutover rule:</strong> no storefront authority until catalog, quantities, pricing and image references are reconciled and explicitly approved.</section>
