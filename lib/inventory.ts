@@ -12,15 +12,46 @@ export async function inventorySnapshot(brandId:string){
  return {state:stateRows[0]||null,products,locations,batches};
 }
 
-export async function createInventoryProduct(input:{brandId:string;externalKey?:string;sku?:string;category?:string;manufacturer?:string;productName:string;variantName?:string;conditionStatus?:string;priceCents?:number;costCents?:number|null;imageUrl?:string;sellable?:boolean;actor:string}){
+export async function createInventoryProduct(input:{brandId:string;externalKey?:string;sku?:string;category?:string;manufacturer?:string;productName:string;variantName?:string;conditionStatus?:string;priceCents?:number;costCents?:number|null;imageUrl?:string;sellable?:boolean;actor:string;openingQuantity?:number;locationId?:string;requestId?:string}){
  const name=input.productName.trim();if(!name)throw new Error("Product name is required.");
- const sql=db();const rows=await sql`
-  INSERT INTO wgos.inventory_products(brand_id,external_key,sku,category,manufacturer,product_name,variant_name,condition_status,price_cents,cost_cents,image_url,sellable,source_system)
-  VALUES(${input.brandId},${input.externalKey?.trim()||null},${input.sku?.trim()||null},${input.category?.trim()||null},${input.manufacturer?.trim()||null},${name},${input.variantName?.trim()||null},${input.conditionStatus||"NEW"},${Math.max(0,Number(input.priceCents||0))},${input.costCents==null?null:Math.max(0,Number(input.costCents))},${input.imageUrl?.trim()||null},${Boolean(input.sellable)},'WGOS')
-  RETURNING *`;
- const product:any=rows[0];
- await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata) VALUES(${input.actor},'INVENTORY_PRODUCT_CREATED','inventory_product',${String(product.id)},jsonb_build_object('brandId',${input.brandId}::text,'name',${name}::text))`;
- return product;
+ const quantity=input.openingQuantity??0;
+ if(!Number.isFinite(quantity)||quantity<0||quantity>99999999999.999||Math.abs(quantity*1000-Math.round(quantity*1000))>0.0001)throw new Error("Starting quantity must be non-negative with at most three decimal places.");
+ for(const value of [input.priceCents??0,input.costCents??0]){
+  if(!Number.isSafeInteger(value)||value<0)throw new Error("Price and cost must be valid non-negative amounts.");
+ }
+ const condition=input.conditionStatus||"NEW";
+ if(!["NEW","OPEN_BOX","USED","DAMAGED","HOLD","UNKNOWN"].includes(condition))throw new Error("Choose a valid condition.");
+ const image=input.imageUrl?.trim()||null;
+ if(image){const url=new URL(image);if(!["https:","http:"].includes(url.protocol))throw new Error("Photo URL must use https or http.");}
+ if(input.requestId&&!/^[0-9a-f-]{36}$/i.test(input.requestId))throw new Error("Invalid product request.");
+ const externalKey=input.externalKey?.trim()||(input.requestId?"WGOS_ENTRY:"+input.requestId:null);
+ const sql=db();
+ if(quantity>0){
+  if(!input.locationId)throw new Error("Choose a stock location for the starting quantity.");
+  const locations=await sql`SELECT id FROM wgos.inventory_locations WHERE id=${input.locationId}::uuid AND brand_id=${input.brandId} AND active=true`;
+  if(!locations.length)throw new Error("Choose an active location for this business.");
+ }
+ const rows=await sql`
+  WITH product AS (
+   INSERT INTO wgos.inventory_products(brand_id,external_key,sku,category,manufacturer,product_name,variant_name,condition_status,price_cents,cost_cents,image_url,sellable,source_system)
+   VALUES(${input.brandId},${externalKey},${input.sku?.trim()||null},${input.category?.trim()||null},${input.manufacturer?.trim()||null},${name},${input.variantName?.trim()||null},${condition},${input.priceCents??0},${input.costCents??null},${image},${Boolean(input.sellable)},'WGOS')
+   ON CONFLICT (brand_id,external_key) WHERE external_key IS NOT NULL DO NOTHING
+   RETURNING *
+  ), stock AS (
+   INSERT INTO wgos.inventory_stock_levels(product_id,location_id,on_hand,reserved)
+   SELECT id,${input.locationId||null}::uuid,${quantity},0 FROM product WHERE ${quantity}>0 RETURNING product_id
+  ), movement AS (
+   INSERT INTO wgos.inventory_movements(brand_id,product_id,location_id,movement_type,quantity_delta,source_system,source_type,actor_subject)
+   SELECT ${input.brandId},id,${input.locationId||null}::uuid,'OPENING',${quantity},'WGOS','MANUAL',${input.actor} FROM product WHERE ${quantity}>0
+  ), audit AS (
+   INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata)
+   SELECT ${input.actor},'INVENTORY_PRODUCT_CREATED','inventory_product',id::text,
+    jsonb_build_object('brandId',${input.brandId}::text,'name',${name}::text,'openingQuantity',${quantity}::numeric) FROM product
+  ) SELECT * FROM product`;
+ if(rows[0])return rows[0];
+ const existing=await sql`SELECT * FROM wgos.inventory_products WHERE brand_id=${input.brandId} AND external_key=${externalKey} LIMIT 1`;
+ if(!existing[0])throw new Error("Unable to save product. Please retry.");
+ return existing[0];
 }
 
 export async function updateInventoryProduct(input:{brandId:string;productId:string;priceCents?:number;costCents?:number|null;sellable?:boolean;active?:boolean;imageUrl?:string;actor:string}){

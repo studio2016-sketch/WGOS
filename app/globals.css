@@ -1449,3 +1449,8 @@ body:has(.admin){background:#080e1b;color:#f5f8ff}
  .admin .attentionBadge{min-width:0;flex-basis:100%;font-size:12px}
  .admin .efficientSectionHead>span{font-size:13px;max-width:115px}
 }
+
+.inventoryEntryForm{display:grid;gap:18px;border-radius:22px}
+.inventoryEntryFields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px}
+.inventoryEntryFields label{display:grid;gap:8px;font-size:16px}
+.inventoryEntryFields input,.inventoryEntryFields select{width:100%;min-width:0;box-sizing:border-box;font-size:16px;min-height:48px}
