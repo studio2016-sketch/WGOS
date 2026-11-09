@@ -11,7 +11,7 @@ export default function BoutiqueSettings({saved,taxStatus}:{saved:any;taxStatus:
    const response=await fetch("/api/admin/boutique-settings",{method:"PUT",headers:{"content-type":"application/json"},signal:AbortSignal.timeout(25000),body:JSON.stringify({version,settings:{
     shippingEnabled:data.get("shippingEnabled")==="on",shippingCents:data.get("shippingAmount")===""?null:Math.round(Number(data.get("shippingAmount"))*100),
     minDays:Number(data.get("minDays")),maxDays:Number(data.get("maxDays")),taxMode:data.get("taxMode"),taxCode:data.get("taxCode"),
-    taxBehavior:data.get("taxBehavior"),taxConfirmed:data.get("taxConfirmed")==="on"
+    taxBehavior:"exclusive",taxConfirmed:data.get("taxConfirmed")==="on"
    }})});
    const result=await response.json();if(!response.ok)throw new Error(result.error||"Unable to save settings.");
    setVersion(result.version);setMessage("Settings saved for checkout preparation.");router.refresh();
@@ -34,7 +34,7 @@ export default function BoutiqueSettings({saved,taxStatus}:{saved:any;taxStatus:
    <div className="inventoryEntryFields">
     <label>Tax setup<select name="taxMode" defaultValue={s.taxMode||"PENDING"}><option value="PENDING">Pending review</option><option value="AUTOMATIC">Automatic Stripe Tax</option></select></label>
     <label>Default product tax code<input name="taxCode" pattern="txcd_[0-9]{8}" defaultValue={s.taxCode||taxStatus?.presetTaxCode||""}/></label>
-    <label>Prices include or exclude tax<select name="taxBehavior" defaultValue={s.taxBehavior||taxStatus?.presetTaxBehavior||""}><option value="">Choose price treatment</option><option value="exclusive">Tax added to listed prices</option><option value="inclusive">Tax included in listed prices</option></select></label>
+    <p>Tax is added to listed prices at checkout.</p>
    </div>
    <p>The default tax code applies to every storefront product. Confirm it matches the merchandise before using it. <a href="https://docs.stripe.com/tax/tax-codes">Review Stripe’s product tax codes</a>.</p>
    <label><input style={{width:"auto"}} name="taxConfirmed" type="checkbox"/> I confirm the default product tax code and price treatment.</label>
