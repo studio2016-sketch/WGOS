@@ -23,7 +23,7 @@ export default function InventoryReviewForm({brandId,product,locations,stockLeve
  }
  return <details className="adminPanel" style={{gridColumn:"1 / -1"}}>
   <summary>Review quantity &amp; condition</summary>
-  <form onSubmit={save} style={{display:"grid",gap:14,marginTop:18}}>
+  <form key={locationId} onSubmit={save} style={{display:"grid",gap:14,marginTop:18}}>
    <label>Stock location<select value={locationId} onChange={event=>{setLocationId(event.target.value);setError("");setMessage("");}}>{locations.map(location=><option key={location.id} value={location.id}>{location.name}</option>)}</select></label>
    <p>Recorded at this location · {Number(stock?.on_hand||0)} on hand, {Number(stock?.reserved||0)} reserved.</p>
    <label>Physical quantity counted<input key={locationId} name="count" type="number" required min={Number(stock?.reserved||0)} max="99999999999.999" step="0.001" inputMode="decimal"/></label>
