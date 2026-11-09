@@ -1,5 +1,6 @@
 "use client";
 import {FormEvent,useMemo,useRef,useState} from "react";
+import InventoryReviewForm from "./InventoryReviewForm";
 import {useRouter} from "next/navigation";
 
 export default function InventoryWorkspace({brandId,brandName,snapshot,canManage}:{brandId:string;brandName:string;snapshot:any;canManage:boolean}){
@@ -15,7 +16,7 @@ export default function InventoryWorkspace({brandId,brandName,snapshot,canManage
    const response=await fetch("/api/admin/inventory",{method:"POST",headers:{"content-type":"application/json"},signal:AbortSignal.timeout(25000),body:JSON.stringify({
     brandId,requestId:requestId.current,productName:values.get("productName"),sku:values.get("sku"),category:values.get("category"),
     variantName:values.get("variantName"),price:values.get("price"),cost:values.get("cost")||null,
-    imageUrl:values.get("imageUrl"),openingQuantity:Number(values.get("openingQuantity")||0),locationId:values.get("locationId")||undefined,sellable:true
+    imageUrl:values.get("imageUrl"),openingQuantity:Number(values.get("openingQuantity")||0),locationId:values.get("locationId")||undefined,sellable:false
    })});
    const data=await response.json();
    if(!response.ok)throw new Error(data.error||"Unable to save product.");
@@ -65,10 +66,11 @@ export default function InventoryWorkspace({brandId,brandName,snapshot,canManage
   <section className="adminPanel"><div className="equipmentHead"><div><p className="eyebrow">CATALOG + STOCK</p><h3>{brandName}</h3></div><small>{snapshot.state?.reconciliation_status||"NOT_STARTED"} · cutover {snapshot.state?.cutover_ready?"ready":"locked"}</small></div>
    {!products.length?<p className="muted">No products yet. Add your first product to begin.</p>:
    <div className="inventoryTable">{products.map((p:any)=><article className="inventoryRow" key={p.product_id}>
-    <div className="inventoryProduct">{p.image_url&&<img src={p.image_url} alt=""/>}<div><small>{p.category||"PRODUCT"} · {p.manufacturer||""}</small><strong>{p.product_name}</strong><span>{p.variant_name||"Standard"} · {p.condition_status}</span>{p.metadata?.needsStockConfirmation&&<small>Imported quantity · count confirmation pending</small>}{p.metadata?.sourceCondition&&<small>{p.metadata.sourceCondition}</small>}</div></div>
+    <div className="inventoryProduct">{p.image_url&&<img src={p.image_url} alt=""/>}<div><small>{p.category||"PRODUCT"} · {p.manufacturer||""}</small><strong>{p.product_name}</strong><span>{p.variant_name||"Standard"} · {p.condition_status}</span><small>{p.metadata?.reviewedAt?(p.sellable?"Reviewed · approved for sale":"Reviewed · held from sale"):"Product review pending"}</small>{p.metadata?.needsStockConfirmation&&<small>Imported quantity · count confirmation pending</small>}{p.metadata?.sourceCondition&&<small>{p.metadata.sourceCondition}</small>}</div></div>
     <div><small>PRICE</small><strong>{"$"+(Number(p.price_cents||0)/100).toFixed(2)}</strong></div>
     <div><small>ON HAND</small><strong>{Number(p.on_hand||0)}</strong><span>{Number(p.available||0)} available</span></div>
     <div className="inventoryActions"><button disabled={!canManage||Boolean(busy)||!location} onClick={()=>adjust(p.product_id,1,"RECEIPT")}>＋ Receive</button><button disabled={!canManage||Boolean(busy)||!location||Number(p.on_hand||0)<=0} onClick={()=>adjust(p.product_id,-1,"ADJUSTMENT")}>− Adjust</button></div>
+    {canManage&&<InventoryReviewForm key={p.product_id+String(p.review_revision)} brandId={brandId} product={p} locations={locations} stockLevels={snapshot.stockLevels||[]}/>}
    </article>)}</div>}
   </section>
   <section className="principle"><strong>Cutover rule:</strong> no storefront authority until catalog, quantities, pricing and image references are reconciled and explicitly approved.</section>
