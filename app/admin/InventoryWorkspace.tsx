@@ -23,6 +23,16 @@ export default function InventoryWorkspace({brandId,brandName,snapshot,canManage
   }catch(error){setError(error instanceof Error?error.message:"Unable to save product. Please retry.");}
   finally{setBusy("");}
  }
+ async function importCatalog(){
+  if(busy)return;setBusy("import");setError("");setMessage("");
+  try{
+   const response=await fetch("/api/admin/inventory/import",{method:"POST",signal:AbortSignal.timeout(30000)});
+   const data=await response.json();
+   if(!response.ok)throw new Error(data.error||"Unable to import catalog.");
+   setMessage(data.imported+" products imported. "+data.skipped+" already present. Confirm physical counts and conditions.");router.refresh();
+  }catch(error){setError(error instanceof Error?error.message:"Unable to import catalog. Please retry.");}
+  finally{setBusy("");}
+ }
  const products=snapshot.products||[],locations=snapshot.locations||[];const location=locations[0];
  const totals=useMemo(()=>products.reduce((a:any,p:any)=>({on:a.on+Number(p.on_hand||0),available:a.available+Number(p.available||0),retail:a.retail+Number(p.retail_value_cents||0)}),{on:0,available:0,retail:0}),[products]);
  async function adjust(productId:string,delta:number,type="ADJUSTMENT"){
@@ -34,6 +44,7 @@ export default function InventoryWorkspace({brandId,brandName,snapshot,canManage
   {error&&<p className="lifecycleMessage" role="alert">{error}</p>}
   {message&&<p role="status">{message}</p>}
   {canManage&&<button type="button" className="primary" onClick={()=>{setAdding(!adding);setError("");}} disabled={Boolean(busy)}>{adding?"Close product form":"＋ Add Product"}</button>}
+  {canManage&&brandId==="dionnesBoutique"&&<div className="adminPanel"><h3>Existing boutique catalog</h3><p>Import the saved storefront catalog, recorded quantities, prices, and image references. Existing products and edits are preserved. Imported counts and conditions need confirmation.</p><button type="button" disabled={Boolean(busy)} onClick={importCatalog}>{busy==="import"?"Importing…":"Import Existing Catalog"}</button></div>}
   {adding&&<form className="adminPanel inventoryEntryForm" onSubmit={createProduct} onChange={()=>{requestId.current=null;}}>
    <h3>Add product to {brandName}</h3>
    <div className="inventoryEntryFields">
@@ -54,7 +65,7 @@ export default function InventoryWorkspace({brandId,brandName,snapshot,canManage
   <section className="adminPanel"><div className="equipmentHead"><div><p className="eyebrow">CATALOG + STOCK</p><h3>{brandName}</h3></div><small>{snapshot.state?.reconciliation_status||"NOT_STARTED"} · cutover {snapshot.state?.cutover_ready?"ready":"locked"}</small></div>
    {!products.length?<p className="muted">No products yet. Add your first product to begin.</p>:
    <div className="inventoryTable">{products.map((p:any)=><article className="inventoryRow" key={p.product_id}>
-    <div className="inventoryProduct">{p.image_url&&<img src={p.image_url} alt=""/>}<div><small>{p.category||"PRODUCT"} · {p.manufacturer||""}</small><strong>{p.product_name}</strong><span>{p.variant_name||"Standard"} · {p.condition_status}</span></div></div>
+    <div className="inventoryProduct">{p.image_url&&<img src={p.image_url} alt=""/>}<div><small>{p.category||"PRODUCT"} · {p.manufacturer||""}</small><strong>{p.product_name}</strong><span>{p.variant_name||"Standard"} · {p.condition_status}</span>{p.metadata?.needsStockConfirmation&&<small>Imported quantity · count confirmation pending</small>}{p.metadata?.sourceCondition&&<small>{p.metadata.sourceCondition}</small>}</div></div>
     <div><small>PRICE</small><strong>{"$"+(Number(p.price_cents||0)/100).toFixed(2)}</strong></div>
     <div><small>ON HAND</small><strong>{Number(p.on_hand||0)}</strong><span>{Number(p.available||0)} available</span></div>
     <div className="inventoryActions"><button disabled={!canManage||Boolean(busy)||!location} onClick={()=>adjust(p.product_id,1,"RECEIPT")}>＋ Receive</button><button disabled={!canManage||Boolean(busy)||!location||Number(p.on_hand||0)<=0} onClick={()=>adjust(p.product_id,-1,"ADJUSTMENT")}>− Adjust</button></div>
