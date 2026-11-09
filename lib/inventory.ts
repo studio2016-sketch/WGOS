@@ -77,21 +77,35 @@ export async function adjustInventory(input:{brandId:string;productId:string;loc
  const sql=db();
  const productRows:any[]=await sql`SELECT id FROM wgos.inventory_products WHERE id=${input.productId}::uuid AND brand_id=${input.brandId} LIMIT 1`;if(!productRows[0])throw new Error("Inventory product not found.");
  const locationRows:any[]=await sql`SELECT id FROM wgos.inventory_locations WHERE id=${input.locationId}::uuid AND brand_id=${input.brandId} AND active=true LIMIT 1`;if(!locationRows[0])throw new Error("Inventory location not found.");
- const currentRows:any[]=await sql`SELECT on_hand,reserved FROM wgos.inventory_stock_levels WHERE product_id=${input.productId}::uuid AND location_id=${input.locationId}::uuid LIMIT 1`;
- const current=Number(currentRows[0]?.on_hand||0),reserved=Number(currentRows[0]?.reserved||0);
- let nextOnHand=current,nextReserved=reserved;
- if(input.movementType==="RESERVATION")nextReserved=reserved+Math.abs(delta);
- else if(input.movementType==="RELEASE")nextReserved=Math.max(0,reserved-Math.abs(delta));
- else nextOnHand=current+delta;
- if(nextOnHand<0)throw new Error("Adjustment would make on-hand inventory negative.");
- if(nextReserved>nextOnHand)throw new Error("Reserved inventory cannot exceed on-hand inventory.");
- await sql`
-  INSERT INTO wgos.inventory_stock_levels(product_id,location_id,on_hand,reserved,updated_at)
-  VALUES(${input.productId}::uuid,${input.locationId}::uuid,${nextOnHand},${nextReserved},now())
-  ON CONFLICT(product_id,location_id) DO UPDATE SET on_hand=EXCLUDED.on_hand,reserved=EXCLUDED.reserved,updated_at=now()`;
- await sql`
-  INSERT INTO wgos.inventory_movements(brand_id,product_id,location_id,movement_type,quantity_delta,source_system,source_type,idempotency_key,notes,actor_subject)
-  VALUES(${input.brandId},${input.productId}::uuid,${input.locationId}::uuid,${input.movementType},${delta},'WGOS','MANUAL',${input.idempotencyKey||null},${input.notes?.trim()||null},${input.actor})`;
- await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata) VALUES(${input.actor},'INVENTORY_QUANTITY_ADJUSTED','inventory_product',${input.productId},jsonb_build_object('brandId',${input.brandId}::text,'movementType',${input.movementType}::text,'delta',${delta}::numeric))`;
- return {onHand:nextOnHand,reserved:nextReserved,available:nextOnHand-nextReserved};
+ const key=input.idempotencyKey||null;
+ const rows=await sql`
+  WITH movement AS (
+   INSERT INTO wgos.inventory_movements(brand_id,product_id,location_id,movement_type,quantity_delta,source_system,source_type,idempotency_key,notes,actor_subject)
+   VALUES(${input.brandId},${input.productId}::uuid,${input.locationId}::uuid,${input.movementType},${delta},'WGOS','MANUAL',${key},${input.notes?.trim()||null},${input.actor})
+   ON CONFLICT(brand_id,idempotency_key) WHERE idempotency_key IS NOT NULL DO NOTHING RETURNING id
+  ), stock AS (
+   INSERT INTO wgos.inventory_stock_levels(product_id,location_id,on_hand,reserved,updated_at)
+   SELECT ${input.productId}::uuid,${input.locationId}::uuid,
+    COALESCE((SELECT on_hand FROM wgos.inventory_stock_levels WHERE product_id=${input.productId}::uuid AND location_id=${input.locationId}::uuid),0)+CASE WHEN ${input.movementType} IN ('RESERVATION','RELEASE') THEN 0 ELSE ${delta} END,
+    CASE WHEN ${input.movementType}='RESERVATION' THEN COALESCE((SELECT reserved FROM wgos.inventory_stock_levels WHERE product_id=${input.productId}::uuid AND location_id=${input.locationId}::uuid),0)+abs(${delta})
+     WHEN ${input.movementType}='RELEASE' THEN greatest(0,COALESCE((SELECT reserved FROM wgos.inventory_stock_levels WHERE product_id=${input.productId}::uuid AND location_id=${input.locationId}::uuid),0)-abs(${delta}))
+     ELSE COALESCE((SELECT reserved FROM wgos.inventory_stock_levels WHERE product_id=${input.productId}::uuid AND location_id=${input.locationId}::uuid),0) END,now() FROM movement
+   ON CONFLICT(product_id,location_id) DO UPDATE SET
+    on_hand=wgos.inventory_stock_levels.on_hand+CASE WHEN ${input.movementType} IN ('RESERVATION','RELEASE') THEN 0 ELSE ${delta} END,
+    reserved=CASE WHEN ${input.movementType}='RESERVATION' THEN wgos.inventory_stock_levels.reserved+abs(${delta})
+     WHEN ${input.movementType}='RELEASE' THEN greatest(0,wgos.inventory_stock_levels.reserved-abs(${delta})) ELSE wgos.inventory_stock_levels.reserved END,
+    updated_at=now()
+   RETURNING on_hand,reserved
+  ), audit AS (
+   INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata)
+   SELECT ${input.actor},'INVENTORY_QUANTITY_ADJUSTED','inventory_product',${input.productId},
+    jsonb_build_object('brandId',${input.brandId}::text,'movementType',${input.movementType}::text,'delta',${delta}::numeric) FROM movement
+  ) SELECT * FROM stock`;
+ if(!rows[0]){
+  const levels=await sql`SELECT on_hand,reserved FROM wgos.inventory_stock_levels WHERE product_id=${input.productId}::uuid AND location_id=${input.locationId}::uuid`;
+  const onHand=Number(levels[0]?.on_hand||0),reserved=Number(levels[0]?.reserved||0);
+  return {onHand,reserved,available:onHand-reserved};
+ }
+ const onHand=Number(rows[0].on_hand),reserved=Number(rows[0].reserved);
+ return {onHand,reserved,available:onHand-reserved};
 }
