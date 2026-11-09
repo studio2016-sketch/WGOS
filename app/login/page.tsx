@@ -1,5 +1,5 @@
 "use client";
-import {FormEvent,useState} from "react";
+import {FormEvent,useEffect,useState} from "react";
 import {useRouter} from "next/navigation";
 
 export default function Login(){
@@ -11,6 +11,10 @@ export default function Login(){
  const [busy,setBusy]=useState(false);
  const [message,setMessage]=useState("");
  const [error,setError]=useState("");
+ useEffect(()=>{
+  if(new URLSearchParams(window.location.search).get("reset")==="success")
+   setMessage("Your password has been set. Sign in with your email and new password.");
+ },[]);
 
  async function signIn(e:FormEvent){
   e.preventDefault();setBusy(true);setError("");setMessage("");
@@ -56,15 +60,23 @@ export default function Login(){
  async function reset(){
   if(!email){setError("Enter your email first.");return}
   setBusy(true);setError("");setMessage("");
-  const r=await fetch("/api/auth/request-password-reset",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({email,redirectTo:window.location.origin+"/reset-password"})});
-  if(r.ok)setMessage("If this account is eligible, Neon Auth has sent a secure password setup/reset link.");
-  else setError("Unable to start password setup right now.");
-  setBusy(false);
+  try{
+   const r=await fetch("/api/auth/request-password-reset",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({email:email.trim(),redirectTo:window.location.origin+"/reset-password"}),signal:AbortSignal.timeout(20000)});
+   if(r.ok)setMessage("Request accepted. If your account is eligible, check your inbox and spam folder for a password setup email. Open its link to choose your new password.");
+   else setError("Password setup could not be requested. Please try again shortly.");
+  }catch{
+   setError("The password setup request could not complete. Check your connection and try again.");
+  }finally{
+   setBusy(false);
+  }
  }
 
  return <main className="admin"><section className="principle" style={{maxWidth:720,margin:"10vh auto"}}>
   <p className="eyebrow">WGOS · SECURE ACCESS</p><h1>Command Center Access</h1>
   <p>Sign in with your authorized WGOS identity. Authentication is provided by Neon Auth; WGOS authorization is separately enforced by the app-user role table.</p>
+  {message&&<p role="status" aria-live="polite">{message}</p>}
+  {error&&<p role="alert">{error}</p>}
+  <p>First time here or forgot your password? Enter your email, then select “Email Password Setup Link”. Open the link in that email to set your password.</p>
   <form onSubmit={signIn} style={{display:"grid",gap:14,marginTop:28}}>
    <label>Email<input type="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)}/></label>
    <label>Password<input type="password" autoComplete="current-password" required minLength={8} value={password} onChange={e=>setPassword(e.target.value)}/></label>
@@ -72,14 +84,13 @@ export default function Login(){
   </form>
   <div style={{display:"flex",gap:10,flexWrap:"wrap",marginTop:12}}>
    <button type="button" disabled={busy} onClick={sendOtp}>Send Verification Code</button>
-   <button type="button" disabled={busy} onClick={reset}>Set / Reset Password</button>
+   <button type="button" disabled={busy} onClick={reset}>Email Password Setup Link</button>
   </div>
   {showOtp&&<form onSubmit={verifyOtp} style={{display:"grid",gap:12,marginTop:20}}>
    <label>6-digit verification code<input inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={otp} onChange={e=>setOtp(e.target.value.replace(/\D/g,"").slice(0,6))}/></label>
    <button className="primary" disabled={busy}>{busy?"Verifying…":"Verify Email →"}</button>
   </form>}
-  {message&&<p className="muted">{message}</p>}
-  {error&&<p className="muted">{error}</p>}
+
   <p className="privateNote">Creating an Auth account alone does not grant WGOS access. Your assigned WGOS role and brand memberships determine exactly which command areas and businesses you can access. Master-only financial, legal, and system controls remain protected.</p>
  </section></main>
 }
