@@ -5,7 +5,7 @@ export async function inventorySnapshot(brandId:string){
  const sql=db();
  const [stateRows,products,locations,batches]=await Promise.all([
   sql`SELECT * FROM wgos.inventory_control_state WHERE brand_id=${brandId} LIMIT 1`,
-  sql`SELECT * FROM wgos.inventory_position WHERE brand_id=${brandId} ORDER BY active DESC,category,manufacturer,product_name,variant_name`,
+  sql`SELECT v.*,p.metadata FROM wgos.inventory_position v JOIN wgos.inventory_products p ON p.id=v.product_id WHERE v.brand_id=${brandId} ORDER BY v.active DESC,v.category,v.manufacturer,v.product_name,v.variant_name`,
   sql`SELECT * FROM wgos.inventory_locations WHERE brand_id=${brandId} AND active=true ORDER BY name`,
   sql`SELECT * FROM wgos.inventory_import_batches WHERE brand_id=${brandId} ORDER BY created_at DESC LIMIT 10`
  ]);
