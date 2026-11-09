@@ -3,13 +3,14 @@ import {db} from "./db";
 
 export async function inventorySnapshot(brandId:string){
  const sql=db();
- const [stateRows,products,locations,batches]=await Promise.all([
+ const [stateRows,products,locations,batches,stockLevels]=await Promise.all([
   sql`SELECT * FROM wgos.inventory_control_state WHERE brand_id=${brandId} LIMIT 1`,
-  sql`SELECT v.*,p.metadata FROM wgos.inventory_position v JOIN wgos.inventory_products p ON p.id=v.product_id WHERE v.brand_id=${brandId} ORDER BY v.active DESC,v.category,v.manufacturer,v.product_name,v.variant_name`,
+  sql`SELECT v.*,p.metadata,p.updated_at,to_char(p.updated_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS review_revision FROM wgos.inventory_position v JOIN wgos.inventory_products p ON p.id=v.product_id WHERE v.brand_id=${brandId} ORDER BY v.active DESC,v.category,v.manufacturer,v.product_name,v.variant_name`,
   sql`SELECT * FROM wgos.inventory_locations WHERE brand_id=${brandId} AND active=true ORDER BY name`,
-  sql`SELECT * FROM wgos.inventory_import_batches WHERE brand_id=${brandId} ORDER BY created_at DESC LIMIT 10`
+  sql`SELECT * FROM wgos.inventory_import_batches WHERE brand_id=${brandId} ORDER BY created_at DESC LIMIT 10`,
+  sql`SELECT s.*,to_char(s.updated_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS review_revision FROM wgos.inventory_stock_levels s JOIN wgos.inventory_products p ON p.id=s.product_id WHERE p.brand_id=${brandId}`
  ]);
- return {state:stateRows[0]||null,products,locations,batches};
+ return {state:stateRows[0]||null,products,locations,batches,stockLevels};
 }
 
 export async function createInventoryProduct(input:{brandId:string;externalKey?:string;sku?:string;category?:string;manufacturer?:string;productName:string;variantName?:string;conditionStatus?:string;priceCents?:number;costCents?:number|null;imageUrl?:string;sellable?:boolean;actor:string;openingQuantity?:number;locationId?:string;requestId?:string}){
