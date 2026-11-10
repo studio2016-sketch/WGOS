@@ -1,4 +1,6 @@
 import Link from "next/link";
+import {studioPursuitBrand,contractPursuitHref} from "../../lib/workspace-links";
+import WorkspaceIcon from "./WorkspaceIcon";
 
 type OwnerDashboardProps = {
   identity:any;
@@ -31,6 +33,7 @@ export default function OwnerDashboard({
   const ownerReviewProposals=proposals.filter((p:any)=>["DRAFT","OWNER_REVIEW","REVIEW_REQUIRED"].includes(String(p.status)));
   const clientProposals=proposals.filter((p:any)=>["APPROVED","SENT"].includes(String(p.status)));
   const query=q(selectedBrand);
+  const studio=studioPursuitBrand(brands,selectedBrand);
 
   const attention=[
     ...ownerReviewProposals.slice(0,2).map((p:any)=>({
@@ -93,6 +96,7 @@ export default function OwnerDashboard({
       icon:"↗",
       href:"https://tradeos-lac.vercel.app/operations"
     }] : []),
+    ...(studio?[{label:"Contract Pursuit",detail:"University & hotel production contracts",icon:"pursuits",href:contractPursuitHref(studio.id)}]:[]),
     ...startActions,
     {label:"New lead or contact",detail:"Capture the next opportunity",icon:"＋",href:"/admin"+query+"#commercial-forms"},
     {label:"Inventory",detail:"Stock, products, replenishment",icon:"▦",href:"/admin/inventory"+query},
@@ -100,18 +104,18 @@ export default function OwnerDashboard({
     {label:"Websites & search",detail:"Search performance & sales",icon:"↗",href:"/admin/seo"+query}
   ];
   return <section className="ownerExperience efficientHome" aria-label="WGOS owner command">
-    <div className="efficientHeading"><div><p className="eyebrow">WGOS · {selectedBrand?brands.find(b=>b.id===selectedBrand)?.name||"BUSINESS COMMAND":"EXECUTIVE COMMAND"}</p><h1>Your business, in focus.</h1><p>Review what needs attention. Move directly into the work.</p></div><Link href={"/admin"+query+"#commercial-forms"} className="newAction">＋ New lead</Link></div>
+    <div className="efficientHeading"><div><p className="eyebrow">WGOS · {selectedBrand?brands.find(b=>b.id===selectedBrand)?.name||"BUSINESS COMMAND":"EXECUTIVE COMMAND"}</p><h1>Clarity for everything you’re building.</h1><p>Review what needs attention. Move directly into the work.</p></div><Link href={"/admin"+query+"#commercial-forms"} className="newAction">＋ New lead</Link></div>
     <div className="efficientMetrics" aria-label="Current business records">
-      <Link href={"/admin"+query+"#commercial"}><small>OPEN PIPELINE · ESTIMATE</small><strong>{money(pipelineValue)}</strong><span>{openOpportunities.length} opportunities{unvalued?" · "+unvalued+" without a value":""}</span></Link>
+      <Link href={"/admin"+query+"#commercial"}><small>OPEN PIPELINE · ESTIMATE</small><strong>{money(pipelineValue)}</strong><span>{openOpportunities.length} opportunit{openOpportunities.length===1?"y":"ies"}{unvalued?" · "+unvalued+" without a value":""}</span></Link>
       <Link href={"/admin/operations"+query}><small>ACTIVE DELIVERY</small><strong>{activeProjects.length}</strong><span>{blockedProjects.length} blocked projects</span></Link>
       <Link href={"/admin/communications"+query}><small>CLIENT FOLLOW-UP</small><strong>{waitingThreads.length}</strong><span>conversations with latest reply inbound</span></Link>
       <Link href={"/admin"+query+"#commercial-lifecycle"}><small>PROPOSAL REVIEW</small><strong>{ownerReviewProposals.length}</strong><span>{clientProposals.length} proposal{clientProposals.length===1?"":"s"} with clients</span></Link>
     </div>
-    <article className="efficientAttention" aria-label="Priority actions"><div className="efficientSectionHead"><div><p className="eyebrow">ATTENTION FIRST</p><h2>{totalAttention?"Your next moves":"No attention items in loaded records"}</h2></div><span>{totalAttention} attention items</span></div>
+    <article className="efficientAttention" aria-label="Priority actions"><div className="efficientSectionHead"><div><p className="eyebrow">ATTENTION FIRST</p><h2>{totalAttention?"Your next moves":"No attention items in loaded records"}</h2></div><span>{totalAttention} attention item{totalAttention===1?"":"s"}</span></div>
       <div className="efficientAttentionList">{attention.map((a:any,i:number)=><Link key={i} href={a.href}><span className={"attentionBadge "+a.tone}>{a.eyebrow}</span><span><strong>{a.title}</strong><small>{a.detail}</small></span><b aria-hidden="true">→</b></Link>)}</div>
       {totalAttention>attention.length&&<p className="efficientNote">Showing {attention.length} priorit{attention.length===1?"y":"ies"}. Use the counts above to review each queue.</p>}
     </article>
-    <article id="start-here" className="efficientActions"><div className="efficientSectionHead"><div><p className="eyebrow">YOUR WORKSPACES</p><h2>What do you need to do?</h2></div><span>Every action keeps your selected business in view.</span></div><div className="efficientActionGrid">{shortcuts.map(a=><Link key={a.label} href={a.href}><b aria-hidden="true">{a.icon}</b><span><strong>{a.label}</strong><small>{a.detail}</small></span><i aria-hidden="true">↗</i></Link>)}</div></article>
+    <article id="start-here" className="efficientActions"><div className="efficientSectionHead"><div><p className="eyebrow">YOUR WORKSPACES</p><h2>What do you need to do?</h2></div><span>Every action keeps your selected business in view.</span></div><div className="efficientActionGrid">{shortcuts.map(a=><Link key={a.label} href={a.href}><b aria-hidden="true"><WorkspaceIcon name={a.label==="Contract Pursuit"?"pursuits":a.label.includes("calendar")?"calendar":a.label.includes("client")?"messages":a.label.includes("proposal")?"contracts":a.label.includes("People")?"people":a.label.includes("Money")?"money":a.label.includes("Marketing")?"marketing":a.label.includes("Inventory")?"inventory":a.label.includes("Equipment")?"resources":a.label.includes("Contract")?"contracts":a.label.includes("lead")?"clients":a.label.includes("TradeOS")||a.label.includes("search")?"arrow":"work"}/></b><span><strong>{a.label}</strong><small>{a.detail}</small></span><i aria-hidden="true"><WorkspaceIcon name="arrow" size={16}/></i></Link>)}</div></article>
     <p className="efficientNote">Pipeline is estimated opportunity value. Review actual payments and expenses in <Link href={"/admin/operations"+query+"#finance"}>Money</Link>.</p>
   </section>;
 }

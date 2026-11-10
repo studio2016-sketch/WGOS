@@ -20,6 +20,7 @@ function profile(name:string){
   label:"Production Company",
   focus:"Sell, contract, staff and deliver productions.",
   specialty:[
+   ["Contract Pursuit","/admin/pursuits","Pursue university and hotel production contracts."],
    ["Bookings & leads","/admin","Move inquiries through discovery and proposal."],
    ["Productions","/admin/operations","Control shows, crews, tasks and delivery."],
    ["Resources","/admin/equipment","Manage production assets and readiness."],
@@ -128,18 +129,7 @@ function profile(name:string){
  };
 }
 
-const universal=[
- ["Revenue","/admin","Pipeline · proposals · approvals"],
- ["Operations","/admin/operations","Projects · tasks · delivery"],
- ["Finance","/admin/operations#finance","Cash · expenses · exceptions"],
- ["Contracts","/admin#contracting","Terms · signatures · obligations"],
- ["Clients","/admin#relationships","Organizations · contacts · history"],
- ["Comms","/admin/communications","Threads · responses · follow-up"],
- ["Schedule","/admin/calendar","Dates · commitments · holds"],
- ["Resources","/admin/equipment","Assets · availability · readiness"],
- ["Growth","/admin/marketing","Campaigns · content · attribution"],
- ["Purpose","/admin/purpose","Strategy · decisions · learning"]
-];
+
 
 function withBrand(path:string,id:string){
  const [base,hash]=path.split("#");
@@ -190,7 +180,7 @@ export default function BusinessCommand({
      <div className="businessCardTitle"><div><small>{p.label}</small><h3>{b.name}</h3><p>{p.focus}</p></div><Link href={"/admin"+qs(brandId)}>Open →</Link></div>
 
      <div className="businessPulse">
-      <Link href={"/admin"+qs(brandId)}><small>OPEN PIPELINE</small><strong>{money(pipeline)}</strong><span>{open.length} opportunity{open.length===1?"":"ies"}</span></Link>
+      <Link href={"/admin"+qs(brandId)}><small>OPEN PIPELINE</small><strong>{money(pipeline)}</strong><span>{open.length} opportunit{open.length===1?"y":"ies"}</span></Link>
       <Link href={"/admin/operations"+qs(brandId)}><small>ACTIVE DELIVERY</small><strong>{active.length}</strong><span>{blocked.length?blocked.length+" blocked":"on track"}</span></Link>
       <Link href={"/admin"+qs(brandId)+"#contracting"}><small>SIGNED WORK</small><strong>{signed.length}</strong><span>active agreements</span></Link>
       <Link href={"/admin/communications"+qs(brandId)}><small>CLIENT WAITING</small><strong>{waiting.length}</strong><span>{waiting.length?"respond now":"clear"}</span></Link>
@@ -198,24 +188,10 @@ export default function BusinessCommand({
 
      <Link href={priority.href} className={"businessPriority "+priority.tone}><span><small>NEXT BEST ACTION</small><strong>{priority.label}</strong><em>{priority.detail}</em></span><b>→</b></Link>
 
-     <div className="businessQuickControl" aria-label={"Quick controls for "+b.name}>
-      <small>MANAGE NOW</small>
-      <div>
-       <Link href={"/admin"+qs(brandId)+"#commercial-forms"}><b>＋</b><span>New lead</span></Link>
-       <Link href={"/admin/operations"+qs(brandId)}><b>▣</b><span>New project</span></Link>
-       <Link href={"/admin/communications"+qs(brandId)}><b>□</b><span>Message</span></Link>
-       <Link href={"/admin/calendar"+qs(brandId)}><b>◷</b><span>Schedule</span></Link>
-       <Link href={"/admin/marketing"+qs(brandId)}><b>↗</b><span>Campaign</span></Link>
-       <Link href={"/admin/equipment"+qs(brandId)}><b>♢</b><span>Resource</span></Link>
-      </div>
-     </div>
-
      <div className="businessSpecialty">
       {p.specialty.map(([label,path,desc])=><Link key={label} href={withBrand(String(path),brandId)}><strong>{label}</strong><span>{desc}</span></Link>)}
      </div>
-     <div className="businessUniversal">
-      {universal.map(([label,path,desc])=><Link key={label} href={withBrand(String(path),brandId)}><b>{label}</b><small>{desc}</small></Link>)}
-     </div>
+
     </article>
    })}
   </div>
