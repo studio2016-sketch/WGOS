@@ -2,11 +2,12 @@ import Link from 'next/link';
 import BrandFilter from './BrandFilter';
 import GlobalSearch from './GlobalSearch';
 import WorkspaceIcon from './WorkspaceIcon';
-import {studioPursuitBrand,contractPursuitHref} from '../../lib/workspace-links';
-type ActiveKey='home'|'clients'|'work'|'showprep'|'messages'|'calendar'|'people'|'money'|'marketing'|'resources'|'inventory'|'contracts'|'pursuits';
+import {studioPursuitBrand,contractPursuitHref,festivalBrand,festivalHref} from '../../lib/workspace-links';
+type ActiveKey='home'|'clients'|'work'|'showprep'|'messages'|'calendar'|'people'|'money'|'marketing'|'resources'|'inventory'|'contracts'|'pursuits'|'festivals';
 export default function AdminNav({active,brands=[],brand}:{active:ActiveKey;brands?:any[];brand?:string}){
  const q=brand?'?brand='+encodeURIComponent(brand):'';
  const studio=studioPursuitBrand(brands,brand);
+ const artists=festivalBrand(brands,brand);
  const nav=[
  {label:'Overview',key:'home',href:'/admin'+q,group:'Workspace'},
  {label:'Messages',key:'messages',href:'/admin/communications'+q,group:'Workspace'},
@@ -14,6 +15,7 @@ export default function AdminNav({active,brands=[],brand}:{active:ActiveKey;bran
  {label:'Projects & work',key:'work',href:'/admin/operations'+q,group:'Workspace'},
  {label:'Clients',key:'clients',href:'/admin'+q+'#relationships',group:'Growth'},
  ...(studio?[{label:'Contract Pursuit',key:'pursuits',href:contractPursuitHref(studio.id),group:'Growth'}]:[]),
+ ...(artists?[{label:'Festival bookings',key:'festivals',href:festivalHref(artists.id),group:'Growth'}]:[]),
  {label:'Marketing',key:'marketing',href:'/admin/marketing'+q,group:'Growth'},
  {label:'Contracts',key:'contracts',href:'/admin'+q+'#contracting',group:'Business'},
  {label:'Money',key:'money',href:'/admin/operations'+q+'#finance',group:'Business'},

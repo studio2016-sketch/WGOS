@@ -1,5 +1,5 @@
 import Link from "next/link";
-import {studioPursuitBrand,contractPursuitHref} from "../../lib/workspace-links";
+import {studioPursuitBrand,contractPursuitHref,festivalBrand,festivalHref} from "../../lib/workspace-links";
 import WorkspaceIcon from "./WorkspaceIcon";
 
 type OwnerDashboardProps = {
@@ -34,6 +34,7 @@ export default function OwnerDashboard({
   const clientProposals=proposals.filter((p:any)=>["APPROVED","SENT"].includes(String(p.status)));
   const query=q(selectedBrand);
   const studio=studioPursuitBrand(brands,selectedBrand);
+  const artists=festivalBrand(brands,selectedBrand);
 
   const attention=[
     ...ownerReviewProposals.slice(0,2).map((p:any)=>({
@@ -97,6 +98,7 @@ export default function OwnerDashboard({
       href:"https://tradeos-lac.vercel.app/operations"
     }] : []),
     ...(studio?[{label:"Contract Pursuit",detail:"University & hotel production contracts",icon:"pursuits",href:contractPursuitHref(studio.id)}]:[]),
+    ...(artists?[{label:"Festival bookings",detail:"2027 submissions, replies & next actions",icon:"showprep",href:festivalHref(artists.id)}]:[]),
     ...startActions,
     {label:"New lead or contact",detail:"Capture the next opportunity",icon:"＋",href:"/admin"+query+"#commercial-forms"},
     {label:"Inventory",detail:"Stock, products, replenishment",icon:"▦",href:"/admin/inventory"+query},

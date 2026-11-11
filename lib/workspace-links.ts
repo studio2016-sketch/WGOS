@@ -5,3 +5,8 @@ export function studioPursuitBrand(brands:Brand[],selectedBrand?:string){
  return brands.find(b=>String(b.name).toLowerCase().replace(/[^a-z0-9]/g,'')==='studio2016'&&(!selectedBrand||b.id===selectedBrand));
 }
 export function contractPursuitHref(brandId:string){return CONTRACT_PURSUIT_PATH+'?brand='+encodeURIComponent(brandId)}
+
+export function festivalBrand(brands:Brand[],selectedBrand?:string){
+ return brands.find(b=>String(b.name).toLowerCase().replace(/[^a-z0-9]/g,'')==='charminjermaine'&&(!selectedBrand||b.id===selectedBrand));
+}
+export function festivalHref(brandId:string){return '/admin/festivals?brand='+encodeURIComponent(brandId)}
