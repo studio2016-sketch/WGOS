@@ -4,6 +4,8 @@ import {runDueRecurringTasks} from "../../../../lib/operations-board";
 import {processClientDecisionEvents} from "../../../../lib/workflow-engine";
 import {syncGmailReplies} from "../../../../lib/communications";
 import {recordSystemHealth} from "../../../../lib/system-health";
+import {summarizeCronHealth} from "../../../../lib/cron-health-policy";
+import {buildSafeCronResponse} from "../../../../lib/cron-response-policy";
 import {observeOperationalExceptions} from "../../../../lib/automation-exception-watch";
 import {observeDepositExceptions} from "../../../../lib/automation-financial-exceptions";
 import {observeProjectDeadlines} from "../../../../lib/automation-deadline-watch";
@@ -33,15 +35,14 @@ export async function GET(req:Request){
    :[])
  ] as const;
  const settled=await Promise.allSettled(jobs.map(([,fn])=>fn()));
- const result:any={ran:true,correlationId};
- let failed=0;
- for(let i=0;i<jobs.length;i++){
-  const name=jobs[i][0],x=settled[i];
-  if(x.status==="fulfilled")result[name]=x.value;
-  else{failed++;result[name]={ok:false,error:x.reason instanceof Error?x.reason.message:"JOB_FAILED"};}
- }
- try{await recordSystemHealth({component:"operations_cron",status:failed?"DEGRADED":"OK",correlationId,details:{failed,total:jobs.length,jobs:Object.fromEntries(jobs.map(([name],i)=>[name,settled[i].status]))}});}catch{}
- if(failed)console.error("WGOS_OPERATIONS_CRON_DEGRADED",JSON.stringify(result));
- else console.log("WGOS_OPERATIONS_CRON_OK",JSON.stringify(result));
- return NextResponse.json(result,{status:failed?500:200,headers:{"Cache-Control":"no-store, private"}});
+ const failed=settled.filter(x=>x.status==="rejected").length;
+ // A fulfilled job can still report per-item failures (e.g. discovery delivery).
+ // Preserve the existing HTTP retry behavior while recording accurate health.
+ const health=summarizeCronHealth(jobs.map(([name],i)=>({name,settlement:settled[i]})));
+ try{await recordSystemHealth({component:"operations_cron",status:health.status,correlationId,details:{failed,reportedFailures:health.reportedFailures,total:jobs.length,jobs:health.jobs}});}catch{}
+ // Log only counts and state labels, never raw job results or provider exceptions.
+ const logSummary={correlationId,rejectedJobs:failed,reportedFailures:health.reportedFailures,jobs:health.jobs};
+ if(health.status==="DEGRADED")console.error("WGOS_OPERATIONS_CRON_DEGRADED",JSON.stringify(logSummary));
+ else console.log("WGOS_OPERATIONS_CRON_OK",JSON.stringify(logSummary));
+ return NextResponse.json(buildSafeCronResponse(correlationId,health),{status:failed?500:200,headers:{"Cache-Control":"no-store, private"}});
 }
