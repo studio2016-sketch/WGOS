@@ -15,6 +15,7 @@ function normalize(name:string){return String(name||"").trim().toLowerCase()}
 function money(value:number){return "$"+Number(value||0).toLocaleString(undefined,{maximumFractionDigits:0})}
 
 function profile(name:string){
+ if(name.toLowerCase().replace(/[^a-z0-9]/g, "")==="charminjermaine") return {label:"Featured Artists",focus:"Concerts, festivals and live experiences.",specialty:[["Festival bookings","/admin/festivals","Track 2027 submissions, replies, evidence and next actions."],["Bookings & leads","/admin","Manage performance inquiries."],["Show Prep","/admin/show-prep","Prepare the live experience."]]};
  const n=normalize(name);
  if(n.includes("studio2016")) return {
   label:"Production Company",
