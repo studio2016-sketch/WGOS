@@ -1,16 +1,12 @@
 import "server-only";
 import {createHmac,timingSafeEqual} from "crypto";
 import {db} from "./db";
+import {isWithinDiscoveryBusinessWindow} from "./discovery-business-hours";
 
 type DiscoveryState={status:string;readiness:number;missing:string[];questions:Array<{key:string;label:string;prompt:string;type?:string;required?:boolean}>;email_sent_at?:string|null;followup_count?:number;last_response_at?:string|null};
 
 const clean=(v:any)=>String(v??"").trim();
 const has=(v:any)=>{const s=clean(v).toLowerCase();return Boolean(s)&&!["not provided","not specified","not sure yet","prefer to discuss privately"].includes(s)};
-function businessWindowOpen(now=new Date()){
- const parts=new Intl.DateTimeFormat("en-US",{timeZone:"America/Chicago",weekday:"short",hour:"2-digit",hour12:false}).formatToParts(now);
- const day=parts.find(x=>x.type==="weekday")?.value||"";const hour=Number(parts.find(x=>x.type==="hour")?.value||0);
- return !["Sat","Sun"].includes(day)&&hour>=8&&hour<18;
-}
 
 function secret(){const v=process.env.DISCOVERY_TOKEN_SECRET;if(!v)throw new Error("DISCOVERY_TOKEN_SECRET is not configured");return v;}
 function sign(payload:string){return createHmac("sha256",secret()).update(payload).digest("base64url");}
@@ -122,8 +118,8 @@ export async function processDiscoveryAutomation(input:{limit?:number}={}){
   const d=o.discovery||{},meta=d._discovery||{},assessment=assessDiscovery(d);const created=new Date(o.created_at).getTime(),now=Date.now();
   const sentAt=meta.email_sent_at?new Date(meta.email_sent_at).getTime():0;const followups=Number(meta.followup_count||0);
   let kind:"initial"|"reminder"|null=null;
-  const urgent=/^immediate\b/i.test(clean(d.urgency));
-  if(!businessWindowOpen(new Date(now))&&!urgent){console.log("DISCOVERY_SKIP",JSON.stringify({id:String(o.id),reason:"outside_business_window",ageMinutes:Math.round((now-created)/60000),sentAt:meta.email_sent_at||null}));skipped++;continue;}
+  // Project urgency describes the customer's timeline; it cannot authorize after-hours sends.
+  if(!isWithinDiscoveryBusinessWindow(new Date(now))){console.log("DISCOVERY_SKIP",JSON.stringify({id:String(o.id),reason:"outside_business_window",ageMinutes:Math.round((now-created)/60000),sentAt:meta.email_sent_at||null}));skipped++;continue;}
   if(!sentAt&&now-created>=5*60*1000)kind="initial";
   else if(sentAt&&assessment.status!=="READY_FOR_PROPOSAL"&&followups<1&&now-sentAt>=24*60*60*1000)kind="reminder";
   else if(sentAt&&assessment.status!=="READY_FOR_PROPOSAL"&&followups<2&&now-sentAt>=72*60*60*1000)kind="reminder";
