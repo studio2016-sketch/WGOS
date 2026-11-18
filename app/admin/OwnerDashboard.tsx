@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {studioPursuitBrand,contractPursuitHref,festivalBrand,festivalHref} from "../../lib/workspace-links";
 import WorkspaceIcon from "./WorkspaceIcon";
+import styles from "./jermaine-brand.module.css";
 
 type OwnerDashboardProps = {
   identity:any;
@@ -33,6 +34,8 @@ export default function OwnerDashboard({
   const ownerReviewProposals=proposals.filter((p:any)=>["DRAFT","OWNER_REVIEW","REVIEW_REQUIRED"].includes(String(p.status)));
   const clientProposals=proposals.filter((p:any)=>["APPROVED","SENT"].includes(String(p.status)));
   const query=q(selectedBrand);
+  const brand = brands.find(({ id }) => id === selectedBrand);
+  const showJermaineEmblem = brand?.id === "jermaine" || brand?.id === "jermaine-williams";
   const studio=studioPursuitBrand(brands,selectedBrand);
   const artists=festivalBrand(brands,selectedBrand);
 
@@ -106,7 +109,26 @@ export default function OwnerDashboard({
     {label:"Websites & search",detail:"Search performance & sales",icon:"↗",href:"/admin/seo"+query}
   ];
   return <section className="ownerExperience efficientHome" aria-label="WGOS owner command">
-    <div className="efficientHeading"><div><p className="eyebrow">WGOS · {selectedBrand?brands.find(b=>b.id===selectedBrand)?.name||"BUSINESS COMMAND":"EXECUTIVE COMMAND"}</p><h1>Clarity for everything you’re building.</h1><p>Review what needs attention. Move directly into the work.</p></div><Link href={"/admin"+query+"#commercial-forms"} className="newAction">＋ New lead</Link></div>
+    <div className="efficientHeading">
+      <div>
+        <div className={styles.identity}>
+          {showJermaineEmblem && (
+            <img
+              src="https://www.jermainewilliams.com/brand/jw-signature-v1/JW_signature_transparent_128h.png"
+              width={96}
+              height={128}
+              alt=""
+              referrerPolicy="no-referrer"
+              className={styles.emblem}
+            />
+          )}
+          <p className="eyebrow">WGOS · {selectedBrand ? brand?.name || "BUSINESS COMMAND" : "EXECUTIVE COMMAND"}</p>
+        </div>
+        <h1>Clarity for everything you’re building.</h1>
+        <p>Review what needs attention. Move directly into the work.</p>
+      </div>
+      <Link href={"/admin"+query+"#commercial-forms"} className="newAction">＋ New lead</Link>
+    </div>
     <div className="efficientMetrics" aria-label="Current business records">
       <Link href={"/admin"+query+"#commercial"}><small>OPEN PIPELINE · ESTIMATE</small><strong>{money(pipelineValue)}</strong><span>{openOpportunities.length} opportunit{openOpportunities.length===1?"y":"ies"}{unvalued?" · "+unvalued+" without a value":""}</span></Link>
       <Link href={"/admin/operations"+query}><small>ACTIVE DELIVERY</small><strong>{activeProjects.length}</strong><span>{blockedProjects.length} blocked projects</span></Link>
