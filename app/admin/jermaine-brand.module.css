@@ -1,0 +1,12 @@
+.identity:has(.emblem) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.emblem {
+  display: block;
+  flex-shrink: 0;
+  width: 36px;
+  height: auto;
+}
