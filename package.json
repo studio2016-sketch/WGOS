@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test:isolation": "node --test scripts/environment-isolation.test.cjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
