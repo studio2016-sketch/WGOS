@@ -19,7 +19,7 @@ export default function BoutiqueSettings({saved,taxStatus}:{saved:any;taxStatus:
   }catch(error){setError(error instanceof Error?error.message:"Unable to save settings.");}
   finally{setBusy(false);}
  }
- return <details className="adminPanel" id="boutique-settings">
+ return <details className="adminPanel" id="boutique-settings" open>
   <summary><strong>Boutique Settings · Shipping &amp; Tax</strong></summary>
   <form onSubmit={save} style={{display:"grid",gap:16,marginTop:18}}>
    <h3>US shipping</h3>
