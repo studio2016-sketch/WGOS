@@ -53,6 +53,9 @@ export async function POST(request:Request){
  const token=process.env.BLOB_READ_WRITE_TOKEN;
  if(!token)return NextResponse.json({error:"WGOS brand image storage is not configured."},{status:503,headers});
  const sha256=createHash("sha256").update(bytes).digest("hex");
+ // Exact owner-approved original file, not a new rendering or lower-resolution copy.
+ if(sha256!=="178dfea779baf6439eb9b6adb6377423c2b694896667ca7250e66e1ea3489cb1")
+  return NextResponse.json({error:"This is not the exact approved Dionne’s Boutique master logo. Select the original 1254 × 1254 PNG."},{status:400,headers});
  const pathname="dionnes-boutique/official-logo-"+sha256.slice(0,14)+"-"+randomUUID()+".png";
  let uploaded:any;
  try{
