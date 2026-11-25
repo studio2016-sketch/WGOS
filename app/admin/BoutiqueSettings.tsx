@@ -15,13 +15,14 @@ export default function BoutiqueSettings({saved,taxStatus}:{saved:any;taxStatus:
     taxBehavior:"exclusive",taxConfirmed:data.get("taxConfirmed")==="on"
    }})});
    const result=await response.json();if(!response.ok)throw new Error(result.error||"Unable to save settings.");
-   setVersion(result.version);setMessage("Settings saved for checkout preparation.");router.refresh();
+   setVersion(result.version);setMessage(data.get("shippingEnabled")==="on"?"Shipping and tax configuration saved. Live checkout still requires separate launch approval.":"Tax configuration saved. Shipping is OFF, so checkout remains unavailable until you enable shipping and set its charge and delivery estimates.");router.refresh();
   }catch(error){setError(error instanceof Error?error.message:"Unable to save settings.");}
   finally{setBusy(false);}
  }
  return <details className="adminPanel" id="boutique-settings" open>
   <summary><strong>Boutique Settings · Shipping &amp; Tax</strong></summary>
   <form onSubmit={save} style={{display:"grid",gap:16,marginTop:18}}>
+   <div className="principle" role="status"><strong>{s.shippingEnabled?"US shipping is configured":"Shipping is currently OFF"}</strong><p>{s.shippingEnabled?`Saved delivery charge: ${(Number(s.shippingCents||0)/100).toFixed(2)} per order${s.freeShippingThresholdCents!=null?` · Free over ${(Number(s.freeShippingThresholdCents)/100).toFixed(2)}`:""}. Estimated delivery: ${s.minDays}–${s.maxDays} business days.`:"Checkout cannot begin while shipping is off. Enable US delivery and enter a rate plus minimum and maximum delivery days, then save."}</p><p>Tax setup: {s.taxMode==="AUTOMATIC"?`Automatic Stripe Tax · ${s.taxCode||"Tax code not set"}`:"Not approved for automatic calculation"}. Saving settings does not enable live payments.</p></div>
    <h3>US shipping</h3>
    <label><input style={{width:"auto"}} type="checkbox" name="shippingEnabled" defaultChecked={Boolean(s.shippingEnabled)}/> Offer flat-rate US delivery</label>
    <div className="inventoryEntryFields">
