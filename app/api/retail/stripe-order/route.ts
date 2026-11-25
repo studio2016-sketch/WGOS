@@ -13,7 +13,7 @@ export async function POST(req:Request){
  try{
   const payload=JSON.parse(raw);
   const sql=db();
-  const rows=await sql`SELECT wgos.record_boutique_order(${JSON.stringify(payload)}::jsonb) AS result`;
+  const rows=await sql`SELECT wgos.boutique_record_reserved_order(${JSON.stringify(payload)}::jsonb) AS result`;
   return NextResponse.json(rows[0].result,{headers:{"Cache-Control":"no-store, private"}});
  }catch{
   return NextResponse.json({error:"Order recording failed. Retry delivery."},{status:500});
