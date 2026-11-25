@@ -41,7 +41,7 @@ export default function InventoryWorkspace({brandId,brandName,snapshot,canManage
   try{const r=await fetch("/api/admin/inventory/adjust",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({brandId,productId,locationId:location.id,quantityDelta:delta,movementType:type})});const d=await r.json();if(!r.ok)throw new Error(d.error||"Unable to adjust inventory");router.refresh();}catch(e){setError(e instanceof Error?e.message:"Unable to adjust inventory");}finally{setBusy("");}
  }
  return <section className="cinematicWorkspace inventoryWorkspace">
-  <div className="workspaceTitle"><div><p className="eyebrow">RETAIL INVENTORY · SHADOW CONTROL</p><h2>Inventory Command</h2><p className="muted">Manage products and stock for {brandName}. New entries are saved in WGOS’s private inventory catalog.</p></div><span className="status">{snapshot.state?.mode||"SHADOW"}</span></div>
+  <div className="workspaceTitle"><div><p className="eyebrow">{snapshot.state?.mode==="AUTHORITATIVE"?"LIVE INVENTORY · WGOS AUTHORITY":"RETAIL INVENTORY · SHADOW CONTROL"}</p><h2>Inventory Command</h2><p className="muted">Manage products and stock for {brandName}. {snapshot.state?.mode==="AUTHORITATIVE"?"Approved stock is synchronized with the storefront. Items on hold or sold out cannot be purchased.":"New entries are saved in WGOS’s private inventory catalog."}</p></div><span className="status">{snapshot.state?.mode||"SHADOW"}</span></div>
   {error&&<p className="lifecycleMessage" role="alert">{error}</p>}
   {message&&<p role="status">{message}</p>}
   {canManage&&<button type="button" className="primary" onClick={()=>{setAdding(!adding);setError("");}} disabled={Boolean(busy)}>{adding?"Close product form":"＋ Add Product"}</button>}
@@ -73,6 +73,6 @@ export default function InventoryWorkspace({brandId,brandName,snapshot,canManage
     {canManage&&<InventoryReviewForm key={p.product_id+String(p.review_revision)+JSON.stringify((snapshot.stockLevels||[]).filter((stock:any)=>stock.product_id===p.product_id).map((stock:any)=>stock.review_revision))} brandId={brandId} product={p} locations={locations} stockLevels={snapshot.stockLevels||[]}/>}
    </article>)}</div>}
   </section>
-  <section className="principle"><strong>Cutover rule:</strong> no storefront authority until catalog, quantities, pricing and image references are reconciled and explicitly approved.</section>
+  <section className="principle"><strong>{snapshot.state?.mode==="AUTHORITATIVE"?"Live inventory rule:":"Cutover rule:"}</strong> {snapshot.state?.mode==="AUTHORITATIVE"?"WGOS is the source of truth for quantities, condition approvals and current prices. Storefront checkout validates each order before Stripe payment and reserves stock against overselling.":"No storefront authority until catalog, quantities, pricing and image references are reconciled and explicitly approved."}</section>
  </section>;
 }
