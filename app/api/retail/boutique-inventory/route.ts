@@ -18,7 +18,9 @@ export async function GET(req:Request){
    sql`SELECT mode,cutover_ready,reconciliation_status,updated_at
       FROM wgos.inventory_control_state WHERE brand_id='dionnesBoutique' LIMIT 1`,
    sql`SELECT p.source_record_id AS id,p.active,p.sellable,p.condition_status,
-      p.price_cents,COALESCE(v.available,0) AS available,
+      p.price_cents,p.image_url,
+      COALESCE((p.metadata->>'approvedPhoto')::boolean,false) AS uploaded_photo_approved,
+      COALESCE(v.available,0) AS available,
       COALESCE((p.metadata->>'needsConditionReview')::boolean,true) AS condition_review_pending,
       COALESCE((p.metadata->>'needsStockConfirmation')::boolean,true) AS count_pending
       FROM wgos.inventory_products p
@@ -34,7 +36,11 @@ export async function GET(req:Request){
       !Number.isSafeInteger(priceCents)||priceCents<0||
       !Number.isSafeInteger(available)||available<0)throw new Error("Invalid catalog record.");
    ids.add(id);
-   return {id,priceCents,available,active:item.active===true,
+   let uploadedPhotoUrl:string|null=null;
+   if(item.uploaded_photo_approved&&typeof item.image_url==="string"){
+    try{const u=new URL(item.image_url);if(u.protocol==="https:"&&u.hostname.endsWith(".blob.vercel-storage.com"))uploadedPhotoUrl=u.href;}catch{}
+   }
+   return {id,priceCents,available,uploadedPhotoUrl,active:item.active===true,
     sellable:item.sellable===true,condition:String(item.condition_status),
     countConfirmed:item.count_pending===false,conditionReviewed:item.condition_review_pending===false};
   });
