@@ -5,7 +5,7 @@ The boutique's home hero previously stretched a 220px raster preview. The origin
 
 ## Publishing
 1. Open `https://wgos.app/admin/inventory?brand=dionnesBoutique#boutique-brand-logo` with an authorized Dionne’s Boutique administrator account.
-2. Select the **exact** approved original `Dionnes_Boutique_Approved_Logo.png`. The uploader accepts only a high-resolution 8-bit transparent RGBA PNG up to 3 MB, without resizing, recoloring, re-rendering or compression.
+2. Select the **exact** approved original `Dionnes_Boutique_Approved_Logo.png`. The uploader accepts only a high-resolution 8-bit transparent RGBA PNG up to 3 MB, without resizing, recoloring, re-rendering or compression. The file's SHA-256 must exactly match `178dfea779baf6439eb9b6adb6377423c2b694896667ca7250e66e1ea3489cb1`.
 3. Tap **Publish Official Logo**. The system validates PNG headers and dimensions, creates an immutable public Vercel Blob asset, logs an audit event, and updates WGOS’s approved logo URL.
 4. All site placements resolve through `https://dionnesboutique.com/brand/official-logo` and take the new URL on the next request. The old logo remains as a safe fallback if the new asset is not yet published.
 5. Verify the live route redirects to a 1254 × 1254 PNG, and inspect iPhone and desktop screenshots for sharpness, cropping and legible tagline.
