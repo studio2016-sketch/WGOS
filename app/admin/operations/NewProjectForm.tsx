@@ -5,12 +5,12 @@ import {useRouter} from "next/navigation";
 type Brand={id:string;name:string;relationship_type?:string|null};
 type User={auth_user_id:string;display_name?:string|null;email?:string|null};
 
-export default function NewProjectForm({brands,users}:{brands:Brand[];users:User[]}){
+export default function NewProjectForm({brands,users,selectedBrand}:{selectedBrand?:string;brands:Brand[];users:User[]}){
  const router=useRouter();
  const [open,setOpen]=useState(false);
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState("");
- const [form,setForm]=useState({brandId:brands[0]?.id||"",title:"",ownerSubject:"",startAt:"",endAt:""});
+ const [form,setForm]=useState({brandId:selectedBrand||brands[0]?.id||"",title:"",ownerSubject:"",startAt:"",endAt:""});
 
  async function create(){
   setBusy(true);setError("");
