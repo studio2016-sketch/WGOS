@@ -9,25 +9,63 @@ const toIso=(value:any)=>value?new Date(String(value)).toISOString():null;
 export default function ShowPrepClient({brandId,events,users,deliverables,runItems}:{brandId:string;events:any[];users:any[];deliverables:any[];runItems:any[]}){
  const [rows,setRows]=useState(events),[tasks,setTasks]=useState(deliverables),[cues,setCues]=useState(runItems),[selected,setSelected]=useState(events[0]?.id||""),[message,setMessage]=useState(""),[saving,setSaving]=useState<string|null>(null);
  const creating=useRef(false);
+ const pendingRequest=useRef({payload:"",id:""});
  const [createBusy,setCreateBusy]=useState(false),[createError,setCreateError]=useState("");
  const current=rows.find(e=>String(e.id)===String(selected));
  const currentTasks=useMemo(()=>tasks.filter(t=>String(t.production_event_id)===String(selected)),[tasks,selected]);
  const currentCues=useMemo(()=>cues.filter(c=>String(c.production_event_id)===String(selected)),[cues,selected]);
- async function create(form:FormData){
+ async function create(form:FormData,element:HTMLFormElement){
   if(creating.current)return;
   creating.current=true;setCreateBusy(true);setMessage("");setCreateError("");
   try{
    const body:Record<string,any>=Object.fromEntries(form);
-   for(const key of ["eventStart","loadInAt","doorsAt"])body[key]=toIso(body[key]);
+   for(const key of ["eventStart","eventEnd","loadInAt","doorsAt"])body[key]=toIso(body[key]);
    body.timezone=Intl.DateTimeFormat().resolvedOptions().timeZone||"America/Chicago";
-   const r=await fetch("/api/admin/show-prep",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
-   const data=await r.json();if(!r.ok)throw new Error(data.error||"Unable to create show");
-   setRows(current=>[data.event,...current]);setTasks(current=>[...data.deliverables,...current]);setSelected(data.event.id);
+   const payload=JSON.stringify(body);
+   const storageKey="show-prep-pending:"+brandId;
+   if(!pendingRequest.current.id){
+    try{pendingRequest.current=JSON.parse(sessionStorage.getItem(storageKey)||"null")||pendingRequest.current;}catch{}
+   }
+   if(payload!==pendingRequest.current.payload){
+    pendingRequest.current={payload,id:crypto.randomUUID()};
+    try{sessionStorage.setItem(storageKey,JSON.stringify(pendingRequest.current));}catch{}
+   }
+   body.requestId=pendingRequest.current.id;
+   const data=await submitShow("POST",body);
+   if(!data)return;
+   setRows(current=>[data.event,...current.filter(e=>e.id!==data.event.id)]);
+   setTasks(current=>[...data.deliverables,...current.filter(t=>t.production_event_id!==data.event.id)]);
+   setSelected(data.event.id);
+   pendingRequest.current={payload:"",id:""};
+   try{sessionStorage.removeItem(storageKey);}catch{}
+   element.reset();
    setMessage(`Show saved with ${data.deliverables.length} prep deliverables. Next, assign owners and review the checklist below.`);
   }catch(error){setCreateError(error instanceof Error?error.message:"Unable to save show. Check the show list before retrying.");}
   finally{creating.current=false;setCreateBusy(false);}
  }
 
+ async function submitShow(method:string,body:Record<string,any>){
+  async function send(){
+   const response=await fetch("/api/admin/show-prep",{method,headers:{"content-type":"application/json"},body:JSON.stringify(body)});
+   return {response,data:await response.json()};
+  }
+  let result=await send();
+  if(result.data.overlap){
+   if(!window.confirm("Another event for this business overlaps the show. Save this time anyway?"))return null;
+   body.acceptOverlap=true;result=await send();
+  }
+  if(!result.response.ok)throw new Error(result.data.error||"Unable to save show.");
+  return result.data;
+ }
+ async function reschedule(form:FormData){
+  if(creating.current)return;
+  creating.current=true;setCreateBusy(true);setMessage("");
+  try{
+   const data=await submitShow("PATCH",{brandId,id:selected,previousStart:current.event_start,eventStart:toIso(form.get("start")),eventEnd:toIso(form.get("end"))});
+   if(data){setRows(rows=>rows.map(e=>e.id===data.event.id?data.event:e));setMessage("Show date updated on the WGOS calendar. Review load-in, doors, cues and checklist deadlines.");}
+  }catch(error){setMessage(error instanceof Error?error.message:"Unable to update show.");}
+  finally{creating.current=false;setCreateBusy(false);}
+ }
  async function saveTask(task:any){setSaving(task.id);setMessage("");const r=await fetch("/api/admin/show-prep/deliverables",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({...task,due_at:toIso(task.due_at)})});const data=await r.json();setSaving(null);if(!r.ok){setMessage(data.error||"Unable to save deliverable");return}setTasks(tasks.map(t=>t.id===task.id?data.deliverable:t));setMessage("Deliverable saved.");}
  async function addTask(form:FormData){setMessage("");const r=await fetch("/api/admin/show-prep/deliverables",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({productionEventId:selected,checkpoint:form.get("checkpoint"),dueAt:toIso(form.get("dueAt")),ownerSubject:form.get("ownerSubject"),notes:form.get("notes")})});const data=await r.json();if(!r.ok){setMessage(data.error||"Unable to add deliverable");return}setTasks([data.deliverable,...tasks]);setMessage("Deliverable added.");}
  async function addCue(form:FormData){setMessage("");const r=await fetch("/api/admin/show-prep/run-of-show",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({productionEventId:selected,title:form.get("title"),cueAt:toIso(form.get("cueAt")),durationSeconds:form.get("durationSeconds"),department:form.get("department"),ownerSubject:form.get("ownerSubject"),notes:form.get("notes")})});const data=await r.json();if(!r.ok){setMessage(data.error||"Unable to add schedule item");return}setCues([...cues,data.item]);setMessage("Schedule item added.");}
@@ -35,11 +73,12 @@ export default function ShowPrepClient({brandId,events,users,deliverables,runIte
  return <section className="adminPanel showPrepWorkspace">
   <h2>Save a show date</h2>
   <p>Enter the show details to save its production plan and generate a prep checklist. This does not confirm a client booking.</p>
-  <form onSubmit={event=>{event.preventDefault();void create(new FormData(event.currentTarget));}} className="showDateForm" aria-busy={createBusy}>
+  <form onSubmit={event=>{event.preventDefault();void create(new FormData(event.currentTarget),event.currentTarget);}} className="showDateForm" aria-busy={createBusy}>
    <input type="hidden" name="brandId" value={brandId}/>
    <label>Show / artist<input name="eventName" required placeholder="Show or artist name"/></label>
    <label>Venue / room<input name="venueName" placeholder="Venue or room, if known"/></label>
    <label>Show date and time<input name="eventStart" type="datetime-local" required/></label>
+   <label>Show end (optional)<input name="eventEnd" type="datetime-local"/></label>
    <label>Load-in date and time (optional)<input name="loadInAt" type="datetime-local"/></label>
    <label>Doors open (optional)<input name="doorsAt" type="datetime-local"/></label>
    <p className="showFormFull">Times use your device’s local time zone.</p>
@@ -49,9 +88,17 @@ export default function ShowPrepClient({brandId,events,users,deliverables,runIte
   {message&&<p role="status">{message}</p>}
 
   <div className="workspaceTitle"><div><p className="eyebrow">UPCOMING & RECENT SHOWS</p><h2>Production events</h2><p className="muted">{rows.length} events · {users.length} active WGOS users available for assignment</p></div></div>
-  {rows.length===0?<div className="emptyAttention"><h3>No Studio2016 production events yet</h3><p>Create a show above to generate its checklist.</p></div>:<>
+  {rows.length===0?<div className="emptyAttention"><h3>No production events yet</h3><p>Create a show above to generate its checklist.</p></div>:<>
    <label style={{display:"grid",gap:6,maxWidth:620,margin:"18px 0"}}>Show<select value={selected} onChange={e=>setSelected(e.target.value)}>{rows.map(e=><option key={e.id} value={e.id}>{e.event_name} · {e.venue_name||"Venue TBD"} · {e.event_start?new Date(e.event_start).toLocaleDateString():"Date TBD"}</option>)}</select></label>
    {current&&<><div style={{padding:"12px 0"}}><h3>{current.event_name}</h3><p className="muted">{current.venue_name||"Venue not set"} · {current.event_start?new Date(current.event_start).toLocaleString():"Date not set"} · Load-in {current.load_in_at?new Date(current.load_in_at).toLocaleString():"TBD"} · Doors {current.doors_at?new Date(current.doors_at).toLocaleString():"TBD"}</p><p><a href="#show-checklist">Review prep checklist</a>{current.project_id&&<> · <a href={"/admin/operations?project="+encodeURIComponent(current.project_id)}>Open show project</a></>}</p></div>
+   <p><strong>{current.status}</strong> · {currentTasks.find(t=>t.status==="BLOCKED")?"Next: resolve a blocked deliverable.":currentTasks.some(t=>t.status!=="DONE"&&!t.owner_subject)?"Next: assign outstanding prep deliverables.":"Next: review the run of show."}</p>
+   <details key={current.id+String(current.event_start)}><summary>Reschedule show</summary>
+    <form onSubmit={e=>{e.preventDefault();void reschedule(new FormData(e.currentTarget));}}>
+     <label>Show start<input name="start" type="datetime-local" defaultValue={localValue(current.event_start)} required/></label>
+     <label>Show end (optional)<input name="end" type="datetime-local" defaultValue={localValue(current.event_end)}/></label>
+     <button disabled={createBusy}>Save new date</button>
+    </form>
+   </details>
    <form action={addTask} style={{display:"grid",gridTemplateColumns:"minmax(220px,2fr) repeat(2,minmax(160px,1fr)) auto",gap:8,margin:"12px 0 20px"}}><input name="checkpoint" required placeholder="Add a deliverable"/><input name="dueAt" type="datetime-local" aria-label="Due date"/><select name="ownerSubject"><option value="">Unassigned</option>{users.map(u=><option key={u.auth_user_id} value={u.auth_user_id}>{u.display_name||u.email}</option>)}</select><button className="primary showSaveButton">Add</button></form>
    <div className="workspaceTitle" style={{marginTop:28}}><div><p className="eyebrow">ADVANCE CHECKLIST</p><h3 id="show-checklist" tabIndex={-1}>Production deliverables</h3><p className="muted">{currentTasks.filter(t=>t.status==="DONE").length} of {currentTasks.length} complete · {currentTasks.filter(t=>t.status==="BLOCKED").length} blocked</p></div></div>
    {currentTasks.length===0?<p className="muted">No deliverables for this show yet.</p>:<div style={{display:"grid",gap:12}}>{currentTasks.map(t=><TaskEditor key={t.id} task={t} users={users} saving={saving===t.id} onSave={saveTask}/>)}</div>}
