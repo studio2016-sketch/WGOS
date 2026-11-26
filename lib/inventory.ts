@@ -1,19 +1,21 @@
 import "server-only";
 import {db} from "./db";
+import {STUDIO_PLAN_SOURCE,STUDIO_PLAN_BRAND,isReservedPlanKey} from "./studio-planned-equipment-input";
 
 export async function inventorySnapshot(brandId:string){
  const sql=db();
  const [stateRows,products,locations,batches,stockLevels]=await Promise.all([
   sql`SELECT * FROM wgos.inventory_control_state WHERE brand_id=${brandId} LIMIT 1`,
-  sql`SELECT v.*,p.metadata,p.updated_at,to_char(p.updated_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS review_revision FROM wgos.inventory_position v JOIN wgos.inventory_products p ON p.id=v.product_id WHERE v.brand_id=${brandId} ORDER BY v.active DESC,v.category,v.manufacturer,v.product_name,v.variant_name`,
+  sql`SELECT v.*,p.metadata,p.updated_at,to_char(p.updated_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS review_revision FROM wgos.inventory_position v JOIN wgos.inventory_products p ON p.id=v.product_id WHERE v.brand_id=${brandId} AND p.source_system IS DISTINCT FROM ${STUDIO_PLAN_SOURCE} ORDER BY v.active DESC,v.category,v.manufacturer,v.product_name,v.variant_name`,
   sql`SELECT * FROM wgos.inventory_locations WHERE brand_id=${brandId} AND active=true ORDER BY name`,
   sql`SELECT * FROM wgos.inventory_import_batches WHERE brand_id=${brandId} ORDER BY created_at DESC LIMIT 10`,
-  sql`SELECT s.*,to_char(s.updated_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS review_revision FROM wgos.inventory_stock_levels s JOIN wgos.inventory_products p ON p.id=s.product_id WHERE p.brand_id=${brandId}`
+  sql`SELECT s.*,to_char(s.updated_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS review_revision FROM wgos.inventory_stock_levels s JOIN wgos.inventory_products p ON p.id=s.product_id WHERE p.brand_id=${brandId} AND p.source_system IS DISTINCT FROM ${STUDIO_PLAN_SOURCE}`
  ]);
  return {state:stateRows[0]||null,products,locations,batches,stockLevels};
 }
 
 export async function createInventoryProduct(input:{brandId:string;externalKey?:string;sku?:string;category?:string;manufacturer?:string;productName:string;variantName?:string;conditionStatus?:string;priceCents?:number;costCents?:number|null;imageUrl?:string;sellable?:boolean;actor:string;openingQuantity?:number;locationId?:string;requestId?:string}){
+ if(input.brandId===STUDIO_PLAN_BRAND&&(isReservedPlanKey(input.sku)||isReservedPlanKey(input.externalKey)))throw new Error("Use the private planned equipment importer for reserved codes.");
  const name=input.productName.trim();if(!name)throw new Error("Product name is required.");
  const quantity=input.openingQuantity??0;
  if(!Number.isFinite(quantity)||quantity<0||quantity>99999999999.999||Math.abs(quantity*1000-Math.round(quantity*1000))>0.0001)throw new Error("Starting quantity must be non-negative with at most three decimal places.");
@@ -64,7 +66,7 @@ export async function updateInventoryProduct(input:{brandId:string;productId:str
    active=COALESCE(${input.active===undefined?null:Boolean(input.active)},active),
    image_url=CASE WHEN ${input.imageUrl===undefined} THEN image_url ELSE ${input.imageUrl?.trim()||null} END,
    updated_at=now()
-  WHERE id=${input.productId}::uuid AND brand_id=${input.brandId}
+  WHERE id=${input.productId}::uuid AND brand_id=${input.brandId} AND source_system IS DISTINCT FROM ${STUDIO_PLAN_SOURCE}
   RETURNING *`;
  const product:any=rows[0];if(!product)throw new Error("Inventory product not found.");
  await sql`INSERT INTO wgos.audit_events(actor_subject,action,entity_type,entity_id,metadata) VALUES(${input.actor},'INVENTORY_PRODUCT_UPDATED','inventory_product',${input.productId},jsonb_build_object('brandId',${input.brandId}::text))`;
@@ -76,7 +78,7 @@ export async function adjustInventory(input:{brandId:string;productId:string;loc
  if(!allowed.has(input.movementType))throw new Error("Unsupported movement type.");
  const delta=Number(input.quantityDelta);if(!Number.isFinite(delta)||delta===0)throw new Error("Quantity change must be non-zero.");
  const sql=db();
- const productRows:any[]=await sql`SELECT id FROM wgos.inventory_products WHERE id=${input.productId}::uuid AND brand_id=${input.brandId} LIMIT 1`;if(!productRows[0])throw new Error("Inventory product not found.");
+ const productRows:any[]=await sql`SELECT id FROM wgos.inventory_products WHERE id=${input.productId}::uuid AND brand_id=${input.brandId} AND source_system IS DISTINCT FROM ${STUDIO_PLAN_SOURCE} LIMIT 1`;if(!productRows[0])throw new Error("Inventory product not found.");
  const locationRows:any[]=await sql`SELECT id FROM wgos.inventory_locations WHERE id=${input.locationId}::uuid AND brand_id=${input.brandId} AND active=true LIMIT 1`;if(!locationRows[0])throw new Error("Inventory location not found.");
  const key=input.idempotencyKey||null;
  const rows=await sql`

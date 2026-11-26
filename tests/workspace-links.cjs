@@ -11,13 +11,14 @@ assert.equal(studioPursuitBrand([{id:'foreign',name:'Studio2016 vendor'}]),undef
 assert.equal(contractPursuitHref('studio&test'),'/admin/pursuits?brand=studio%26test');
 assert.equal(new URL(CONTRACT_PURSUIT_URL).protocol,'https:');
 const routeSource=fs.readFileSync('app/admin/pursuits/page.tsx','utf8');
-async function routeFor(visibleBrands,isGlobal){
+async function routeFor(visibleBrands,isGlobal,canManage=isGlobal){
  const queries=[];
  const ctx={exports:{},require(name){
   if(name==='react/jsx-runtime')return {jsx:(type,props)=>({type,props})};
   if(name.includes('PursuitWorkspace'))return {default:'PursuitWorkspace'};
   if(name==='next/navigation')return {notFound(){throw Error('NOT_FOUND')}};
-  if(name.includes('authz'))return {commandAccess:async()=>({isGlobal,identity:{auth_user_id:'qa-scoped-user'}})};
+  if(name.includes('authz'))return {commandAccess:async()=>({isGlobal,identity:{auth_user_id:'qa-scoped-user'}}),canManageBrand:async(_identity,id)=>id==='studio2016'&&canManage};
+  if(name.includes('studio-planned-equipment-input'))return {STUDIO_PLAN_BRAND:'studio2016'};
   if(name.includes('workspace-links'))return context.exports;
   if(name.includes('/db'))return {db:()=>async(strings,...values)=>{queries.push({text:strings.join('?'),values});return visibleBrands}};
   throw Error(name);
@@ -26,8 +27,9 @@ async function routeFor(visibleBrands,isGlobal){
  return {run:()=>ctx.exports.default(),queries};
 }
 (async()=>{
- const owner=await routeFor(brands,true);assert.equal((await owner.run()).props.studio.id,'studio2016');
- const scoped=await routeFor([brands[0]],false);assert.equal((await scoped.run()).props.studio.id,'studio2016');
+ const owner=await routeFor(brands,true);const ownerProps=(await owner.run()).props;assert.equal(ownerProps.studio.id,'studio2016');assert.equal(ownerProps.showPlannedEquipment,true);
+ const scoped=await routeFor([brands[0]],false);const scopedProps=(await scoped.run()).props;assert.equal(scopedProps.studio.id,'studio2016');assert.equal(scopedProps.showPlannedEquipment,false);
+ const manager=await routeFor([brands[0]],false,true);assert.equal((await manager.run()).props.showPlannedEquipment,true);
  assert.match(scoped.queries[0].text,/brand_memberships/);assert.match(scoped.queries[0].text,/m.active=true/);assert.equal(scoped.queries[0].values[0],'qa-scoped-user');
  const foreign=await routeFor([brands[1]],false);await assert.rejects(foreign.run(),/NOT_FOUND/);
  console.log('PASS: workspace visibility, selected-business scope, exact Studio2016 match, URL encoding, and scoped pursuit-route access.');

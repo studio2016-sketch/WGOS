@@ -1,6 +1,7 @@
 import {NextResponse} from "next/server";
 import {requireApiUser,requireApiBrandAdmin} from "../../../../../lib/authz";
 import {db} from "../../../../../lib/db";
+import {isStudioPlanningRecord} from "../../../../../lib/studio-planned-equipment";
 export async function POST(req:Request){
  const auth=await requireApiUser();if(!auth.ok)return NextResponse.json({error:auth.error},{status:auth.status});
  const body=await req.json().catch(()=>null);
@@ -8,6 +9,7 @@ export async function POST(req:Request){
  const access=await requireApiBrandAdmin(auth.identity,String(body.brandId||""));
  if(!access.ok)return NextResponse.json({error:access.error},{status:access.status});
  try{
+  if(await isStudioPlanningRecord(String(body.brandId||""),String(body.productId||"")))return NextResponse.json({error:"Planned equipment cannot enter retail stock."},{status:409});
   const rows=await db()`SELECT wgos.review_inventory_product(${JSON.stringify(body)}::jsonb,${String(auth.identity.auth_user_id)}) AS result`;
   return NextResponse.json(rows[0].result);
  }catch(error){
