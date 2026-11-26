@@ -1,5 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": {
+      "review/wgos-ai-workbench": false
+    }
+  },
   "crons": [
     {
       "path": "/api/cron/operations",
