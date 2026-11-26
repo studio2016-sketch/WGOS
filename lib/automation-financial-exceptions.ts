@@ -15,6 +15,7 @@ export async function observeDepositExceptions(input:{limit?:number;dryRun?:bool
   FROM wgos.agreements a
   JOIN wgos.proposals p ON p.id=a.proposal_id
   LEFT JOIN wgos.payments pay ON pay.proposal_id=p.id
+    AND upper(trim(pay.currency))=upper(trim(p.currency))
   WHERE a.status='SIGNED' AND p.deposit_amount>0
     AND a.signed_at IS NOT NULL AND a.signed_at<now()-interval '24 hours'
   GROUP BY a.id,a.signed_at,p.id,p.brand_id,p.deposit_amount,p.currency
